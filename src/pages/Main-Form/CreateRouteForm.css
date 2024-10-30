@@ -1,0 +1,321 @@
+
+.progress-bar {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #c4c4c4;
+}
+
+.step.active {
+    color: #ff7a00;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #c4c4c4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    margin-bottom: 5px;
+    transition: border-color 0.3s;
+}
+
+.step.active .step-icon {
+    border-color: #ff7a00;
+    background-color: #ff7a00;
+    color: #ffffff;
+}
+
+.step-label {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Заголовок формы */
+.form-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.form-subtitle {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 20px;
+}
+
+/* Поля ввода */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.input-group input, .input-group select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.input-group input::placeholder, .input-group select {
+    color: #bbb;
+}
+
+.input-group input:focus, .input-group select:focus {
+    outline: none;
+    border-color: #ff7a00;
+    box-shadow: 0 0 5px rgba(255, 122, 0, 0.2);
+}
+
+/* Кнопка "Next" */
+.wizard-footer {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.next-button {
+    padding: 12px 24px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #ff7a00;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.next-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.next-button:hover:not(:disabled) {
+    background-color: #e66e00;
+}
+
+.modal {
+    position: relative;
+    background: white;
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+    margin: auto;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.overlay {
+    background: rgba(0, 0, 0, 0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-modal {
+    background-color: #ff7a00;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.close-modal:hover {
+    background-color: #e66e00;
+}
+
+.option-button {
+    padding: 15px 30px;
+    font-size: 16px;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #007bff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.option-button.selected {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.step.active .step-icon, .step.active .step-label {
+    color: #ff7a00;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.dimension-fields {
+    display: flex;
+    gap: 10px;
+}
+
+.input-group input[type="checkbox"] {
+    width: auto;
+    margin-left: 10px;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+/* Превью фотографий */
+.photo-preview img {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    margin: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.next-button, .back-button {
+    padding: 12px 24px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #ff7a00;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.next-button:disabled, .back-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.next-button:hover:not(:disabled),
+.back-button:hover:not(:disabled) {
+    background-color: #e66e00;
+}
+
+.create-route-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Заголовок формы */
+.form-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Поля ввода */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.dimension-fields input {
+    width: 100%;
+    padding: 8px;
+    font-size: 16px;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    margin-right: 8px;
+}
+
+/* Кнопки "Back" и "Next" */
+.wizard-footer {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.back-button, .next-button {
+    padding: 12px 24px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #ff7a00;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover, .next-button:hover {
+    background-color: #e66e00;
+}
+
+.back-button:disabled, .next-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}

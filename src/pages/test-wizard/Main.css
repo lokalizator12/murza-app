@@ -1,0 +1,23 @@
+.multi-step-form {
+    width: 33%;
+    margin: auto;
+    text-align: center;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.progress-indicator span {
+    display: inline-block;
+    width: 100px;
+    padding: 5px;
+    margin-right: 5px;
+    text-align: center;
+    color: #ccc;
+}
+
+.progress-indicator .active {
+    color: #ff6f00;
+    font-weight: bold;
+}
