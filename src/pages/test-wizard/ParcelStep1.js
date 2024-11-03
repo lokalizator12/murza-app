@@ -1,27 +1,41 @@
-// ParcelStep1.js
 import React, { useState } from 'react';
-import { Box, Typography } from '@mui/material';
-import MapSearchInput from './../../components/MapSearchInput';
+import { Box, Typography, Button } from '@mui/material';
 import MapModal from './../../components/MapModal';
 import RouteMap from './../../components/RouteMap';
 
 const ParcelStep1 = ({ formData, handleChange }) => {
     const [isPickupModalOpen, setPickupModalOpen] = useState(false);
-    const [isDeliveryModalOpen, setDeliveryModalOpen] = useState(false);
-    const [pickupCoords, setPickupCoords] = useState({ lat: null, lng: null });
-    const [deliveryCoords, setDeliveryCoords] = useState({ lat: null, lng: null });
+    const [isDestinationModalOpen, setDestinationModalOpen] = useState(false);
+    const [pickupAddress, setPickupAddress] = useState(formData.pickupAddress || '');
+    const [destinationAddress, setDestinationAddress] = useState(formData.destinationAddress || '');
+    const [pickupCoordinates, setPickupCoordinates] = useState(formData.pickupCoordinates || null);
+    const [destinationCoordinates, setDestinationCoordinates] = useState(formData.destinationCoordinates || null);
 
-    // Обработка выбора адреса через AddressAutofill
-    const handleAddressSelect = (type, result) => {
-        const { latitude, longitude, fullAddress } = result.features[0].properties;
+    // Обработчики для открытия и закрытия модальных окон
+    const handleOpenPickupModal = () => setPickupModalOpen(true);
+    const handleClosePickupModal = () => setPickupModalOpen(false);
 
-        if (type === 'pickup') {
-            setPickupCoords({ lat: latitude, lng: longitude });
-            handleChange('pickupAddress', fullAddress);
-        } else if (type === 'delivery') {
-            setDeliveryCoords({ lat: latitude, lng: longitude });
-            handleChange('deliveryAddress', fullAddress);
-        }
+    const handleOpenDestinationModal = () => setDestinationModalOpen(true);
+    const handleCloseDestinationModal = () => setDestinationModalOpen(false);
+
+    // Обновление адреса "откуда" из модального окна
+    const updatePickupAddressFromMap = (location) => {
+        const { address, coordinates } = location;
+        setPickupAddress(address);
+        setPickupCoordinates(coordinates);
+        handleChange('pickupAddress', address);
+        handleChange('pickupCoordinates', coordinates);
+        handleClosePickupModal();
+    };
+
+    // Обновление адреса "куда" из модального окна
+    const updateDestinationAddressFromMap = (location) => {
+        const { address, coordinates } = location;
+        setDestinationAddress(address);
+        setDestinationCoordinates(coordinates);
+        handleChange('destinationAddress', address);
+        handleChange('destinationCoordinates', coordinates);
+        handleCloseDestinationModal();
     };
 
     return (
@@ -30,37 +44,49 @@ const ParcelStep1 = ({ formData, handleChange }) => {
                 Шаг 1: Местоположение и тип доставки
             </Typography>
 
-            <MapSearchInput
-                label="Адрес отправления"
-                address={formData.pickupAddress || ''}
-                onAddressChange={(value) => handleChange('pickupAddress', value)}
-                onMapOpen={() => setPickupModalOpen(true)}
-                onAddressSelect={(result) => handleAddressSelect('pickup', result)}
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <input
+                    type="text"
+                    value={pickupAddress}
+                    readOnly
+                    placeholder="Адрес отправления"
+                    style={{ flex: 1, padding: '10px', fontSize: '16px' }}
+                />
+                <Button variant="contained" onClick={handleOpenPickupModal}>
+                    Указать
+                </Button>
+            </Box>
 
-            <MapSearchInput
-                label="Адрес доставки"
-                address={formData.deliveryAddress || ''}
-                onAddressChange={(value) => handleChange('deliveryAddress', value)}
-                onMapOpen={() => setDeliveryModalOpen(true)}
-                onAddressSelect={(result) => handleAddressSelect('delivery', result)}
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <input
+                    type="text"
+                    value={destinationAddress}
+                    readOnly
+                    placeholder="Адрес назначения"
+                    style={{ flex: 1, padding: '10px', fontSize: '16px' }}
+                />
+                <Button variant="contained" onClick={handleOpenDestinationModal}>
+                    Указать
+                </Button>
+            </Box>
 
+            {/* Модальные окна для выбора "Откуда" и "Куда" */}
             <MapModal
                 isOpen={isPickupModalOpen}
-                onClose={() => setPickupModalOpen(false)}
-                setCoords={(coords) => setPickupCoords(coords)}
-                setAddress={(address) => handleChange('pickupAddress', address)}
+                onClose={handleClosePickupModal}
+                setAddress={updatePickupAddressFromMap}
             />
-
             <MapModal
-                isOpen={isDeliveryModalOpen}
-                onClose={() => setDeliveryModalOpen(false)}
-                setCoords={(coords) => setDeliveryCoords(coords)}
-                setAddress={(address) => handleChange('deliveryAddress', address)}
+                isOpen={isDestinationModalOpen}
+                onClose={handleCloseDestinationModal}
+                setAddress={updateDestinationAddressFromMap}
             />
 
-            <RouteMap pickupCoords={pickupCoords} deliveryCoords={deliveryCoords} />
+            {/* Отображение карты с маршрутом */}
+            <RouteMap
+                pickupCoordinates={pickupCoordinates}
+                destinationCoordinates={destinationCoordinates}
+            />
         </Box>
     );
 };

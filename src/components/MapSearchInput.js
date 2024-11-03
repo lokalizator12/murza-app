@@ -1,78 +1,51 @@
 // MapSearchInput.js
-import React, {useEffect, useRef, useState} from 'react';
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} from '@mui/material';
-import {AddressAutofill} from '@mapbox/search-js-react';
-import mapboxgl from 'mapbox-gl';
-
-// Временно вставьте ваш Mapbox Access Token напрямую для отладки
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
+import React, {useCallback} from 'react';
+import {Box, Button, TextField} from '@mui/material';
+import {AddressAutofill, useConfirmAddress} from '@mapbox/search-js-react';
 
 const MapSearchInput = ({label, address, onAddressChange, onAddressSelect}) => {
-    const [isMapOpen, setMapOpen] = useState(false);
-    const mapContainerRef = useRef(null); // ссылка на контейнер для карты
+    const {formRef, showConfirm} = useConfirmAddress({
+        accessToken: process.env.REACT_APP_MAPBOX_TOKEN,
+    });
 
     const handleRetrieve = (result) => {
-        if (result && result.features && result.features.length > 0) {
-            const feature = result.features[0];
-            const placeName = feature.place_name;
-            const coords = feature.geometry.coordinates;
-
-            onAddressChange(placeName);
-            setMapOpen(true);
-        }
+        console.log('Autofill result:', result);
+        onAddressChange(result.features[0]?.properties?.formatted);
     };
 
-    // Инициализация карты при открытии модального окна
-    useEffect(() => {
-        if (isMapOpen && mapContainerRef.current) {
-            console.log("Инициализация карты в контейнере:", mapContainerRef.current);
-            const map = new mapboxgl.Map({
-                container: mapContainerRef.current,
-                style: 'mapbox://styles/mapbox/streets-v11',
-                center: [37.6173, 55.7558], // Координаты по умолчанию (например, Москва)
-                zoom: 10,
-            });
+    const handleSubmit = useCallback(async (e) => {
+        e.preventDefault();
+        const result = await showConfirm();
+        console.log('Confirm result:', result);
 
-            // Удаление карты при закрытии модального окна
-            return () => {
-                console.log("Удаление карты из DOM");
-                map.remove();
-            };
+        if (result.type === 'change' && result.feature) {
+            onAddressSelect(result.feature);
+        } else if (result.type === 'nochange') {
+            onAddressSelect({place_name: address});
         }
-    }, [isMapOpen]);
+    }, [showConfirm, address, onAddressSelect]);
 
     return (
-        <Box>
-            <AddressAutofill accessToken={mapboxgl.accessToken} onRetrieve={handleRetrieve}>
-                <TextField
-                    label={label}
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={address}
-                    onChange={(e) => onAddressChange(e.target.value)}
-                />
-            </AddressAutofill>
-            <Button variant="contained" onClick={() => setMapOpen(true)}>
-                Подтвердить адрес на карте
-            </Button>
-
-            {/* Модальное окно с картой для подтверждения */}
-            <Dialog open={isMapOpen} onClose={() => setMapOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>Подтвердите адрес на карте</DialogTitle>
-                <DialogContent>
-                    <Box ref={mapContainerRef} sx={{width: '100%', height: '400px'}}/>
-                </DialogContent>
-                <DialogActions>
-                    <Button
-                        onClick={() => setMapOpen(false)}
-                        color="primary"
-                    >
-                        Подтвердить
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
+        <form ref={formRef} onSubmit={handleSubmit}>
+            <Box sx={{display: 'flex', gap: 2}}>
+                <AddressAutofill
+                    accessToken={process.env.REACT_APP_MAPBOX_TOKEN}
+                    onRetrieve={handleRetrieve}
+                >
+                    <TextField
+                        label={label}
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        value={address}
+                        onChange={(e) => onAddressChange(e.target.value)}
+                    />
+                </AddressAutofill>
+                <Button variant="contained" type="submit">
+                    Подтвердить адрес
+                </Button>
+            </Box>
+        </form>
     );
 };
 
