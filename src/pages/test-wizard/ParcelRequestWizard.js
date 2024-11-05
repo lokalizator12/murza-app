@@ -26,18 +26,45 @@ const ParcelRequestWizard = () => {
         height: 0,
         width: 0,
         length: 0,
-        suggestedPrice: 0
+        suggestedPrice: 0,
+        images: [] // добавляем поле для изображений
     };
-
 
     const handleSubmit = async (data) => {
         try {
-            const response = await axios.post('/parcel-requests/create', data);
+            const formData = new FormData();
+
+            // Добавляем JSON-данные
+            const jsonData = {
+                ...data,
+                images: undefined // Удаляем images из JSON данных
+            };
+            formData.append('parcelRequest', new Blob([JSON.stringify(jsonData)], {type: 'application/json'}));
+
+            // Добавляем файлы
+            if (data.images.length > 0) {
+                data.images.forEach((file) => {
+                    formData.append('files', file);
+                });
+            }
+
+            // Выводим содержимое FormData для проверки
+            formData.forEach((value, key) => {
+                console.log(key, value);
+            });
+
+            // Отправка на сервер
+            const response = await axios.post('/parcel-requests/create', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             console.log('Parcel Request Submitted:', response.data);
         } catch (error) {
             console.error('Failed to submit parcel request:', error);
         }
     };
+
 
     return (
         <WizardForm

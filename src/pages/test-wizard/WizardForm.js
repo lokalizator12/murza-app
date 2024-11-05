@@ -4,14 +4,16 @@ import {Box, Button, Paper, Step, StepLabel, Stepper, Typography} from '@mui/mat
 const WizardForm = ({steps, initialData, onSubmit}) => {
     const [activeStep, setActiveStep] = useState(0);
     const [formData, setFormData] = useState(initialData || {});
-    const [isNextEnabled, setIsNextEnabled] = useState(false); // Контролирует доступность кнопки "Next"
+    const [isNextEnabled, setIsNextEnabled] = useState(false);
 
     const handleNext = () => {
         if (isNextEnabled) {
             setActiveStep((prevStep) => prevStep + 1);
         }
     };
-
+/*    React.useEffect(() => {
+        setIsNextEnabled(true);
+    }, []);*/
     const handleBack = () => {
         setActiveStep((prevStep) => prevStep - 1);
     };
@@ -30,7 +32,7 @@ const WizardForm = ({steps, initialData, onSubmit}) => {
             <StepComponent
                 formData={formData}
                 handleChange={handleChange}
-                setIsNextEnabled={setIsNextEnabled} // Передаем управление доступностью кнопки "Next"
+                setIsNextEnabled={setIsNextEnabled}
             />
         );
     };

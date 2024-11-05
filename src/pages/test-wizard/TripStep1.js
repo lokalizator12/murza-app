@@ -1,3 +1,4 @@
+// TripStep1.js
 import React, {useEffect, useState} from 'react';
 import MapModal from './../../components/MapModal';
 import RouteMap from './../../components/RouteMap';
@@ -8,12 +9,19 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
     const [modalType, setModalType] = useState(null);
     const [selectedDeparture, setSelectedDeparture] = useState(formData.departureAddress || '');
     const [selectedDestination, setSelectedDestination] = useState(formData.destinationAddress || '');
-    const [waypoints, setWaypoints] = useState(formData.waypoints || []);
-    const [transportType, setTransportType] = useState('driving');
+    const [waypoints, setWaypoints] = useState(formData.intermediateLocations || []);
 
+    // Инициализация типа транспорта из formData
+    const [transportType, setTransportType] = useState(
+        formData.shippingMethodId === 1 ? 'walking' :
+            formData.shippingMethodId === 2 ? 'cycling' : 'driving'
+    );
+
+    // Валидация для активации кнопки "Next"
     useEffect(() => {
         setIsNextEnabled(!!selectedDeparture && !!selectedDestination);
     }, [selectedDeparture, selectedDestination, setIsNextEnabled]);
+
     const handleOpenModal = (type) => {
         setModalType(type);
         setModalOpen(true);
@@ -21,39 +29,50 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
 
     const handleCloseModal = () => setModalOpen(false);
 
+    // Обновление адреса отправления
     const updateDepartureFromMap = (location) => {
         const {address, coordinates} = location;
         setSelectedDeparture(address);
         handleChange('departureAddress', address);
-        handleChange('departureCoordinates', coordinates);
+        handleChange('departureLatitude', coordinates[0]);
+        handleChange('departureLongitude', coordinates[1]);
         handleCloseModal();
     };
 
+    // Обновление адреса назначения
     const updateDestinationFromMap = (location) => {
         const {address, coordinates} = location;
         setSelectedDestination(address);
         handleChange('destinationAddress', address);
-        handleChange('destinationCoordinates', coordinates);
+        handleChange('destinationLatitude', coordinates[0]);
+        handleChange('destinationLongitude', coordinates[1]);
         handleCloseModal();
     };
 
+    // Добавление промежуточной точки как { latitude, longitude, address }
     const addWaypoint = (location) => {
         const {address, coordinates} = location;
-        const updatedWaypoints = [...waypoints, {address, coordinates}];
+        const updatedWaypoints = [
+            ...waypoints,
+            {latitude: coordinates[0], longitude: coordinates[1], address}
+        ];
         setWaypoints(updatedWaypoints);
-        handleChange('waypoints', updatedWaypoints);
+        handleChange('intermediateLocations', updatedWaypoints); // Сохранение в formData
         handleCloseModal();
     };
 
+    // Удаление промежуточной точки
     const removeWaypoint = (index) => {
         const updatedWaypoints = waypoints.filter((_, i) => i !== index);
         setWaypoints(updatedWaypoints);
-        handleChange('waypoints', updatedWaypoints);
+        handleChange('intermediateLocations', updatedWaypoints);
     };
 
+    // Обработка изменения типа транспорта
     const handleTransportTypeChange = (type) => {
         setTransportType(type);
-        handleChange('transportType', type);
+        const shippingMethodId = type === 'walking' ? 1 : type === 'cycling' ? 2 : 3; // Пример: 1 = walking, 2 = cycling, 3 = driving
+        handleChange('shippingMethodId', shippingMethodId);
     };
 
     return (
@@ -147,9 +166,9 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
 
             {/* Route Map */}
             <RouteMap
-                pickupCoordinates={formData.departureCoordinates}
-                destinationCoordinates={formData.destinationCoordinates}
-                waypoints={waypoints.map(wp => wp.coordinates)}
+                pickupCoordinates={formData.departureLatitude && formData.departureLongitude ? [formData.departureLatitude, formData.departureLongitude] : null}
+                destinationCoordinates={formData.destinationLatitude && formData.destinationLongitude ? [formData.destinationLatitude, formData.destinationLongitude] : null}
+                waypoints={waypoints.map(wp => [wp.latitude, wp.longitude])}
                 transportType={transportType}
             />
 

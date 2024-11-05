@@ -1,8 +1,24 @@
 // ParcelStep3.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Typography, TextField } from '@mui/material';
 
-const ParcelStep3 = ({ formData, handleChange }) => {
+const ParcelStep3 = ({ formData, handleChange, setIsNextEnabled }) => {
+    // Validation function to enable or disable the "Next" button
+    const validateForm = () => {
+        const { title, description, pickupDate, deliveryDate, price } = formData;
+
+        // All required fields must be filled and price must be positive
+        const isValid = title && description && pickupDate && deliveryDate && price > 0;
+
+        // Update the "Next" button status
+        setIsNextEnabled(isValid);
+    };
+
+    // Run validation whenever formData changes
+    useEffect(() => {
+        validateForm();
+    }, [formData]);
+
     return (
         <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography variant="h5" gutterBottom>
@@ -34,6 +50,9 @@ const ParcelStep3 = ({ formData, handleChange }) => {
                 margin="normal"
                 value={formData.pickupDate || ''}
                 onChange={(e) => handleChange('pickupDate', e.target.value)}
+                InputLabelProps={{
+                    shrink: true,
+                }}
             />
             <TextField
                 label="Дата доставки"
@@ -43,6 +62,9 @@ const ParcelStep3 = ({ formData, handleChange }) => {
                 margin="normal"
                 value={formData.deliveryDate || ''}
                 onChange={(e) => handleChange('deliveryDate', e.target.value)}
+                InputLabelProps={{
+                    shrink: true,
+                }}
             />
             <TextField
                 label="Итоговая цена"
@@ -51,7 +73,10 @@ const ParcelStep3 = ({ formData, handleChange }) => {
                 fullWidth
                 margin="normal"
                 value={formData.price || ''}
-                onChange={(e) => handleChange('price', e.target.value)}
+                onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    handleChange('price', value >= 0 ? value : ''); // Ensure price is non-negative
+                }}
             />
         </Box>
     );
