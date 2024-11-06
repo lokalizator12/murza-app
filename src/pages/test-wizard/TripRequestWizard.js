@@ -27,6 +27,7 @@ const TripRequestWizard = () => {
         maxHeight: 0,
         maxWidth: 0,
         maxLength: 0,
+        title: '',
     };
 
     const handleSubmit = async (data) => {

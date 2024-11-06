@@ -14,6 +14,7 @@ import CreateRouteForm from "./pages/Main-Form/CreateRouteForm";
 import ParcelRequestWizard from "./components/ParcelRequestWizard";
 import App2 from "./pages/test-wizard/Main";
 import MapboxExample from "./pages/test-map";
+import MainPage from "./pages/main/MainPage";
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Router>
             <Routes>
                 <Route path="" element={<Home/>}/>
+                <Route path="/main" element={<MainPage/>}/>
                 <Route path="/Map" element={<App2/>}/>
                 <Route path="/home" element={<Home/>}/>
                 <Route path="/login" element={<SignIn1/>}/>
