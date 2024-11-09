@@ -1,69 +1,108 @@
+// MainPage.js
 import React, { useEffect, useState } from 'react';
-import Navbar8 from '../../components/navbar8'; // Подключаем Navbar
-import MapboxMap from '../components/MapboxMap'; // Компонент для карты Mapbox
-import RequestFilters from '../../components/RequestFilters'; // Компонент фильтров
-import RequestList from './components/RequestList'; // Компонент списка запросов
+import Navbar8 from '../../components/navbar8';
+import MapboxMap from '../../components/MainPage/MapboxMap/MapboxMap';
+import RequestsFilter from '../../components/MainPage/RequestsFilter';
+import RequestsList from '../../components/MainPage/RequestsList';
 import axios from 'axios';
+import RequestDetailsModal from '../../components/MainPage/RequestDetailsModal';
 
 const MainPage = () => {
-    const [requests, setRequests] = useState([]);
+    const [parcels, setParcels] = useState([]);
+    const [drivers, setDrivers] = useState([]);
     const [filteredRequests, setFilteredRequests] = useState([]);
     const [selectedRequest, setSelectedRequest] = useState(null);
-    const [requestType, setRequestType] = useState('all'); // 'drivers' или 'parcels'
+    const [currentFilter, setCurrentFilter] = useState('parcel');
+    const [isModalOpen, setModalOpen] = useState(false);
 
+    // State for map-specific data
+    const [mapParcels, setMapParcels] = useState([]);
+    const [mapDrivers, setMapDrivers] = useState([]);
+
+    // Fetch order list data for the sidebar
     useEffect(() => {
         fetchRequests();
     }, []);
 
+    useEffect(() => {
+        filterRequests();
+    }, [currentFilter, parcels, drivers]);
+
+    // Fetch map-specific data
+    useEffect(() => {
+        fetchMapRequests();
+    }, []);
+
     const fetchRequests = async () => {
         try {
-            const driversResponse = await axios.get('/api/driver-requests');
-            const parcelsResponse = await axios.get('/api/parcel-requests');
-            setRequests([...driversResponse.data, ...parcelsResponse.data]);
+            const driversResponse = await axios.get('/trip-requests/list-summary');
+            const parcelsResponse = await axios.get('/parcel-requests/list-summary');
+            setDrivers(driversResponse.data);
+            setParcels(parcelsResponse.data);
         } catch (error) {
-            console.error("Ошибка при получении запросов:", error);
+            console.error("Error fetching order list requests:", error);
         }
     };
 
-    // Обработка фильтров
-    const handleFilterChange = (filters) => {
-        // Примените фильтры к списку запросов
-        const filtered = requests.filter(request => {
-            // Логика фильтрации в зависимости от filters и requestType
-            return true;
-        });
-        setFilteredRequests(filtered);
+    const fetchMapRequests = async () => {
+        try {
+            const mapDriversResponse = await axios.get('/trip-requests/list-map');
+            const mapParcelsResponse = await axios.get('/parcel-requests/list-map');
+            setMapDrivers(mapDriversResponse.data);
+            setMapParcels(mapParcelsResponse.data);
+        } catch (error) {
+            console.error("Error fetching map-specific requests:", error);
+        }
+    };
+
+    const filterRequests = () => {
+        if (currentFilter === 'parcel') {
+            setFilteredRequests(parcels);
+        } else if (currentFilter === 'trip') {
+            setFilteredRequests(drivers);
+        }
+    };
+
+    const handleRequestSelect = async (requestId, type) => {
+        try {
+            const response = type === 'parcel'
+                ? await axios.get(`/parcel-requests/${requestId}`)
+                : await axios.get(`/trip-requests/${requestId}`);
+            setSelectedRequest(response.data);
+            setModalOpen(true);
+        } catch (error) {
+            console.error("Error fetching request details:", error);
+        }
     };
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-            {/* Navbar8 */}
             <Navbar8 />
-
-            {/* Основное содержимое */}
             <div style={{ display: 'flex', flexGrow: 1 }}>
-                {/* Левая панель с фильтрами и списком запросов */}
-                <div style={{ width: '300px', padding: '10px', borderRight: '1px solid #ddd' }}>
-                    <div>
-                        <button onClick={() => setRequestType('parcels')}>Посылки</button>
-                        <button onClick={() => setRequestType('drivers')}>Водители</button>
-                    </div>
-                    <RequestFilters onFilterChange={handleFilterChange} />
-                    <RequestList
+                <div style={{ width: 600, padding: 15, borderRight: '1px solid #ddd' }}>
+                    <RequestsFilter currentFilter={currentFilter} onFilterChange={setCurrentFilter} />
+                    <RequestsList
                         requests={filteredRequests}
-                        onSelectRequest={(request) => setSelectedRequest(request)}
+                        currentFilter={currentFilter}
+                        onSelectRequest={(id) => handleRequestSelect(id, currentFilter)}
                     />
                 </div>
-
-                {/* Карта с метками */}
                 <div style={{ flexGrow: 1 }}>
                     <MapboxMap
-                        requests={filteredRequests}
-                        selectedRequest={selectedRequest}
-                        onSelectRequest={(request) => setSelectedRequest(request)}
+                        mapParcels={mapParcels}
+                        mapDrivers={mapDrivers}
+                        selectedType={currentFilter}
                     />
                 </div>
             </div>
+            {selectedRequest && (
+                <RequestDetailsModal
+                    open={isModalOpen}
+                    onClose={() => setModalOpen(false)}
+                    request={selectedRequest}
+                    requestType={currentFilter}
+                />
+            )}
         </div>
     );
 };

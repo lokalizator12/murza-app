@@ -7,14 +7,13 @@ import About from "./pages/about/about";
 import './style.css'
 import Legal from "./pages/legal/legal";
 import NotFound from "./pages/not-found/not-found";
-import AppMap from "./pages/test-wizard/Main";
+import App2 from "./pages/test-wizard/Main";
 import SignUp from "./pages/register/sign-up";
 import SignIn1 from "./pages/login/SignIn1";
-import CreateRouteForm from "./pages/Main-Form/CreateRouteForm";
-import ParcelRequestWizard from "./components/ParcelRequestWizard";
-import App2 from "./pages/test-wizard/Main";
 import MapboxExample from "./pages/test-map";
 import MainPage from "./pages/main/MainPage";
+import 'mapbox-gl/dist/mapbox-gl.css';
+
 
 
 function App() {
