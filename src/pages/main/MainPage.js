@@ -1,11 +1,11 @@
-// MainPage.js
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import Navbar8 from '../../components/navbar8';
 import MapboxMap from '../../components/MainPage/MapboxMap/MapboxMap';
 import RequestsFilter from '../../components/MainPage/RequestsFilter';
 import RequestsList from '../../components/MainPage/RequestsList';
-import axios from 'axios';
 import RequestDetailsModal from '../../components/MainPage/RequestDetailsModal';
+import {Box, Pagination} from '@mui/material';
+import axios from 'axios';
 
 const MainPage = () => {
     const [parcels, setParcels] = useState([]);
@@ -15,15 +15,25 @@ const MainPage = () => {
     const [currentFilter, setCurrentFilter] = useState('parcel');
     const [isModalOpen, setModalOpen] = useState(false);
 
+    const [currentPageParcel, setCurrentPageParcel] = useState(0);
+    const [currentPageTrip, setCurrentPageTrip] = useState(0);
+    const [totalPagesParcel, setTotalPagesParcel] = useState(0);
+    const [totalPagesTrip, setTotalPagesTrip] = useState(0);
+
     // State for map-specific data
     const [mapParcels, setMapParcels] = useState([]);
     const [mapDrivers, setMapDrivers] = useState([]);
 
-    // Fetch order list data for the sidebar
+    // Fetch requests when component mounts or page changes
     useEffect(() => {
-        fetchRequests();
-    }, []);
+        if (currentFilter === 'parcel') {
+            fetchParcelRequests(currentPageParcel);
+        } else if (currentFilter === 'trip') {
+            fetchTripRequests(currentPageTrip);
+        }
+    }, [currentPageParcel, currentPageTrip, currentFilter]);
 
+    // Update filtered requests when filter or data changes
     useEffect(() => {
         filterRequests();
     }, [currentFilter, parcels, drivers]);
@@ -33,14 +43,23 @@ const MainPage = () => {
         fetchMapRequests();
     }, []);
 
-    const fetchRequests = async () => {
+    const fetchParcelRequests = async (page = 0) => {
         try {
-            const driversResponse = await axios.get('/trip-requests/list-summary');
-            const parcelsResponse = await axios.get('/parcel-requests/list-summary');
-            setDrivers(driversResponse.data);
-            setParcels(parcelsResponse.data);
+            const parcelsResponse = await axios.get(`/parcel-requests/list-summary?page=${page}&size=7`);
+            setParcels(parcelsResponse.data.content);
+            setTotalPagesParcel(parcelsResponse.data.totalPages);
         } catch (error) {
-            console.error("Error fetching order list requests:", error);
+            console.error("Error fetching parcel requests:", error);
+        }
+    };
+
+    const fetchTripRequests = async (page = 0) => {
+        try {
+            const driversResponse = await axios.get(`/trip-requests/list-summary?page=${page}&size=7`);
+            setDrivers(driversResponse.data.content);
+            setTotalPagesTrip(driversResponse.data.totalPages);
+        } catch (error) {
+            console.error("Error fetching trip requests:", error);
         }
     };
 
@@ -75,19 +94,36 @@ const MainPage = () => {
         }
     };
 
+    const handlePageChange = (event, newPage) => {
+        if (currentFilter === 'parcel') {
+            setCurrentPageParcel(newPage - 1);
+        } else if (currentFilter === 'trip') {
+            setCurrentPageTrip(newPage - 1);
+        }
+    };
+
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-            <Navbar8 />
-            <div style={{ display: 'flex', flexGrow: 1 }}>
-                <div style={{ width: 600, padding: 15, borderRight: '1px solid #ddd' }}>
-                    <RequestsFilter currentFilter={currentFilter} onFilterChange={setCurrentFilter} />
+        <div style={{display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden'}}>
+            <Navbar8/>
+            <div style={{display: 'flex', flexGrow: 1, overflow: 'hidden'}}>
+                <div style={{width: 600, padding: 15, borderRight: '1px solid #ddd', overflowY: 'auto'}}>
+                    <RequestsFilter currentFilter={currentFilter} onFilterChange={setCurrentFilter}/>
                     <RequestsList
                         requests={filteredRequests}
                         currentFilter={currentFilter}
                         onSelectRequest={(id) => handleRequestSelect(id, currentFilter)}
                     />
+                    <Box sx={{display: 'flex', justifyContent: 'center', mt: 2}}>
+                        <Pagination
+                            count={currentFilter === 'parcel' ? totalPagesParcel : totalPagesTrip}
+                            page={currentFilter === 'parcel' ? currentPageParcel + 1 : currentPageTrip + 1}
+                            onChange={handlePageChange}
+                            color="primary"
+                            disabled={(currentFilter === 'parcel' && totalPagesParcel === 0) || (currentFilter === 'trip' && totalPagesTrip === 0)}
+                        />
+                    </Box>
                 </div>
-                <div style={{ flexGrow: 1 }}>
+                <div style={{flexGrow: 1, overflow: 'hidden'}}>
                     <MapboxMap
                         mapParcels={mapParcels}
                         mapDrivers={mapDrivers}
@@ -105,6 +141,7 @@ const MainPage = () => {
             )}
         </div>
     );
+
 };
 
 export default MainPage;

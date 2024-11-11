@@ -16,6 +16,10 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
         formData.shippingMethodId === 1 ? 'walking' :
             formData.shippingMethodId === 2 ? 'cycling' : 'driving'
     );
+    useEffect(() => {
+        const shippingMethodId = transportType === 'walking' ? 1 : transportType === 'cycling' ? 2 : 3;
+        handleChange('shippingMethodId', shippingMethodId);
+    }, [transportType, handleChange]);
 
     // Валидация для активации кнопки "Next"
     useEffect(() => {
@@ -34,8 +38,8 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
         const {address, coordinates} = location;
         setSelectedDeparture(address);
         handleChange('departureAddress', address);
-        handleChange('departureLatitude', coordinates[0]);
-        handleChange('departureLongitude', coordinates[1]);
+        handleChange('departureLatitude', coordinates[1]);
+        handleChange('departureLongitude', coordinates[0]);
         handleCloseModal();
     };
 
@@ -44,8 +48,8 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
         const {address, coordinates} = location;
         setSelectedDestination(address);
         handleChange('destinationAddress', address);
-        handleChange('destinationLatitude', coordinates[0]);
-        handleChange('destinationLongitude', coordinates[1]);
+        handleChange('destinationLatitude', coordinates[1]);
+        handleChange('destinationLongitude', coordinates[0]);
         handleCloseModal();
     };
 
@@ -54,7 +58,7 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
         const {address, coordinates} = location;
         const updatedWaypoints = [
             ...waypoints,
-            {latitude: coordinates[0], longitude: coordinates[1], address}
+            {latitude: coordinates[1], longitude: coordinates[0], address}
         ];
         setWaypoints(updatedWaypoints);
         handleChange('intermediateLocations', updatedWaypoints); // Сохранение в formData
@@ -166,9 +170,9 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
 
             {/* Route Map */}
             <RouteMap
-                pickupCoordinates={formData.departureLatitude && formData.departureLongitude ? [formData.departureLatitude, formData.departureLongitude] : null}
-                destinationCoordinates={formData.destinationLatitude && formData.destinationLongitude ? [formData.destinationLatitude, formData.destinationLongitude] : null}
-                waypoints={waypoints.map(wp => [wp.latitude, wp.longitude])}
+                pickupCoordinates={formData.departureLatitude && formData.departureLongitude ? [formData.departureLongitude, formData.departureLatitude] : null}
+                destinationCoordinates={formData.destinationLatitude && formData.destinationLongitude ? [formData.destinationLongitude, formData.destinationLatitude,] : null}
+                waypoints={waypoints.map(wp => [wp.longitude, wp.latitude])}
                 transportType={transportType}
             />
 

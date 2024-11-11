@@ -6,7 +6,7 @@ import './MapboxMap.css';
 
 const MapboxMap = ({mapParcels, mapDrivers, selectedType}) => {
     const mapContainerRef = useRef(null);
-    const {map, mapLoaded} = useMapbox(mapContainerRef, [37.618423, 55.751244], 4);
+    const {map, mapLoaded} = useMapbox(mapContainerRef, [37.618423, 55.751244], 3);
 
     return (
         <div ref={mapContainerRef} className="map-container">

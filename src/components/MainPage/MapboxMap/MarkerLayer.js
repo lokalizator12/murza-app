@@ -1,9 +1,12 @@
-// MarkerLayer.js
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import './MarkerLayer.css';
+import { ICON_URLS } from '../../../utils/contstants';
 
 const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) => {
     const [popup, setPopup] = useState(null);
+    const [markers, setMarkers] = useState([]);
+    let animationFrameId = null;
 
     useEffect(() => {
         if (!map || !mapLoaded) {
@@ -14,8 +17,32 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
         console.log('MarkerLayer useEffect executed after map and style are loaded');
         console.log('Selected type:', selectedType);
 
-        const isParcel = selectedType === 'parcel';
-        const requests = isParcel ? mapParcels : mapDrivers;
+        // Очищаем предыдущие маркеры и маршруты
+        markers.forEach(marker => marker.remove());
+        setMarkers([]);
+
+        if (popup) popup.remove();
+
+        const removeExistingRoute = () => {
+            if (map.getLayer('route-border-layer')) {
+                map.removeLayer('route-border-layer');
+            }
+            if (map.getLayer('route-layer')) {
+                map.removeLayer('route-layer');
+            }
+            if (map.getSource('route')) {
+                map.removeSource('route');
+            }
+
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        };
+
+        removeExistingRoute();
+
+        const requests = selectedType === 'parcel' ? mapParcels : mapDrivers;
 
         console.log('Requests:', requests);
 
@@ -24,251 +51,236 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
             console.warn('No requests available');
             return;
         }
-        try {
-            // Формируем GeoJSON данные для маршрутов и точек
-            const routeFeatures = [];
-            const pointFeatures = [];
 
-            requests.forEach((request) => {
-                const coordinates = isParcel
-                    ? [
-                        [request.pickupLongitude, request.pickupLatitude],
-                        [request.deliveryLongitude, request.deliveryLatitude],
-                    ]
-                    : [
-                        [request.departureLongitude, request.departureLatitude],
-                        ...(request.intermediateLocations || []).map(loc => [loc.longitude, loc.latitude]),
-                        [request.destinationLongitude, request.destinationLatitude],
-                    ];
+        // Проверка на валидность координат
+        const isValidCoordinates = (coordinates) => {
+            return Array.isArray(coordinates) &&
+                coordinates.length === 2 &&
+                typeof coordinates[0] === 'number' &&
+                typeof coordinates[1] === 'number' &&
+                !isNaN(coordinates[0]) &&
+                !isNaN(coordinates[1]);
+        };
 
-                // Исправление порядка координат для всех точек
-                const correctedCoordinates = coordinates;
+        const getRoute = async (coordinates) => {
+            try {
+                // Удаляем предыдущий маршрут и его слои перед добавлением нового маршрута
+                removeExistingRoute();
 
-                console.log('Corrected Coordinates for request', request.idParcel || request.idTrip, ':', correctedCoordinates);
-
-                // Проверяем валидность координат
-                const validCoordinates = correctedCoordinates.every(coord =>
-                    Array.isArray(coord) &&
-                    coord.length === 2 &&
-                    typeof coord[0] === 'number' &&
-                    typeof coord[1] === 'number' &&
-                    !isNaN(coord[0]) &&
-                    !isNaN(coord[1])
-                );
-
-                if (!validCoordinates) {
-                    console.warn('Invalid coordinates for request:', request);
+                // Убедитесь, что все координаты валидные
+                const validCoordinates = coordinates.filter(isValidCoordinates);
+                if (validCoordinates.length < 2) {
+                    console.warn('Not enough valid coordinates for route');
                     return;
                 }
 
-                // Добавляем маршрут
-                routeFeatures.push({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: correctedCoordinates,
-                    },
-                    properties: {
-                        id: request.idParcel || request.idTrip,
-                        title: request.title || `Trip by ${request.driverFirstName}`,
-                        previewPhoto: request.previewPhoto || request.driverPhoto,
-                        type: selectedType,
-                    },
-                });
+                const waypoints = validCoordinates.map(coord => `${coord[0]},${coord[1]}`).join(';');
+                const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${waypoints}?geometries=geojson&access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`;
+                const response = await fetch(url);
+                const data = await response.json();
 
-                // Добавляем точки (начальная и конечная)
-                pointFeatures.push(
-                    {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: correctedCoordinates[0],
-                        },
-                        properties: {
-                            ...request,
-                            pointType: 'start',
-                        },
-                    },
-                    {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: correctedCoordinates[correctedCoordinates.length - 1],
-                        },
-                        properties: {
-                            ...request,
-                            pointType: 'end',
-                        },
-                    }
-                );
-            });
+                if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0].geometry;
 
-            console.log('Route Features:', routeFeatures);
-            console.log('Point Features:', pointFeatures);
-
-            const routesData = {
-                type: 'FeatureCollection',
-                features: routeFeatures,
-            };
-
-            const pointsData = {
-                type: 'FeatureCollection',
-                features: pointFeatures,
-            };
-
-            console.log('routesData:', routesData);
-            console.log('pointsData:', pointsData);
-
-            // Добавляем или обновляем источники и слои
-
-                // Добавляем или обновляем источники
-                if (map.getSource('routes')) {
-                    map.getSource('routes').setData(routesData);
-                    console.log('Updated routes source');
-                } else {
-                    map.addSource('routes', {
+                    // Добавляем маршрут на карту как GeoJSON слой с поддержкой lineMetrics
+                    map.addSource('route', {
                         type: 'geojson',
-                        data: routesData,
+                        data: {
+                            type: 'Feature',
+                            geometry: route,
+                        },
+                        lineMetrics: true, // Добавляем поддержку line metrics
                     });
-                    console.log('Added routes source');
-                }
 
-                if (map.getSource('points')) {
-                    map.getSource('points').setData(pointsData);
-                    console.log('Updated points source');
-                } else {
-                    map.addSource('points', {
-                        type: 'geojson',
-                        data: pointsData,
-                    });
-                    console.log('Added points source');
-                }
-
-                // Добавляем или обновляем слои
-                if (!map.getLayer('routes-layer')) {
+                    // Добавляем слой границы маршрута (широкий слой)
                     map.addLayer({
-                        id: 'routes-layer',
+                        id: 'route-border-layer',
                         type: 'line',
-                        source: 'routes',
+                        source: 'route',
                         layout: {
                             'line-cap': 'round',
                             'line-join': 'round',
                         },
                         paint: {
-                            'line-color': isParcel ? '#0000FF' : '#008000',
-                            'line-width': 3,
-                            'line-opacity': 0.5,
+                            'line-color': '#000000', // Черный цвет для границы маршрута
+                            'line-width': 7,         // Ширина границы
+                            'line-opacity': 0.6,
                         },
                     });
-                    console.log('Added routes layer');
-                }
 
-                if (!map.getLayer('points-layer')) {
+                    // Добавляем слой с градиентом, который будет анимирован
                     map.addLayer({
-                        id: 'points-layer',
-                        type: 'circle',
-                        source: 'points',
-                        paint: {
-                            'circle-color': [
-                                'match',
-                                ['get', 'pointType'],
-                                'start', '#FF0000',
-                                'end', '#00FF00',
-                                '#000000',
-                            ],
-                            'circle-radius': 6,
-                            'circle-stroke-width': 1,
-                            'circle-stroke-color': '#fff',
-                        },
-                    });
-                    console.log('Added points layer');
-
-
-                // Добавляем слой для выделенного маршрута
-                if (!map.getLayer('highlighted-route')) {
-                    map.addLayer({
-                        id: 'highlighted-route',
+                        id: 'route-layer',
                         type: 'line',
-                        source: 'routes',
-                        layout: {},
-                        paint: {
-                            'line-color': '#FFA500',
-                            'line-width': 5,
+                        source: 'route',
+                        layout: {
+                            'line-cap': 'round',
+                            'line-join': 'round',
                         },
-                        filter: ['==', 'id', ''],
+                        paint: {
+                            'line-gradient': [
+                                'interpolate',
+                                ['linear'],
+                                ['line-progress'],
+                                0, '#FFFFFF',         // Белый в начале линии
+                                0.45, '#FFFFFF',      // Белый до пучка
+                                0.5, '#D2691E',       // Шоколадный цвет "пучка"
+                                0.55, '#FFFFFF',      // Белый после "пучка"
+                                1, '#FFFFFF'          // Белый до конца
+                            ],
+                            'line-width': 5,
+                            'line-opacity': 1.0,
+                        },
                     });
-                    console.log('Added highlighted-route layer');
+
+                    // Масштабируем карту, чтобы охватить весь маршрут
+                    const bounds = new mapboxgl.LngLatBounds();
+                    route.coordinates.forEach(coord => bounds.extend(coord));
+                    map.fitBounds(bounds, {
+                        padding: 50,
+                        animate: true,
+                        duration: 1000,
+                    });
+
+                    // Анимация "пучка" по маршруту
+                    let lineProgress = 0.0;
+
+                    const animateLine = () => {
+                        lineProgress += 0.01; // Скорость анимации (можно изменить)
+                        if (lineProgress > 1.0) {
+                            lineProgress = 0.0; // Перезапускаем анимацию
+                        }
+
+                        // Обновляем градиент линии для создания эффекта движения пучка
+                        map.setPaintProperty('route-layer', 'line-gradient', [
+                            'interpolate',
+                            ['linear'],
+                            ['line-progress'],
+                            0, '#FFFFFF',
+                            Math.max(0, lineProgress - 0.05), '#FFFFFF', // Белый до пучка
+                            lineProgress, '#D2691E',                   // Шоколадный цвет в текущем положении "пучка"
+                            Math.min(1, lineProgress + 0.05), '#FFFFFF', // Белый после пучка
+                            1, '#FFFFFF'
+                        ]);
+
+                        // Запрашиваем следующий кадр анимации
+                        animationFrameId = requestAnimationFrame(animateLine);
+                    };
+
+                    // Запускаем анимацию
+                    animateLine();
+                } else {
+                    console.error('No route found');
+                }
+            } catch (error) {
+                console.error('Error fetching route:', error);
+            }
+        };
+
+        // Добавляем все маркеры для каждой пары отправления и назначения
+        requests.forEach((request) => {
+            let startCoordinates, endCoordinates;
+
+            if (selectedType === 'parcel') {
+                startCoordinates = [request.pickupLongitude, request.pickupLatitude];
+                endCoordinates = [request.deliveryLongitude, request.deliveryLatitude];
+            } else if (selectedType === 'trip') {
+                startCoordinates = [request.departureLongitude, request.departureLatitude];
+                endCoordinates = [request.destinationLongitude, request.destinationLatitude];
+            }
+
+            const intermediateCoordinates = request.intermediateLocations
+                ? request.intermediateLocations
+                    .filter(loc => typeof loc.longitude !== 'undefined' && typeof loc.latitude !== 'undefined')
+                    .map(loc => [loc.longitude, loc.latitude])
+                : [];
+
+            // Все координаты маршрута (начальная, промежуточные, конечная)
+            const allCoordinates = [startCoordinates, ...intermediateCoordinates, endCoordinates];
+
+            // Создаем кастомные маркеры для начальных и конечных точек
+            const createCustomMarker = (coordinates, type) => {
+                if (!isValidCoordinates(coordinates)) {
+                    console.warn(`Invalid coordinates for ${type}:`, coordinates);
+                    return;
                 }
 
-                // Добавляем обработчики событий
-                map.on('mouseenter', 'points-layer', handleMouseEnter);
-                map.on('mouseleave', 'points-layer', handleMouseLeave);
-                map.on('click', 'points-layer', handleClick);
-            } else {
-                console.warn('Map style is not loaded yet.');
-            } console.log('Sources and layers added successfully.');
-        } catch (error) {
-            console.error('Error in MarkerLayer useEffect:', error);
-        }
+                const el = document.createElement('div');
+                el.className = `marker ${type} ${selectedType}`;
 
-        // Функции обработчиков событий
-        const handleMouseEnter = (e) => {
-            map.getCanvas().style.cursor = 'pointer';
+                // Создаем и добавляем кастомный маркер на карту
+                const marker = new mapboxgl.Marker(el)
+                    .setLngLat(coordinates)
+                    .setPopup(
+                        new mapboxgl.Popup({ offset: 25 })
+                            .setHTML(`<h3>${request.departureAddress}</h3><p>${request.departureAddress}</p>`)
+                    )
+                    .addTo(map);
 
-            const feature = e.features[0];
-            const routeId = feature.properties.id;
+                setMarkers(prevMarkers => [...prevMarkers, marker]);
 
-            // Выделяем соответствующий маршрут
-            map.setFilter('highlighted-route', ['==', 'id', routeId]);
-        };
+                // Добавляем событие клика для маркера
+                el.addEventListener('click', () => handleClick(coordinates, type, allCoordinates));
+            };
 
-        const handleMouseLeave = () => {
-            map.getCanvas().style.cursor = '';
-            // Снимаем выделение маршрута
-            map.setFilter('highlighted-route', ['==', 'id', '']);
-        };
+            createCustomMarker(startCoordinates, 'start');
+            createCustomMarker(endCoordinates, 'end');
 
-        const handleClick = (e) => {
-            const feature = e.features[0];
-            const coordinates = feature.geometry.coordinates.slice();
-            const { title, previewPhoto } = feature.properties;
+            intermediateCoordinates.forEach((coord, index) => {
+                if (isValidCoordinates(coord)) {
+                    createCustomMarker(coord, 'intermediate');
+                } else {
+                    console.warn('Invalid intermediate coordinates:', coord);
+                }
+            });
 
-            if (popup) popup.remove();
+            // Обработчик для построения маршрута, отображения попапа и приближения
+            const handleClick = (coordinates, pointType, allCoordinates) => {
+                // Удаляем предыдущий попап, если он существует
+                if (popup) popup.remove();
 
-            const newPopup = new mapboxgl.Popup({ offset: 25 })
-                .setLngLat(coordinates)
-                .setHTML(
-                    `<div>
-                        <strong>${title}</strong><br/>
-                        <img src="${previewPhoto}" style="width:100px; height:auto;"/>
-                    </div>`
-                )
-                .addTo(map);
+                // Создаем новое всплывающее окно с информацией
+                const newPopup = new mapboxgl.Popup({ offset: 25 })
+                    .setLngLat(coordinates)
+                    .setHTML(`
+                        <div>
+                            <strong>${pointType === 'start' ? 'Отправление' : 'Прибытие'}:</strong><br/>
+                            ${pointType === 'start' ? request.startLocation || 'Не указано' : request.endLocation || 'Не указано'}
+                            <br/>
+                            <strong>Стоимость:</strong> ${request.cost || 'Не указана'} €
+                        </div>
+                    `)
+                    .addTo(map);
 
-            setPopup(newPopup);
-        };
+                setPopup(newPopup);
+
+                // Строим маршрут при клике на маркер
+                getRoute(allCoordinates);
+            };
+        });
+
+        console.log('Markers and popups added successfully.');
 
         // Очистка при размонтировании
         return () => {
             if (map) {
-                // Удаляем слои и источники
-                if (map.getLayer('routes-layer')) map.removeLayer('routes-layer');
-                if (map.getLayer('points-layer')) map.removeLayer('points-layer');
-                if (map.getLayer('highlighted-route')) map.removeLayer('highlighted-route');
-                if (map.getSource('routes')) map.removeSource('routes');
-                if (map.getSource('points')) map.removeSource('points');
+                if (popup) popup.remove();
+                markers.forEach(marker => marker.remove());
+                setMarkers([]);
 
-                // Удаляем обработчики событий
-                map.off('mouseenter', 'points-layer', handleMouseEnter);
-                map.off('mouseleave', 'points-layer', handleMouseLeave);
-                map.off('click', 'points-layer', handleClick);
+                removeExistingRoute();
             }
-
-            if (popup) popup.remove();
         };
     }, [map, mapLoaded, mapParcels, mapDrivers, selectedType]);
 
     return null;
 };
+
+// Константы для кастомных иконок маркеров
+document.documentElement.style.setProperty('--parcel-start-icon', `url(${ICON_URLS.PARCEL_START})`);
+document.documentElement.style.setProperty('--trip-start-icon', `url(${ICON_URLS.TRIP_START})`);
+document.documentElement.style.setProperty('--parcel-end-icon', `url(${ICON_URLS.PARCEL_END})`);
+document.documentElement.style.setProperty('--trip-end-icon', `url(${ICON_URLS.TRIP_END})`);
+document.documentElement.style.setProperty('--trip-intermediate-icon', `url(${ICON_URLS.INTERMEDIATE})`);
 
 export default MarkerLayer;

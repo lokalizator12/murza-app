@@ -73,7 +73,7 @@ export default function SignIn1() {
             console.log('Token saved:', Cookies.get('token'));
             console.log('Login successful:', response.data);
 
-            navigate('/Map');
+            navigate('/main');
         } catch (error) {
             const errorMessage = error.response ? error.response.data : error.message;
             console.error('Login failed:', errorMessage);

@@ -27,8 +27,8 @@ const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
         setPickupAddress(address);
         setPickupCoordinates(coordinates);
         handleChange('pickupAddress', address);
-        handleChange('pickupLatitude', coordinates[0]);
-        handleChange('pickupLongitude', coordinates[1]);
+        handleChange('pickupLatitude', coordinates[1]);
+        handleChange('pickupLongitude', coordinates[0]);
         handleClosePickupModal();
     };
 
@@ -37,8 +37,8 @@ const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
         setDestinationAddress(address);
         setDestinationCoordinates(coordinates);
         handleChange('deliveryAddress', address);
-        handleChange('deliveryLatitude', coordinates[0]);
-        handleChange('deliveryLongitude', coordinates[1]);
+        handleChange('deliveryLatitude', coordinates[1]);
+        handleChange('deliveryLongitude', coordinates[0]);
         handleCloseDestinationModal();
     };
 

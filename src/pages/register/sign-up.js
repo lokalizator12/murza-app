@@ -56,8 +56,15 @@ const SignUp = (props) => {
                                 Sign Up
                             </h2>
                             <p className="thq-body-large sign-up10-text2">
-                                Already have an account? Sign in
+                                Already have an account?
                             </p>
+                            <button type="button"
+                                    className="sign-in2-button4 thq-button-outline"
+                                    onClick={() => navigate('/login')}>
+                                <span className="sign-in2-text26 thq-body-small">Sign In</span>
+                            </button>
+
+
                         </div>
                         <form className="sign-up10-form2" onSubmit={formik.handleSubmit}>
                             <div className="sign-up10-email">
