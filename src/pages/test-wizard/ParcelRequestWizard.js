@@ -1,12 +1,16 @@
 // ParcelRequestWizard.js
-import React from 'react';
+import React, {useState} from 'react';
 import WizardForm from './WizardForm';
 import ParcelStep1 from './ParcelStep1';
 import ParcelStep2 from './ParcelStep2';
 import ParcelStep3 from './ParcelStep3';
 import axios from '../../axiosConfig';
+import {Alert, Snackbar} from "@mui/material";
 
-const ParcelRequestWizard = () => {
+const ParcelRequestWizard = ({onClose, onRefreshData}) => {
+
+    const [notification, setNotification] = useState({open: false, message: '', severity: 'success'});
+
     const initialData = {
         requestType: 'Parcel',
         description: '',
@@ -33,11 +37,9 @@ const ParcelRequestWizard = () => {
     const handleSubmit = async (data) => {
         try {
             const formData = new FormData();
-
-            // Добавляем JSON-данные
             const jsonData = {
                 ...data,
-                images: undefined // Удаляем images из JSON данных
+                images: undefined
             };
             formData.append('parcelRequest', new Blob([JSON.stringify(jsonData)], {type: 'application/json'}));
 
@@ -59,19 +61,42 @@ const ParcelRequestWizard = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
+
+            if (response.status === 200) {
+                setNotification({
+                    open: true,
+                    message: response.data.message || 'Запрос успешно создан!',
+                    severity: 'success'
+                });
+                onRefreshData();
+                setTimeout(() => {
+                    setNotification({open: false});
+                    onClose();
+                }, 2000);
+            }
             console.log('Parcel Request Submitted:', response.data);
         } catch (error) {
+            setNotification({
+                open: true,
+                message: error.response?.data.message || 'Не удалось создать запрос',
+                severity: 'error'
+            });
             console.error('Failed to submit parcel request:', error);
         }
     };
 
 
     return (
-        <WizardForm
-            steps={[ParcelStep1, ParcelStep2, ParcelStep3]}
-            initialData={initialData}
-            onSubmit={handleSubmit}
-        />
+        <>
+            <WizardForm steps={[ParcelStep1, ParcelStep2, ParcelStep3]} initialData={initialData}
+                        onSubmit={handleSubmit}/>
+            <Snackbar open={notification.open} autoHideDuration={6000} onClose={() => setNotification({open: false})}>
+                <Alert onClose={() => setNotification({open: false})} severity={notification.severity}
+                       sx={{width: '100%'}}>
+                    {notification.message}
+                </Alert>
+            </Snackbar>
+        </>
     );
 };
 

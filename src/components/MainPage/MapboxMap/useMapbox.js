@@ -1,5 +1,5 @@
 // useMapbox.js
-import { useEffect, useRef, useState } from 'react';
+import {useEffect, useRef, useState} from 'react';
 import mapboxgl from 'mapbox-gl';
 
 const useMapbox = (mapContainerRef, center = [0, 0], zoom = 2) => {
@@ -14,6 +14,11 @@ const useMapbox = (mapContainerRef, center = [0, 0], zoom = 2) => {
             center,
             zoom,
         });
+        const navigationControl = new mapboxgl.NavigationControl({
+            showCompass: true,
+            showZoom: true
+        });
+        mapRef.current.addControl(navigationControl, 'top-right');
 
         const onStyleLoad = () => {
             console.log('Map style loaded');
@@ -31,7 +36,7 @@ const useMapbox = (mapContainerRef, center = [0, 0], zoom = 2) => {
         };
     }, []);
 
-    return { map: mapRef.current, mapLoaded };
+    return {map: mapRef.current, mapLoaded};
 };
 
 export default useMapbox;

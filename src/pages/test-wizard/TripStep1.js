@@ -81,7 +81,6 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
 
     return (
         <div className="container">
-            <div className="header">Request a Trip</div>
             <div className="subheader">Step 1: Location and Transport Type</div>
 
             {/* Departure Address */}

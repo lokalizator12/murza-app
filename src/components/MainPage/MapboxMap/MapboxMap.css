@@ -16,7 +16,7 @@
 
 .map-container {
     width: 100%;
-    height: calc(100vh - 60px); /* 60px - это примерная высота Navbar */
+    height: 100%; /* 60px - это примерная высота Navbar */
     overflow: hidden;
 }
 

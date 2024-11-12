@@ -1,4 +1,3 @@
-/* TripStep1.css */
 
 .container {
     text-align: center;
@@ -91,15 +90,6 @@
 .transport-selection label {
     font-size: 16px;
     color: #555;
-}
-
-.map-container {
-    width: 100%;
-    height: 400px;
-    margin-top: 20px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #ddd;
 }
 
 .route-info {

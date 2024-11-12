@@ -1,8 +1,8 @@
 // RequestsList.js
 import React from 'react';
-import { Box, Typography, Divider, List, ListItem, ListItemText, ListItemAvatar, Avatar, Button } from '@mui/material';
+import {Avatar, Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemText, Typography} from '@mui/material';
 
-const RequestsList = ({ requests, currentFilter, onSelectRequest }) => {
+const RequestsList = ({requests, currentFilter, onSelectRequest}) => {
     return (
         <Box sx={{
             width: '100%',
@@ -15,39 +15,55 @@ const RequestsList = ({ requests, currentFilter, onSelectRequest }) => {
             <Typography variant="h6" gutterBottom>
                 Список Запросов
             </Typography>
-            <Divider />
+            <Divider/>
             <List>
                 {requests.map(request => (
-                    <ListItem key={request.idParcel || request.idTrip} alignItems="flex-start" sx={{ padding: 1, borderBottom: '1px solid #eee' }}>
+                    <ListItem key={request.idParcel || request.idTrip} alignItems="flex-start"
+                              sx={{padding: 1, borderBottom: '1px solid #eee'}}>
                         <ListItemAvatar>
                             <Avatar
                                 variant="rounded"
                                 src={request.previewPhoto || ''}
                                 alt="preview"
-                                sx={{ width: 64, height: 64, marginRight: 2 }}
+                                sx={{width: 64, height: 64, marginRight: 2}}
                             />
                         </ListItemAvatar>
                         <ListItemText
                             primary={
-                                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+
+                                <>
+                            {currentFilter === 'parcel' ? (
+
+                                <Typography variant="subtitle1" sx={{fontWeight: 'bold'}}>
                                     {request.title || 'Без названия'}
                                 </Typography>
+                            ) : (
+                                <Typography variant="subtitle1" sx={{fontWeight: 'bold'}}>
+                                    {request.driverFirstName || 'Без названия'}
+                                </Typography>
+                            )}
+                                </>
+
                             }
                             secondary={
                                 <>
                                     {currentFilter === 'parcel' ? (
                                         <>
-                                            <Typography sx={{ display: 'block' }} component="span" variant="body2" color="text.primary">
+                                            <Typography sx={{display: 'block'}} component="span" variant="body2"
+                                                        color="text.primary">
                                                 Откуда: {request.pickupAddress}
                                             </Typography>
-                                            <Typography sx={{ display: 'block' }} component="span" variant="body2" color="text.primary">
+                                            <Typography sx={{display: 'block'}} component="span" variant="body2"
+                                                        color="text.primary">
                                                 Куда: {request.deliveryAddress}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Дата отправки: {request.pickupDate ? new Date(request.pickupDate).toLocaleDateString() : 'N/A'}
+                                                Дата
+                                                отправки: {request.pickupDate ? new Date(request.pickupDate).toLocaleDateString() : 'N/A'}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Дата прибытия: {request.deliveryDate ? new Date(request.deliveryDate).toLocaleDateString() : 'N/A'}
+                                                Дата
+                                                прибытия: {request.deliveryDate ? new Date(request.deliveryDate).toLocaleDateString() : 'N/A'}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
                                                 Размер: {request.size || 'N/A'} см | Цена: {request.price || 'N/A'} €
@@ -55,10 +71,12 @@ const RequestsList = ({ requests, currentFilter, onSelectRequest }) => {
                                         </>
                                     ) : (
                                         <>
-                                            <Typography sx={{ display: 'block' }} component="span" variant="body2" color="text.primary">
+                                            <Typography sx={{display: 'block'}} component="span" variant="body2"
+                                                        color="text.primary">
                                                 Откуда: {request.departureAddress}
                                             </Typography>
-                                            <Typography sx={{ display: 'block' }} component="span" variant="body2" color="text.primary">
+                                            <Typography sx={{display: 'block'}} component="span" variant="body2"
+                                                        color="text.primary">
                                                 Куда: {request.destinationAddress}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
@@ -76,7 +94,7 @@ const RequestsList = ({ requests, currentFilter, onSelectRequest }) => {
                             variant="contained"
                             size="small"
                             onClick={() => onSelectRequest(request.idParcel || request.idTrip)}
-                            sx={{ marginLeft: 1 }}
+                            sx={{marginLeft: 1}}
                         >
                             Подробнее
                         </Button>

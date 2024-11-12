@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 
 axios.defaults.baseURL = 'http://localhost:8080/api/';
 
@@ -15,7 +16,7 @@ axios.interceptors.request.use(
             headers: config.headers,
             data: config.data,
         });
-        console.log('JWT Token:', token); // Логируем токен
+        console.log('JWT Token:', token);
         return config;
     },
     (error) => {
@@ -25,7 +26,6 @@ axios.interceptors.request.use(
 
 axios.interceptors.response.use(
     (response) => {
-        // Log the response details
         console.log('Response:', {
             url: response.config.url,
             status: response.status,
@@ -34,11 +34,19 @@ axios.interceptors.response.use(
         return response;
     },
     (error) => {
-        // Log the error response
         if (error.response) {
+            const { status } = error.response;
+
+            // Если ошибка 401 или 403, перенаправляем на страницу входа
+            if (status === 401 || status === 403) {
+                console.warn('Unauthorized! Redirecting to login.');
+                window.location.href = '/login'; // Перенаправление на страницу входа
+            }
+
+            // Логирование ошибок на основе статуса
             console.error('Error Response:', {
                 url: error.response.config.url,
-                status: error.response.status,
+                status: status,
                 data: error.response.data,
             });
         } else {
@@ -47,4 +55,5 @@ axios.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
 export default axios;

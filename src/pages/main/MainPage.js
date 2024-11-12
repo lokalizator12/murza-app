@@ -4,8 +4,10 @@ import MapboxMap from '../../components/MainPage/MapboxMap/MapboxMap';
 import RequestsFilter from '../../components/MainPage/RequestsFilter';
 import RequestsList from '../../components/MainPage/RequestsList';
 import RequestDetailsModal from '../../components/MainPage/RequestDetailsModal';
-import {Box, Pagination} from '@mui/material';
+import {Box, Button, Pagination} from '@mui/material';
 import axios from 'axios';
+import Dialog from "@mui/material/Dialog";
+import RequestForm from "../test-wizard/MainFormRequest";
 
 const MainPage = () => {
     const [parcels, setParcels] = useState([]);
@@ -23,7 +25,11 @@ const MainPage = () => {
     // State for map-specific data
     const [mapParcels, setMapParcels] = useState([]);
     const [mapDrivers, setMapDrivers] = useState([]);
+    const [showRequestDialog, setShowRequestDialog] = useState(false); // состояние для отображения диалога
 
+    // Функция открытия и закрытия диалога
+    const handleOpenRequestDialog = () => setShowRequestDialog(true);
+    const handleCloseRequestDialog = () => setShowRequestDialog(false);
     // Fetch requests when component mounts or page changes
     useEffect(() => {
         if (currentFilter === 'parcel') {
@@ -73,7 +79,11 @@ const MainPage = () => {
             console.error("Error fetching map-specific requests:", error);
         }
     };
-
+    const refreshRequestsData = () => {
+        fetchParcelRequests(currentPageParcel);
+        fetchTripRequests(currentPageTrip);
+        fetchMapRequests();
+    };
     const filterRequests = () => {
         if (currentFilter === 'parcel') {
             setFilteredRequests(parcels);
@@ -105,8 +115,23 @@ const MainPage = () => {
     return (
         <div style={{display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden'}}>
             <Navbar8/>
+
+
+            <Dialog
+                open={showRequestDialog}
+                onClose={handleCloseRequestDialog}
+                fullWidth
+            >
+                <RequestForm onClose={handleCloseRequestDialog} onRefreshData={refreshRequestsData}/>
+            </Dialog>
+
             <div style={{display: 'flex', flexGrow: 1, overflow: 'hidden'}}>
                 <div style={{width: 600, padding: 15, borderRight: '1px solid #ddd', overflowY: 'auto'}}>
+                    <Box sx={{display: 'flex', justifyContent: 'center', mt: 2}}>
+                        <Button variant="contained" color="primary" onClick={handleOpenRequestDialog}>
+                            Создать запрос
+                        </Button>
+                    </Box>
                     <RequestsFilter currentFilter={currentFilter} onFilterChange={setCurrentFilter}/>
                     <RequestsList
                         requests={filteredRequests}
@@ -141,7 +166,6 @@ const MainPage = () => {
             )}
         </div>
     );
-
 };
 
 export default MainPage;
