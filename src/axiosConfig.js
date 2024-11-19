@@ -1,6 +1,5 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { useNavigate } from 'react-router-dom';
 
 axios.defaults.baseURL = 'http://localhost:8080/api/';
 
@@ -10,13 +9,13 @@ axios.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        console.log('Request:', {
-            url: config.url,
-            method: config.method,
-            headers: config.headers,
-            data: config.data,
-        });
-        console.log('JWT Token:', token);
+        /* console.log('Request:', {
+             url: config.url,
+             method: config.method,
+             headers: config.headers,
+             data: config.data,
+         });
+         console.log('JWT Token:', token);*/
         return config;
     },
     (error) => {
@@ -26,16 +25,16 @@ axios.interceptors.request.use(
 
 axios.interceptors.response.use(
     (response) => {
-        console.log('Response:', {
-            url: response.config.url,
-            status: response.status,
-            data: response.data,
-        });
+        /* console.log('Response:', {
+             url: response.config.url,
+             status: response.status,
+             data: response.data,
+         });*/
         return response;
     },
     (error) => {
         if (error.response) {
-            const { status } = error.response;
+            const {status} = error.response;
 
             // Если ошибка 401 или 403, перенаправляем на страницу входа
             if (status === 401 || status === 403) {

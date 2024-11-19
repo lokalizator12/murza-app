@@ -129,7 +129,7 @@ const MainPage = () => {
                 <div style={{width: 600, padding: 15, borderRight: '1px solid #ddd', overflowY: 'auto'}}>
                     <Box sx={{display: 'flex', justifyContent: 'center', mt: 2}}>
                         <Button variant="contained" color="primary" onClick={handleOpenRequestDialog}>
-                            Создать запрос
+                            Create request
                         </Button>
                     </Box>
                     <RequestsFilter currentFilter={currentFilter} onFilterChange={setCurrentFilter}/>

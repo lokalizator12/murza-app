@@ -1,11 +1,11 @@
 // ParcelStep3.js
-import React, { useEffect } from 'react';
-import { Box, Typography, TextField } from '@mui/material';
+import React, {useEffect} from 'react';
+import {Box, TextField, Typography} from '@mui/material';
 
-const ParcelStep3 = ({ formData, handleChange, setIsNextEnabled }) => {
+const ParcelStep3 = ({formData, handleChange, setIsNextEnabled}) => {
     // Validation function to enable or disable the "Next" button
     const validateForm = () => {
-        const { title, description, pickupDate, deliveryDate, price } = formData;
+        const {title, description, pickupDate, deliveryDate, price} = formData;
 
         // All required fields must be filled and price must be positive
         const isValid = title && description && pickupDate && deliveryDate && price > 0;
@@ -20,12 +20,12 @@ const ParcelStep3 = ({ formData, handleChange, setIsNextEnabled }) => {
     }, [formData]);
 
     return (
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
-                Шаг 3: Подробности и завершение
+                Step 3: Details and Completion
             </Typography>
             <TextField
-                label="Заголовок заявки"
+                label="Request Title"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -33,7 +33,7 @@ const ParcelStep3 = ({ formData, handleChange, setIsNextEnabled }) => {
                 onChange={(e) => handleChange('title', e.target.value)}
             />
             <TextField
-                label="Полное описание заявки"
+                label="Full Request Description"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -43,7 +43,7 @@ const ParcelStep3 = ({ formData, handleChange, setIsNextEnabled }) => {
                 onChange={(e) => handleChange('description', e.target.value)}
             />
             <TextField
-                label="Дата забора"
+                label="Pickup Date"
                 type="datetime-local"
                 variant="outlined"
                 fullWidth
@@ -55,7 +55,7 @@ const ParcelStep3 = ({ formData, handleChange, setIsNextEnabled }) => {
                 }}
             />
             <TextField
-                label="Дата доставки"
+                label="Delivery Date"
                 type="datetime-local"
                 variant="outlined"
                 fullWidth
@@ -67,7 +67,7 @@ const ParcelStep3 = ({ formData, handleChange, setIsNextEnabled }) => {
                 }}
             />
             <TextField
-                label="Итоговая цена"
+                label="Final Price"
                 type="number"
                 variant="outlined"
                 fullWidth

@@ -1,4 +1,3 @@
-// TripStep3.js
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, TextField } from '@mui/material';
 
@@ -10,12 +9,12 @@ const TripStep3 = ({ formData, handleChange, setIsNextEnabled, onSubmit }) => {
         const errors = {};
         const { title, description, departureDate, destinationDate } = formData;
 
-        if (!title && touchedFields.title) errors.title = "Заголовок обязателен";
-        if (!description && touchedFields.description) errors.description = "Описание обязательно";
-        if (!departureDate && touchedFields.departureDate) errors.departureDate = "Дата отправления обязательна";
-        if (!destinationDate && touchedFields.destinationDate) errors.destinationDate = "Дата прибытия обязательна";
+        if (!title && touchedFields.title) errors.title = "Title is required";
+        if (!description && touchedFields.description) errors.description = "Description is required";
+        if (!departureDate && touchedFields.departureDate) errors.departureDate = "Departure date is required";
+        if (!destinationDate && touchedFields.destinationDate) errors.destinationDate = "Destination date is required";
         if (departureDate && destinationDate && departureDate > destinationDate) {
-            errors.destinationDate = "Дата прибытия должна быть позже даты отправления";
+            errors.destinationDate = "Destination date must be later than the departure date";
         }
 
         setValidationErrors(errors);
@@ -34,10 +33,10 @@ const TripStep3 = ({ formData, handleChange, setIsNextEnabled, onSubmit }) => {
     return (
         <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography variant="h5" gutterBottom>
-                Шаг 3: Подробности и завершение
+                Step 3: Details and Completion
             </Typography>
             <TextField
-                label="Заголовок заявки"
+                label="Request Title"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -48,7 +47,7 @@ const TripStep3 = ({ formData, handleChange, setIsNextEnabled, onSubmit }) => {
                 helperText={validationErrors.title}
             />
             <TextField
-                label="Описание"
+                label="Description"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -61,7 +60,7 @@ const TripStep3 = ({ formData, handleChange, setIsNextEnabled, onSubmit }) => {
                 helperText={validationErrors.description}
             />
             <TextField
-                label="Дата отправления"
+                label="Departure Date"
                 type="datetime-local"
                 variant="outlined"
                 fullWidth
@@ -74,7 +73,7 @@ const TripStep3 = ({ formData, handleChange, setIsNextEnabled, onSubmit }) => {
                 helperText={validationErrors.departureDate}
             />
             <TextField
-                label="Дата прибытия"
+                label="Destination Date"
                 type="datetime-local"
                 variant="outlined"
                 fullWidth

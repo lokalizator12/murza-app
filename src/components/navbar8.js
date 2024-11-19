@@ -6,6 +6,7 @@ import './navbar8.css'
 const Navbar8 = (props) => {
     const [link5DropdownVisible, setLink5DropdownVisible] = useState(false)
     const [link5AccordionOpen, setLink5AccordionOpen] = useState(false)
+    const currentUserId = localStorage.getItem("currentUserId");
     return (
         <header className={`navbar8-container1 ${props.rootClassName} `}>
             <header data-thq="thq-navbar" className="navbar8-navbar-interactive">
@@ -83,7 +84,14 @@ const Navbar8 = (props) => {
                                 </Fragment>
                             )}
                         </Link>
+
+                        {currentUserId && (
+                            <Link to={`/profile/${currentUserId}`} className="navbar8-link32">
+                                <span className="navbar8-text19 thq-body-small thq-link">My Profile</span>
+                            </Link>
+                        )}
                     </nav>
+
                     <div className="navbar8-buttons1">
                         <button className="navbar8-action11 thq-button-filled thq-button-animated"
                                 onClick={() => {

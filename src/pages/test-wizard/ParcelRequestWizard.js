@@ -43,19 +43,19 @@ const ParcelRequestWizard = ({onClose, onRefreshData}) => {
             };
             formData.append('parcelRequest', new Blob([JSON.stringify(jsonData)], {type: 'application/json'}));
 
-            // Добавляем файлы
+            // Adding files
             if (data.images.length > 0) {
                 data.images.forEach((file) => {
                     formData.append('files', file);
                 });
             }
 
-            // Выводим содержимое FormData для проверки
+            // Log FormData content for verification
             formData.forEach((value, key) => {
                 console.log(key, value);
             });
 
-            // Отправка на сервер
+            // Send request to the server
             const response = await axios.post('/parcel-requests/create', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -65,7 +65,7 @@ const ParcelRequestWizard = ({onClose, onRefreshData}) => {
             if (response.status === 200) {
                 setNotification({
                     open: true,
-                    message: response.data.message || 'Запрос успешно создан!',
+                    message: response.data.message || 'Request created successfully!',
                     severity: 'success'
                 });
                 onRefreshData();
@@ -78,12 +78,13 @@ const ParcelRequestWizard = ({onClose, onRefreshData}) => {
         } catch (error) {
             setNotification({
                 open: true,
-                message: error.response?.data.message || 'Не удалось создать запрос',
+                message: error.response?.data.message || 'Failed to create request',
                 severity: 'error'
             });
             console.error('Failed to submit parcel request:', error);
         }
     };
+
 
 
     return (

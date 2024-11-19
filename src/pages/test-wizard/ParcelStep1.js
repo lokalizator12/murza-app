@@ -45,7 +45,7 @@ const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
     return (
         <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography variant="h5" gutterBottom>
-                Шаг 1: Местоположение и тип доставки
+                Step 1: Location and type delivery
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -53,11 +53,11 @@ const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
                     type="text"
                     value={pickupAddress}
                     readOnly
-                    placeholder="Адрес отправления"
+                    placeholder="Adres pickup"
                     style={{ flex: 1, padding: '10px', fontSize: '16px' }}
                 />
                 <Button variant="contained" onClick={handleOpenPickupModal}>
-                    Указать
+                    Set
                 </Button>
             </Box>
 
@@ -66,11 +66,11 @@ const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
                     type="text"
                     value={destinationAddress}
                     readOnly
-                    placeholder="Адрес назначения"
+                    placeholder="Adres destination"
                     style={{ flex: 1, padding: '10px', fontSize: '16px' }}
                 />
                 <Button variant="contained" onClick={handleOpenDestinationModal}>
-                    Указать
+                    Set
                 </Button>
             </Box>
 

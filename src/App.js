@@ -9,10 +9,10 @@ import Legal from "./pages/legal/legal";
 import NotFound from "./pages/not-found/not-found";
 import SignUp from "./pages/register/sign-up";
 import SignIn1 from "./pages/login/SignIn1";
-import MapboxExample from "./pages/test-map";
 import MainPage from "./pages/main/MainPage";
 import 'mapbox-gl/dist/mapbox-gl.css';
 import RequestForm from "./pages/test-wizard/MainFormRequest";
+import ProfilePage from "./pages/profile/ProfilePage";
 
 
 function App() {
@@ -28,7 +28,7 @@ function App() {
                 <Route path="/success" element={<Success/>}/>
                 <Route path="/about" element={<About/>}/>
                 <Route path="/legal" element={<Legal/>}/>
-                <Route path="/example" element={<MapboxExample/>}/>
+                <Route path="/profile/:userId" element={<ProfilePage/>}/>
                 <Route path="*" element={<NotFound/>}/>
             </Routes>
         </Router>

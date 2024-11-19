@@ -1,4 +1,3 @@
-// RequestsList.js
 import React from 'react';
 import {Avatar, Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemText, Typography} from '@mui/material';
 
@@ -13,7 +12,7 @@ const RequestsList = ({requests, currentFilter, onSelectRequest}) => {
             borderRight: '1px solid #ccc'
         }}>
             <Typography variant="h6" gutterBottom>
-                Список Запросов
+                Request List
             </Typography>
             <Divider/>
             <List>
@@ -30,20 +29,17 @@ const RequestsList = ({requests, currentFilter, onSelectRequest}) => {
                         </ListItemAvatar>
                         <ListItemText
                             primary={
-
                                 <>
-                            {currentFilter === 'parcel' ? (
-
-                                <Typography variant="subtitle1" sx={{fontWeight: 'bold'}}>
-                                    {request.title || 'Без названия'}
-                                </Typography>
-                            ) : (
-                                <Typography variant="subtitle1" sx={{fontWeight: 'bold'}}>
-                                    {request.driverFirstName || 'Без названия'}
-                                </Typography>
-                            )}
+                                    {currentFilter === 'parcel' ? (
+                                        <Typography variant="subtitle1" sx={{fontWeight: 'bold'}}>
+                                            {request.title || 'Untitled'}
+                                        </Typography>
+                                    ) : (
+                                        <Typography variant="subtitle1" sx={{fontWeight: 'bold'}}>
+                                            {request.driverFirstName || 'Untitled'}
+                                        </Typography>
+                                    )}
                                 </>
-
                             }
                             secondary={
                                 <>
@@ -51,39 +47,37 @@ const RequestsList = ({requests, currentFilter, onSelectRequest}) => {
                                         <>
                                             <Typography sx={{display: 'block'}} component="span" variant="body2"
                                                         color="text.primary">
-                                                Откуда: {request.pickupAddress}
+                                                From: {request.pickupAddress}
                                             </Typography>
                                             <Typography sx={{display: 'block'}} component="span" variant="body2"
                                                         color="text.primary">
-                                                Куда: {request.deliveryAddress}
+                                                To: {request.deliveryAddress}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Дата
-                                                отправки: {request.pickupDate ? new Date(request.pickupDate).toLocaleDateString() : 'N/A'}
+                                                Pickup Date: {request.pickupDate ? new Date(request.pickupDate).toLocaleDateString() : 'N/A'}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Дата
-                                                прибытия: {request.deliveryDate ? new Date(request.deliveryDate).toLocaleDateString() : 'N/A'}
+                                                Delivery Date: {request.deliveryDate ? new Date(request.deliveryDate).toLocaleDateString() : 'N/A'}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Размер: {request.size || 'N/A'} см | Цена: {request.price || 'N/A'} €
+                                                Size: {request.size || 'N/A'} cm | Price: {request.price || 'N/A'} €
                                             </Typography>
                                         </>
                                     ) : (
                                         <>
                                             <Typography sx={{display: 'block'}} component="span" variant="body2"
                                                         color="text.primary">
-                                                Откуда: {request.departureAddress}
+                                                From: {request.departureAddress}
                                             </Typography>
                                             <Typography sx={{display: 'block'}} component="span" variant="body2"
                                                         color="text.primary">
-                                                Куда: {request.destinationAddress}
+                                                To: {request.destinationAddress}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Дата отправления: {new Date(request.departureDate).toLocaleDateString()}
+                                                Departure Date: {new Date(request.departureDate).toLocaleDateString()}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Дата прибытия: {new Date(request.destinationDate).toLocaleDateString()}
+                                                Arrival Date: {new Date(request.destinationDate).toLocaleDateString()}
                                             </Typography>
                                         </>
                                     )}
@@ -96,7 +90,7 @@ const RequestsList = ({requests, currentFilter, onSelectRequest}) => {
                             onClick={() => onSelectRequest(request.idParcel || request.idTrip)}
                             sx={{marginLeft: 1}}
                         >
-                            Подробнее
+                            Details
                         </Button>
                     </ListItem>
                 ))}

@@ -39,7 +39,7 @@ const TripRequestWizard = ({onClose, onRefreshData}) => {
             if (response.status === 200) {
                 setNotification({
                     open: true,
-                    message: response.data.message || 'Запрос успешно создан!',
+                    message: response.data.message || 'Request created successfully!',
                     severity: 'success'
                 });
                 onRefreshData();
@@ -53,7 +53,7 @@ const TripRequestWizard = ({onClose, onRefreshData}) => {
 
             setNotification({
                 open: true,
-                message: error.response?.data.message || 'Не удалось создать запрос',
+                message: error.response?.data.message || 'Failed to create request',
                 severity: 'error'
             });
             console.error('Failed to submit trip request:', error);

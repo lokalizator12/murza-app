@@ -18,19 +18,19 @@ const RequestForm = ({onClose, onRefreshData }) => {
                 {!selectedOption ? (
                     <>
                         <Typography variant="h4" sx={{fontWeight: 'bold', mb: 3}}>
-                            Выберите тип заявки
+                            Choose the type of request
                         </Typography>
                         <Box sx={{display: 'flex', justifyContent: 'center', gap: 2}}>
                             <Button variant="outlined" onClick={() => setSelectedOption('Parcel')}>
-                                Заявка на посылку
+                                Request a parcel
                             </Button>
                             <Button variant="outlined" onClick={() => setSelectedOption('Trip')}>
-                                Заявка на поездку
+                                Request a trip
                             </Button>
                         </Box>
                         <Box sx={{mt: 4}}>
                             <Button variant="text" onClick={onClose}>
-                                Отмена
+                                Cancel
                             </Button>
                         </Box>
                     </>
@@ -42,10 +42,10 @@ const RequestForm = ({onClose, onRefreshData }) => {
                             <TripRequestWizard onClose={onClose} onRefreshData={onRefreshData} />
                         )}
                         <Button variant="text" onClick={handleBackToSelection}>
-                            Назад к выбору типа заявки
+                            Return to type of request
                         </Button>
                         <Button variant="outlined" onClick={onClose} sx={{ml: 2}}>
-                            Отмена
+                            Cancel
                         </Button>
                     </>
                 )}

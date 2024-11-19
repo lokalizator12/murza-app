@@ -1,9 +1,9 @@
 // ParcelStep2.js
-import React, {useEffect, useState} from 'react';
-import {Box, Checkbox, FormControlLabel, TextField, Typography} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material';
 import ImageCarousel from './../../components/ImageCarousel';
 
-const ParcelStep2 = ({formData, handleChange, setIsNextEnabled}) => {
+const ParcelStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
     const [images, setImages] = useState([]);
 
     const handlePositiveNumberChange = (field, value) => {
@@ -12,15 +12,15 @@ const ParcelStep2 = ({formData, handleChange, setIsNextEnabled}) => {
             handleChange(field, numericValue);
 
             if (['length', 'width', 'height'].includes(field)) {
-                // Обновляем поля size и volume
+                // Update size and volume fields
                 const length = formData.length || 0;
                 const width = formData.width || 0;
                 const height = formData.height || 0;
 
-                // Формируем строку для размера
+                // Form the size string
                 handleChange('size', `${length}x${width}x${height}`);
 
-                // Рассчитываем объем и обновляем его в formData
+                // Calculate volume and update it in formData
                 const volume = length * width * height;
                 handleChange('volume', volume);
             }
@@ -36,19 +36,19 @@ const ParcelStep2 = ({formData, handleChange, setIsNextEnabled}) => {
         setIsNextEnabled(allFieldsFilled && hasImages);
     };
 
-    // Обновляем formData с изображениями каждый раз, когда они изменяются
+    // Update formData with images each time they change
     useEffect(() => {
         handleChange('images', images);
         validateForm();
     }, [images, formData, handleChange]);
 
     return (
-        <Box sx={{textAlign: 'center', mb: 4}}>
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
             <Typography variant="h5" gutterBottom>
-                Шаг 2: Данные о посылке
+                Step 2: Parcel Information
             </Typography>
             <TextField
-                label="Масса (кг)"
+                label="Weight (kg)"
                 type="number"
                 variant="outlined"
                 fullWidth
@@ -56,23 +56,23 @@ const ParcelStep2 = ({formData, handleChange, setIsNextEnabled}) => {
                 value={formData.weight || ''}
                 onChange={(e) => handlePositiveNumberChange('weight', e.target.value)}
             />
-            <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 2}}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
                 <TextField
-                    label="Длина"
+                    label="Length"
                     type="number"
                     variant="outlined"
                     value={formData.length || ''}
                     onChange={(e) => handlePositiveNumberChange('length', e.target.value)}
                 />
                 <TextField
-                    label="Ширина"
+                    label="Width"
                     type="number"
                     variant="outlined"
                     value={formData.width || ''}
                     onChange={(e) => handlePositiveNumberChange('width', e.target.value)}
                 />
                 <TextField
-                    label="Высота"
+                    label="Height"
                     type="number"
                     variant="outlined"
                     value={formData.height || ''}
@@ -80,9 +80,9 @@ const ParcelStep2 = ({formData, handleChange, setIsNextEnabled}) => {
                 />
             </Box>
 
-            {/* Поле для отображения объема */}
+            {/* Field to display volume */}
             <TextField
-                label="Объем (куб. см)"
+                label="Volume (cubic cm)"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -90,7 +90,7 @@ const ParcelStep2 = ({formData, handleChange, setIsNextEnabled}) => {
                 InputProps={{
                     readOnly: true,
                 }}
-                sx={{mt: 2}}
+                sx={{ mt: 2 }}
             />
 
             <FormControlLabel
@@ -100,11 +100,11 @@ const ParcelStep2 = ({formData, handleChange, setIsNextEnabled}) => {
                         onChange={(e) => handleChange('declaration', e.target.checked)}
                     />
                 }
-                label="Декларация"
+                label="Declaration"
             />
 
             {/* Image Carousel Component */}
-            <ImageCarousel images={images} setImages={setImages} maxImages={10}/>
+            <ImageCarousel images={images} setImages={setImages} maxImages={10} />
         </Box>
     );
 };

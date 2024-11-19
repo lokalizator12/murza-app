@@ -1,15 +1,15 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, TextField, Checkbox, FormControlLabel, Button, Alert } from '@mui/material';
+import React, {useCallback, useEffect, useState} from 'react';
+import {Alert, Box, Button, Checkbox, FormControlLabel, TextField, Typography} from '@mui/material';
 import axios from '../../axiosConfig';
 
-const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
+const TripStep2 = ({formData, handleChange, setIsNextEnabled}) => {
     const [items, setItems] = useState([]);
     const [acceptedItems, setAcceptedItems] = useState([]);
     const [declinedItems, setDeclinedItems] = useState([]);
     const [showVolumeAlert, setShowVolumeAlert] = useState(false);
     const [validationErrors, setValidationErrors] = useState({});
 
-    // Получаем список всех предметов при загрузке
+    // Fetch the list of all items when the component loads
     useEffect(() => {
         const fetchItems = async () => {
             try {
@@ -22,7 +22,7 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
         fetchItems();
     }, []);
 
-    // Обработчики добавления/удаления предметов
+    // Handlers for adding/removing items
     const handleAcceptItem = useCallback((item) => {
         setAcceptedItems((prev) =>
             prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
@@ -37,7 +37,7 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
         setAcceptedItems((prev) => prev.filter(i => i !== item));
     }, []);
 
-    // Обновление состояния formData только при реальном изменении acceptedItems или declinedItems
+    // Update formData state only when acceptedItems or declinedItems actually change
     useEffect(() => {
         const newAcceptedItems = acceptedItems.map(item => item.id);
         const newDeclinedItems = declinedItems.map(item => item.id);
@@ -48,61 +48,61 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
         ) {
             handleChange('acceptedItemsId', newAcceptedItems);
             handleChange('declinedItemsId', newDeclinedItems);
-            console.log("Принятые предметы:", acceptedItems);
-            console.log("Отклоненные предметы:", declinedItems);
+            console.log("Accepted items:", acceptedItems);
+            console.log("Declined items:", declinedItems);
         }
     }, [acceptedItems, declinedItems, formData, handleChange]);
 
-    // Валидация полей
+    // Field validation
     const validateFields = () => {
         const errors = {};
-        if (!formData.maxWeight || formData.maxWeight <= 0) errors.maxWeight = "Масса должна быть положительным числом";
-        if (!formData.maxVolume || formData.maxVolume <= 0) errors.maxVolume = "Объем должен быть положительным числом";
-        if (!formData.maxLength || formData.maxLength <= 0) errors.maxLength = "Длина должна быть положительным числом";
-        if (!formData.maxWidth || formData.maxWidth <= 0) errors.maxWidth = "Ширина должна быть положительным числом";
-        if (!formData.maxHeight || formData.maxHeight <= 0) errors.maxHeight = "Высота должна быть положительным числом";
+        if (!formData.maxWeight || formData.maxWeight <= 0) errors.maxWeight = "Weight must be a positive number";
+        if (!formData.maxVolume || formData.maxVolume <= 0) errors.maxVolume = "Volume must be a positive number";
+        if (!formData.maxLength || formData.maxLength <= 0) errors.maxLength = "Length must be a positive number";
+        if (!formData.maxWidth || formData.maxWidth <= 0) errors.maxWidth = "Width must be a positive number";
+        if (!formData.maxHeight || formData.maxHeight <= 0) errors.maxHeight = "Height must be a positive number";
 
         setValidationErrors(errors);
 
         return Object.keys(errors).length === 0;
     };
 
-    // Проверяем валидацию для активации кнопки "Next"
+    // Validate the form to enable the "Next" button
     useEffect(() => {
         const isFormValid = validateFields();
         setIsNextEnabled(isFormValid && (acceptedItems.length > 0 || declinedItems.length > 0));
     }, [formData, acceptedItems, declinedItems, setIsNextEnabled]);
 
-    // Обработчик для обновления размеров и расчета объема
+    // Handler for updating dimensions and calculating volume
     const handleDimensionChange = (field, value) => {
         const numericValue = parseFloat(value);
         if (!isNaN(numericValue) && numericValue >= 0) {
             handleChange(field, numericValue);
 
-            // Вычисляем объем, если заданы все три размера
-            const { maxLength = 0, maxWidth = 0, maxHeight = 0 } = formData;
+            // Calculate volume if all three dimensions are provided
+            const {maxLength = 0, maxWidth = 0, maxHeight = 0} = formData;
             const updatedDimensions = {
                 ...formData,
                 [field]: numericValue
             };
             const calculatedVolume = updatedDimensions.maxLength * updatedDimensions.maxWidth * updatedDimensions.maxHeight;
 
-            // Если рассчитанный объем больше, чем текущий указанный "Максимальный объем", обновляем его
+            // If the calculated volume exceeds the current "Max Volume", update it
             if (calculatedVolume > formData.maxVolume) {
                 handleChange('maxVolume', calculatedVolume);
-                setShowVolumeAlert(true); // Показываем алерт
+                setShowVolumeAlert(true); // Show the alert
             } else {
-                setShowVolumeAlert(false); // Скрываем алерт, если объем не превышен
+                setShowVolumeAlert(false); // Hide the alert if volume is not exceeded
             }
         } else {
-            handleChange(field, ''); // Если значение пустое
+            handleChange(field, ''); // If value is empty
         }
     };
 
     return (
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
-                Шаг 2: Параметры груза и предметы
+                Step 2: Cargo Parameters and Items
             </Typography>
 
             <FormControlLabel
@@ -112,11 +112,11 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
                         onChange={(e) => handleChange('declaration', e.target.checked)}
                     />
                 }
-                label="Еду через красный коридор (декларация)"
+                label="Going through the red corridor (declaration)"
             />
 
             <TextField
-                label="Максимальная масса (кг)"
+                label="Maximum Weight (kg)"
                 type="number"
                 variant="outlined"
                 fullWidth
@@ -128,7 +128,7 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
             />
 
             <TextField
-                label="Максимальный объем (м³)"
+                label="Maximum Volume (m³)"
                 type="number"
                 variant="outlined"
                 fullWidth
@@ -140,14 +140,14 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
             />
 
             {showVolumeAlert && (
-                <Alert severity="warning" sx={{ mt: 2 }}>
-                    Объем был автоматически пересчитан на основе введенных размеров.
+                <Alert severity="warning" sx={{mt: 2}}>
+                    The volume has been automatically recalculated based on the entered dimensions.
                 </Alert>
             )}
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 2}}>
                 <TextField
-                    label="Макс. длина"
+                    label="Max Length"
                     type="number"
                     variant="outlined"
                     value={formData.maxLength || ''}
@@ -156,7 +156,7 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
                     helperText={validationErrors.maxLength}
                 />
                 <TextField
-                    label="Макс. ширина"
+                    label="Max Width"
                     type="number"
                     variant="outlined"
                     value={formData.maxWidth || ''}
@@ -165,7 +165,7 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
                     helperText={validationErrors.maxWidth}
                 />
                 <TextField
-                    label="Макс. высота"
+                    label="Max Height"
                     type="number"
                     variant="outlined"
                     value={formData.maxHeight || ''}
@@ -175,12 +175,12 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
                 />
             </Box>
 
-            <Typography variant="h6" sx={{ mt: 4 }}>
-                Выберите предметы для перевозки
+            <Typography variant="h6" sx={{mt: 4}}>
+                Select Items for Transportation
             </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-around', mt: 4 }}>
-                <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6">Принятые предметы</Typography>
+            <Box sx={{display: 'flex', justifyContent: 'space-around', mt: 4}}>
+                <Box sx={{textAlign: 'center'}}>
+                    <Typography variant="h6">Accepted Items</Typography>
                     {items.map((item) => (
                         <Button
                             key={`accept-${item.id}`}
@@ -200,8 +200,8 @@ const TripStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
                     ))}
                 </Box>
 
-                <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6">Отклоненные предметы</Typography>
+                <Box sx={{textAlign: 'center'}}>
+                    <Typography variant="h6">Declined Items</Typography>
                     {items.map((item) => (
                         <Button
                             key={`decline-${item.id}`}

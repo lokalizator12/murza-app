@@ -244,10 +244,10 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
                     .setLngLat(coordinates)
                     .setHTML(`
                         <div>
-                            <strong>${pointType === 'start' ? 'Отправление' : 'Прибытие'}:</strong><br/>
-                            ${pointType === 'start' ? request.startLocation || 'Не указано' : request.endLocation || 'Не указано'}
+                            <strong>${pointType === 'start' ? 'Departure' : 'Arrival'}:</strong><br/>
+                            ${pointType === 'start' ? request.startLocation || 'Not set' : request.endLocation || 'Not set'}
                             <br/>
-                            <strong>Стоимость:</strong> ${request.cost || 'Не указана'} €
+                            <strong>Стоимость:</strong> ${request.cost || 'Not set'} €
                         </div>
                     `)
                     .addTo(map);
