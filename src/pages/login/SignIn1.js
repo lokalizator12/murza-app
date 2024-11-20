@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import axios from "../../axiosConfig";
 import {Helmet} from "react-helmet";
 import ForgotPassword from './ForgotPassword';
+import {useAuth} from "../../context/AuthContext";
 
 export default function SignIn1() {
     const [emailError, setEmailError] = useState(false);
@@ -14,6 +15,7 @@ export default function SignIn1() {
     const [showPassword, setShowPassword] = React.useState(false);
     const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const validateInputs = useCallback(() => {
         const email = document.getElementById('thq-sign-in-2-email').value;
@@ -68,11 +70,11 @@ export default function SignIn1() {
                 },
                 withCredentials: true,
             });
-
-            Cookies.set('token', response.data.token, {expires: 1999999, secure: true});
+            login(response.data.token);
+            localStorage.setItem('currentUserId', response.data.userId);
+            Cookies.set('token', response.data.token, {expires: response.data.expiresIn, secure: true});
             console.log('Token saved:', Cookies.get('token'));
             console.log('Login successful:', response.data);
-
             navigate('/main');
         } catch (error) {
             const errorMessage = error.response ? error.response.data : error.message;

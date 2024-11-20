@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { Box, TextField, Button, Grid, Avatar, Snackbar, Alert } from "@mui/material";
+import React, {useState} from "react";
+import {Alert, Avatar, Box, Button, Grid, Snackbar, TextField} from "@mui/material";
 import UploadIcon from "@mui/icons-material/Upload";
 import axios from "../../../axiosConfig";
 
-const EditProfileForm = ({ initialProfile, onProfileUpdated }) => {
+const EditProfileForm = ({initialProfile, onProfileUpdated}) => {
     const [profile, setProfile] = useState(initialProfile);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -11,12 +11,10 @@ const EditProfileForm = ({ initialProfile, onProfileUpdated }) => {
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
-    // Обработчик изменения полей ввода
     const handleInputChange = (field, value) => {
-        setProfile({ ...profile, [field]: value });
+        setProfile({...profile, [field]: value});
     };
 
-    // Обработчик загрузки фотографии
     const handlePhotoUpload = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -41,8 +39,8 @@ const EditProfileForm = ({ initialProfile, onProfileUpdated }) => {
         }
 
         try {
-            const response = await axios.put("/v1/profiles/me", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
+            const response = await axios.put("/v1/profile", formData, {
+                headers: {"Content-Type": "multipart/form-data"},
             });
 
             setSnackbarMessage("Profile updated successfully!");
@@ -68,7 +66,7 @@ const EditProfileForm = ({ initialProfile, onProfileUpdated }) => {
     };
 
     return (
-        <form onSubmit={handleSave} style={{ marginTop: "20px" }}>
+        <form onSubmit={handleSave} style={{marginTop: "20px"}}>
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}
@@ -77,7 +75,7 @@ const EditProfileForm = ({ initialProfile, onProfileUpdated }) => {
                 <Alert
                     onClose={handleSnackbarClose}
                     severity={snackbarSeverity}
-                    sx={{ width: "100%" }}
+                    sx={{width: "100%"}}
                 >
                     {snackbarMessage}
                 </Alert>
@@ -99,11 +97,11 @@ const EditProfileForm = ({ initialProfile, onProfileUpdated }) => {
                         <Button
                             variant="outlined"
                             component="label"
-                            startIcon={<UploadIcon />}
-                            sx={{ mb: 2 }}
+                            startIcon={<UploadIcon/>}
+                            sx={{mb: 2}}
                         >
                             Upload Photo
-                            <input type="file" hidden onChange={handlePhotoUpload} />
+                            <input type="file" hidden onChange={handlePhotoUpload}/>
                         </Button>
                     </Box>
                 </Grid>

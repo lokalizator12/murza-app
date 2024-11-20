@@ -1,8 +1,6 @@
 import React, {Fragment} from 'react'
 
 import {Helmet} from 'react-helmet'
-
-import Navbar8 from '../../components/navbar8'
 import Hero9 from '../../components/hero9'
 import ContentList5 from '../../components/content-list5'
 import FAQ14 from '../../components/faq14'
@@ -20,108 +18,6 @@ const Legal = () => {
                     content="Legal - Apprehensive Euphoric Hamster"
                 />
             </Helmet>
-            <Navbar8
-                link1={
-                    <Fragment>
-                        <span className="legal-text10 thq-body-small thq-link">Login</span>
-                    </Fragment>
-                }
-                link2={
-                    <Fragment>
-            <span className="legal-text11 thq-body-small thq-link">
-              Register
-            </span>
-                    </Fragment>
-                }
-                link3={
-                    <Fragment>
-            <span className="legal-text12 thq-body-small thq-link">
-              Find a Driver
-            </span>
-                    </Fragment>
-                }
-                link4={
-                    <Fragment>
-            <span className="legal-text13 thq-body-small thq-link">
-              Find a Parcel
-            </span>
-                    </Fragment>
-                }
-                page1={
-                    <Fragment>
-                        <span className="legal-text14 thq-body-large">Login</span>
-                    </Fragment>
-                }
-                page2={
-                    <Fragment>
-                        <span className="legal-text15 thq-body-large">Register</span>
-                    </Fragment>
-                }
-                page3={
-                    <Fragment>
-                        <span className="legal-text16 thq-body-large">Find a Driver</span>
-                    </Fragment>
-                }
-                page4={
-                    <Fragment>
-                        <span className="legal-text17 thq-body-large">Find a Parcel</span>
-                    </Fragment>
-                }
-                link31={
-                    <Fragment>
-            <span className="legal-text18 thq-body-small thq-link">
-              <span>About us</span>
-              <br></br>
-            </span>
-                    </Fragment>
-                }
-                action1={
-                    <Fragment>
-            <span className="legal-text21">
-              <span>Login</span>
-              <br></br>
-            </span>
-                    </Fragment>
-                }
-                action2={
-                    <Fragment>
-            <span className="legal-text24">
-              <span>Registration</span>
-              <br></br>
-            </span>
-                    </Fragment>
-                }
-                logoSrc="/logo-1500h.png"
-                rootClassName="navbar8root-class-name2"
-                page1Description={
-                    <Fragment>
-            <span className="legal-text27 thq-body-small">
-              Log in to your account
-            </span>
-                    </Fragment>
-                }
-                page2Description={
-                    <Fragment>
-            <span className="legal-text28 thq-body-small">
-              Create a new account
-            </span>
-                    </Fragment>
-                }
-                page3Description={
-                    <Fragment>
-            <span className="legal-text29 thq-body-small">
-              Search for available drivers
-            </span>
-                    </Fragment>
-                }
-                page4Description={
-                    <Fragment>
-            <span className="legal-text30 thq-body-small">
-              Search for available parcels
-            </span>
-                    </Fragment>
-                }
-            ></Navbar8>
             <Hero9
                 action1={
                     <Fragment>

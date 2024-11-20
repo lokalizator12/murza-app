@@ -1,9 +1,11 @@
 import React, {Fragment, useState} from 'react'
 import {Link} from 'react-router-dom'
-
+import {useAuth} from '../context/AuthContext';
 import './navbar8.css'
 
 const Navbar8 = (props) => {
+
+    const {isAuthenticated, logout} = useAuth();
     const [link5DropdownVisible, setLink5DropdownVisible] = useState(false)
     const [link5AccordionOpen, setLink5AccordionOpen] = useState(false)
     const currentUserId = localStorage.getItem("currentUserId");
@@ -85,18 +87,55 @@ const Navbar8 = (props) => {
                             )}
                         </Link>
 
-                        {currentUserId && (
-                            <Link to={`/profile/${currentUserId}`} className="navbar8-link32">
-                                <span className="navbar8-text19 thq-body-small thq-link">My Profile</span>
-                            </Link>
-                        )}
-                    </nav>
 
+                    </nav>
                     <div className="navbar8-buttons1">
+                        {isAuthenticated ? (
+                            <>
+                                <Link to={`/profile/${currentUserId}`}
+                                      className="navbar8-action11 thq-button-filled thq-button-animated">
+                                    My Profile
+                                </Link>
+                                <button
+                                    className="navbar8-action21 thq-button-outline thq-button-animated"
+                                    onClick={logout}
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link to="/login" className="navbar8-action11 thq-button-filled thq-button-animated">
+                                    Sign in
+                                </Link>
+                                <Link to="/register"
+                                      className="navbar8-action21 thq-button-outline thq-button-animated">
+                                    Sign up
+                                </Link>
+                            </>
+                        )}
+                    </div>
+
+                    {/* <div className="navbar8-buttons1">
+                        <div className="navbar-actions">
+                            {isAuthenticated ? (
+                                <>
+                                    <Link to="/profile" className="button">My Profile</Link>
+                                    <button className="navbar8-action21 thq-button-outline thq-button-animated"
+                                        onClick={logout} >Logout</button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link to="/login" className="button">Sign in</Link>
+                                    <Link to="/register" className="button button-outline">Sign up</Link>
+                                </>
+                            )}
+                        </div>
                         <button className="navbar8-action11 thq-button-filled thq-button-animated"
                                 onClick={() => {
                                     window.location.href = '/login';
                                 }}>
+
               <span className="thq-body-small">
                 {props.action1 ?? (
                     <Fragment>
@@ -105,6 +144,7 @@ const Navbar8 = (props) => {
                 )}
               </span>
                         </button>
+
                         <button className="navbar8-action21 thq-button-outline thq-button-animated"
                                 onClick={() => {
                                     window.location.href = '/register';
@@ -117,7 +157,7 @@ const Navbar8 = (props) => {
                 )}
               </span>
                         </button>
-                    </div>
+                    </div>*/}
                 </div>
                 <div data-thq="thq-burger-menu" className="navbar8-burger-menu">
                     <svg viewBox="0 0 1024 1024" className="navbar8-icon14">

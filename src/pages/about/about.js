@@ -1,8 +1,6 @@
 import React, {Fragment} from 'react'
 
 import {Helmet} from 'react-helmet'
-
-import Navbar8 from '../../components/navbar8'
 import Features16 from '../../components/features16'
 import Stats8 from '../../components/stats8'
 import Features22 from '../../components/features22'
@@ -23,108 +21,7 @@ const About = (props) => {
                     content="About - Apprehensive Euphoric Hamster"
                 />
             </Helmet>
-            <Navbar8
-                link1={
-                    <Fragment>
-                        <span className="about-text100 thq-body-small thq-link">Login</span>
-                    </Fragment>
-                }
-                link2={
-                    <Fragment>
-            <span className="about-text101 thq-body-small thq-link">
-              Register
-            </span>
-                    </Fragment>
-                }
-                link3={
-                    <Fragment>
-            <span className="about-text102 thq-body-small thq-link">
-              Find a Driver
-            </span>
-                    </Fragment>
-                }
-                link4={
-                    <Fragment>
-            <span className="about-text103 thq-body-small thq-link">
-              Find a Parcel
-            </span>
-                    </Fragment>
-                }
-                page1={
-                    <Fragment>
-                        <span className="about-text104 thq-body-large">Login</span>
-                    </Fragment>
-                }
-                page2={
-                    <Fragment>
-                        <span className="about-text105 thq-body-large">Register</span>
-                    </Fragment>
-                }
-                page3={
-                    <Fragment>
-                        <span className="about-text106 thq-body-large">Find a Driver</span>
-                    </Fragment>
-                }
-                page4={
-                    <Fragment>
-                        <span className="about-text107 thq-body-large">Find a Parcel</span>
-                    </Fragment>
-                }
-                link31={
-                    <Fragment>
-            <span className="about-text108 thq-body-small thq-link">
-              <span>About us</span>
-              <br></br>
-            </span>
-                    </Fragment>
-                }
-                action1={
-                    <Fragment>
-            <span className="about-text111">
-              <span>Login</span>
-              <br></br>
-            </span>
-                    </Fragment>
-                }
-                action2={
-                    <Fragment>
-            <span className="about-text114">
-              <span>Registration</span>
-              <br></br>
-            </span>
-                    </Fragment>
-                }
-                logoSrc="/logo-1500h.png"
-                rootClassName="navbar8root-class-name1"
-                page1Description={
-                    <Fragment>
-            <span className="about-text117 thq-body-small">
-              Log in to your account
-            </span>
-                    </Fragment>
-                }
-                page2Description={
-                    <Fragment>
-            <span className="about-text118 thq-body-small">
-              Create a new account
-            </span>
-                    </Fragment>
-                }
-                page3Description={
-                    <Fragment>
-            <span className="about-text119 thq-body-small">
-              Search for available drivers
-            </span>
-                    </Fragment>
-                }
-                page4Description={
-                    <Fragment>
-            <span className="about-text120 thq-body-small">
-              Search for available parcels
-            </span>
-                    </Fragment>
-                }
-            ></Navbar8>
+
             <Features16
                 slogan1={
                     <Fragment>

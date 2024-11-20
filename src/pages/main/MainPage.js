@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import Navbar8 from '../../components/navbar8';
 import MapboxMap from '../../components/MainPage/MapboxMap/MapboxMap';
 import RequestsFilter from '../../components/MainPage/RequestsFilter';
 import RequestsList from '../../components/MainPage/RequestsList';
@@ -114,8 +113,6 @@ const MainPage = () => {
 
     return (
         <div style={{display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden'}}>
-            <Navbar8/>
-
 
             <Dialog
                 open={showRequestDialog}

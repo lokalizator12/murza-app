@@ -10,7 +10,7 @@ import ProfileDetailsDialog from "../../components/Profile/ProfileDetailsDialog"
 import {Alert, Box, Container, Grid, Paper, Snackbar} from "@mui/material";
 import RequestDetailsModal from "../../components/MainPage/RequestDetailsModal";
 import SettingsPanel from "../../components/Profile/panels/SettingsPanel";
-import Navbar8 from "../../components/navbar8"; // Import Navbar8
+import SubscriptionsPanel from "../../components/Profile/panels/SubscriptionsPanel";
 
 
 const ProfilePage = () => {
@@ -37,10 +37,10 @@ const ProfilePage = () => {
 
     const fetchProfileData = useCallback(async () => {
         try {
-            const isOwnProfileRes = await axios.get(`/v1/profiles/is-owner/${userId}`);
+            const isOwnProfileRes = await axios.get(`/v1/profile/is-owner/${userId}`);
             setIsOwnProfile(isOwnProfileRes.data);
 
-            const profileEndpoint = isOwnProfileRes.data ? "/v1/profiles/me" : `/v1/profiles/${userId}`;
+            const profileEndpoint = isOwnProfileRes.data ? "/v1/profile" : `/v1/profile/${userId}`;
             const profileRes = await axios.get(profileEndpoint);
             setProfile(profileRes.data);
 
@@ -109,7 +109,7 @@ const ProfilePage = () => {
             formData.append("lastName", updatedProfile.lastName);
             if (updatedPhoto) formData.append("userPhoto", updatedPhoto);
 
-            const response = await axios.put(`/v1/profiles/me`, formData, {
+            const response = await axios.put(`/v1/profile`, formData, {
                 headers: {"Content-Type": "multipart/form-data"},
                 withCredentials: true,
             });
@@ -132,13 +132,15 @@ const ProfilePage = () => {
                 requestType: type, // Тип запроса (parcel или trip)
                 ownerId: userId, // ID владельца профиля
             });
-            setModalType("active"); // Устанавливаем тип модального окна
+            setModalType("active");
             setModalOpen(true);
         } catch (error) {
             console.error("Error fetching request details:", error);
         }
     };
-
+    useEffect(() => {
+        fetchProfileData();
+    }, [userId]);
     const handleProfileUpdated = (updatedProfile) => {
         setProfile(updatedProfile); // Обновление данных на странице
     };
@@ -153,12 +155,14 @@ const ProfilePage = () => {
         fetchTripsAndParcels();
     }, [userId, tripsPage, parcelsPage]);
 
-    if (!profile) return <div>Loading...</div>;
+    if (!profile || isOwnProfile === null) {
+        return <div>Loading...</div>;
+    }
 
     return (
 
         <>
-            <Navbar8 rootClassName="custom-navbar"/>
+
             <Container maxWidth="lg" sx={{mt: 4, pb: 4}}>
                 <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
                     <Alert severity="error" onClose={() => setError(null)}>
@@ -185,8 +189,12 @@ const ProfilePage = () => {
 
                     {/* Profile Content */}
                     <Grid item xs={12} md={8}>
-                        <ProfileTabs activeTab={activeTab} onTabChange={(event, value) => setActiveTab(value)}/>
 
+                        <ProfileTabs
+                            activeTab={activeTab}
+                            onTabChange={(event, value) => setActiveTab(value)}
+                            isOwnProfile={isOwnProfile}
+                        />
                         {activeTab === 0 && (
                             <Box>
                                 <ProfileTrips
@@ -227,7 +235,7 @@ const ProfilePage = () => {
                                 }}
                             />
                         )}
-
+                        {activeTab === 3 && isOwnProfile && <SubscriptionsPanel />}
                         {modalType === "active" && (
                             <RequestDetailsModal
                                 open={modalOpen}
