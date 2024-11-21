@@ -12,16 +12,41 @@ import Testimonial17 from '../../components/testimonial17'
 import Contact11 from '../../components/contact11'
 import Footer15 from '../../components/footer15'
 import './home.css'
+import Hero17 from "../../components/hero17";
+import {useNavigate} from "react-router-dom";
+import {useAuth} from "../../context/AuthContext";
 
 const Home = (props) => {
+
     return (
         <div className="home-container">
             <Helmet>
                 <title>Murza</title>
                 <meta property="og:title" content="Apprehensive Euphoric Hamster"/>
             </Helmet>
-
-            <Hero11
+            <Hero17
+                action2={
+                    <Fragment>
+                        <span className="home-text31">Find a driver</span>
+                    </Fragment>
+                }
+                action1={
+                    <Fragment>
+                        <span className="home-text32">Find a parcel</span>
+                    </Fragment>
+                }
+                heading1={
+                    <Fragment>
+                        <span className="home-text33">Find a driver or a parcel</span>
+                    </Fragment>
+                }
+                content1={
+                    <Fragment>
+                        <span className="home-text34">Choose a driver to deliver your package or find a package to deliver.</span>
+                    </Fragment>
+                }
+            ></Hero17>
+            {/*<Hero11
                 action1={
                     <Fragment>
             <span className="home-text31 thq-body-small">
@@ -48,7 +73,7 @@ const Home = (props) => {
                         <span className="home-text38 thq-heading-1">Default value</span>
                     </Fragment>
                 }
-            ></Hero11>
+            ></Hero11>*/}
             <Features24
                 feature1Title={
                     <Fragment>

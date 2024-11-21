@@ -12,11 +12,14 @@ const Navbar8 = (props) => {
     return (
         <header className={`navbar8-container1 ${props.rootClassName} `}>
             <header data-thq="thq-navbar" className="navbar8-navbar-interactive">
-                <img
-                    alt={props.imageAlt1}
-                    src={props.imageSrc1}
-                    className="navbar8-image"
-                />
+                <Link to="/">
+                    <img
+                        alt={props.imageAlt1}
+                        src={props.imageSrc1}
+                        className="navbar8-image"
+                        style={{cursor: 'pointer'}}
+                    />
+                </Link>
                 <div data-thq="thq-navbar-nav" className="navbar8-desktop-menu">
                     <nav className="navbar8-links1">
                         <a href={props.link1Url}>
@@ -439,7 +442,7 @@ const Navbar8 = (props) => {
                                     </div>
                                 </div>
                             </a>
-                            <a href={props.linkUrlPage2}>
+                            <a href={props.link2Url}>
                                 <div className="navbar8-menu-item6">
                                     <img
                                         alt={props.page2ImageAlt}
@@ -560,7 +563,7 @@ Navbar8.defaultProps = {
     imageSrc1: '/logo-1500h.png',
     logoSrc: '/logo-1500h.png',
     page2Description: undefined,
-    linkUrlPage4: '/find-parcel',
+    linkUrlPage4: '/main',
     link31: undefined,
     page4ImageSrc:
         'https://images.unsplash.com/photo-1691809840543-0a3a4db49348?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5MTMyMXwwfDF8cmFuZG9tfHx8fHx8fHx8MTcyOTcwNTc4OXw&ixlib=rb-4.0.3&q=80&w=1080',
