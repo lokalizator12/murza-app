@@ -1,104 +1,127 @@
+// RequestDetailsModal.js
 import React from 'react';
-import {Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography} from '@mui/material';
+import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Typography,} from '@mui/material';
 import ReadOnlyImageCarousel from '../ReadOnlyImageCarousel';
 import RouteMap from '../RouteMap';
 import {useNavigate} from 'react-router-dom';
+import {AccountCircle, Close, ContactMail, Map} from '@mui/icons-material';
 
 const RequestDetailsModal = ({open, onClose, request, requestType}) => {
-    const navigate = useNavigate(); // Hook for navigation
+    const navigate = useNavigate();
     const isParcel = requestType === 'parcel';
 
-    React.useEffect(() => {
-        console.log("Request in Modal:", request);
-        console.log("Owner ID:", request?.ownerId);
-        console.log("Request Type:", request?.requestTypeMove);
-    }, [request, requestType]);
-
-
     const handleProfileRedirect = () => {
-        if (requestType === 'parcel') {
-            // Check if sender exists and has an id
-            if (request?.sender?.id) {
-                console.warn('Redirecting to sender profile. User ID:', request.sender.id);
-                onClose(); // Close modal window
-                setTimeout(() => {
-                    navigate(`/profile/${request.sender.id}`); // Navigate to profile
-                }, 100);
-            } else {
-                console.error('Sender ID is not available for redirection.');
-            }
-        } else if (requestType === 'trip') {
-            // Check if driver exists and has an id
-            if (request?.driver?.id) {
-                console.warn('Redirecting to driver profile. User ID:', request.driver.id);
-                onClose(); // Close modal window
-                setTimeout(() => {
-                    navigate(`/profile/${request.driver.id}`); // Navigate to profile
-                }, 100);
-            } else {
-                console.error('Driver ID is not available for redirection.');
-            }
+        if (isParcel && request?.sender?.id) {
+            onClose();
+            setTimeout(() => {
+                navigate(`/profile/${request.sender.id}`);
+            }, 100);
+        } else if (!isParcel && request?.driver?.id) {
+            onClose();
+            setTimeout(() => {
+                navigate(`/profile/${request.driver.id}`);
+            }, 100);
         } else {
-            console.error('Invalid requestType or missing request data.');
+            console.error('User ID is not available for redirection.');
         }
     };
-
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
             <DialogTitle>Request Details</DialogTitle>
             <DialogContent dividers>
-                <Typography variant="h6" sx={{fontWeight: 'bold'}}>
+                <Typography variant="h5" gutterBottom>
                     {request.title || 'Untitled'}
                 </Typography>
                 {isParcel && request.photos && request.photos.length > 0 && (
                     <ReadOnlyImageCarousel images={request.photos}/>
                 )}
-                <Typography>Description: {request.description}</Typography>
-                <Typography>Price: {request.price ? `${request.price} €` : 'N/A'}</Typography>
-                <Typography>Volume: {request.volume ? `${request.volume} m³` : 'N/A'}</Typography>
-                <Typography>Weight: {request.weight ? `${request.weight} kg` : 'N/A'}</Typography>
-
-                {/* Show different details based on request type */}
-                {isParcel ? (
-                    <>
-                        <Typography>Pickup Address: {request.pickupAddress}</Typography>
-                        <Typography>Delivery Address: {request.deliveryAddress}</Typography>
-                        <Typography>
-                            Pickup Date:{' '}
-                            {request.pickupDate ? new Date(request.pickupDate).toLocaleDateString() : 'N/A'}
+                <Grid container spacing={2} sx={{mt: 1}}>
+                    <Grid item xs={12} sm={6}>
+                        <Typography variant="body1" gutterBottom>
+                            <strong>Description:</strong> {request.description}
                         </Typography>
-                        <Typography>
-                            Delivery Date:{' '}
-                            {request.deliveryDate ? new Date(request.deliveryDate).toLocaleDateString() : 'N/A'}
+                        <Typography variant="body1" gutterBottom>
+                            <strong>Price:</strong> {request.price ? `${request.price} €` : 'N/A'}
                         </Typography>
-                        <RouteMap
-                            pickupCoordinates={[request.pickupLongitude, request.pickupLatitude]}
-                            destinationCoordinates={[request.deliveryLongitude, request.deliveryLatitude]}
-                        />
-                    </>
-                ) : (
-                    <>
-                        <Typography>Departure Address: {request.departureAddress}</Typography>
-                        <Typography>Destination Address: {request.destinationAddress}</Typography>
-                        <Typography>
-                            Departure Date: {new Date(request.departureDate).toLocaleDateString()}
+                        <Typography variant="body1" gutterBottom>
+                            <strong>Volume:</strong> {request.volume ? `${request.volume} m³` : 'N/A'}
                         </Typography>
-                        <Typography>Arrival Date: {new Date(request.destinationDate).toLocaleDateString()}</Typography>
-                        <RouteMap
-                            pickupCoordinates={[request.departureLongitude, request.departureLatitude]}
-                            destinationCoordinates={[request.destinationLongitude, request.destinationLatitude]}
-                        />
-                    </>
-                )}
+                        <Typography variant="body1" gutterBottom>
+                            <strong>Weight:</strong> {request.weight ? `${request.weight} kg` : 'N/A'}
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        {isParcel ? (
+                            <>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Pickup Address:</strong> {request.pickupAddress}
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Delivery Address:</strong> {request.deliveryAddress}
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Pickup Date:</strong>{' '}
+                                    {request.pickupDate ? new Date(request.pickupDate).toLocaleDateString() : 'N/A'}
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Delivery Date:</strong>{' '}
+                                    {request.deliveryDate ? new Date(request.deliveryDate).toLocaleDateString() : 'N/A'}
+                                </Typography>
+                            </>
+                        ) : (
+                            <>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Departure Address:</strong> {request.departureAddress}
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Destination Address:</strong> {request.destinationAddress}
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Departure Date:</strong>{' '}
+                                    {new Date(request.departureDate).toLocaleDateString()}
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Arrival Date:</strong>{' '}
+                                    {new Date(request.destinationDate).toLocaleDateString()}
+                                </Typography>
+                            </>
+                        )}
+                    </Grid>
+                </Grid>
+                <Box sx={{mt: 2}}>
+                    <RouteMap
+                        pickupCoordinates={
+                            isParcel
+                                ? [request.pickupLongitude, request.pickupLatitude]
+                                : [request.departureLongitude, request.departureLatitude]
+                        }
+                        destinationCoordinates={
+                            isParcel
+                                ? [request.deliveryLongitude, request.deliveryLatitude]
+                                : [request.destinationLongitude, request.destinationLatitude]
+                        }
+                    />
+                </Box>
             </DialogContent>
             <DialogActions>
-                <Button variant="contained" color="primary">Contact</Button>
-                <Button variant="contained" color="secondary" onClick={handleProfileRedirect}>
-                    Show Profile
+                <Button variant="contained" color="primary" startIcon={<ContactMail/>}>
+                    Contact
                 </Button>
-                <Button variant="outlined" color="info">Show Route on Map</Button>
-                <Button onClick={onClose} color="inherit">Close</Button>
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<AccountCircle/>}
+                    onClick={handleProfileRedirect}
+                >
+                    Profile
+                </Button>
+                <Button variant="outlined" color="info" startIcon={<Map/>}>
+                    Route on Map
+                </Button>
+                <Button variant="text" color="inherit" startIcon={<Close/>} onClick={onClose}>
+                    Close
+                </Button>
             </DialogActions>
         </Dialog>
     );

@@ -1,14 +1,20 @@
-import { useEffect, useState } from 'react';
+// MarkerLayer.js
+import {useEffect, useRef, useState} from 'react';
+import ReactDOM from 'react-dom';
 import mapboxgl from 'mapbox-gl';
 import './MarkerLayer.css';
-import { ICON_URLS } from '../../../utils/contstants';
+import {ICON_URLS} from '../../../utils/constants';
+import PopupContent from './PopupContent';
 
-const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) => {
+const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRequestSelect}) => {
     const [popup, setPopup] = useState(null);
     const [markers, setMarkers] = useState([]);
-    let animationFrameId = null;
+    const animationFrameId = useRef(null); // Use ref to persist across renders
+    const isMounted = useRef(true); // Track if the component is mounted
 
     useEffect(() => {
+        isMounted.current = true; // Mark as mounted when the component is loaded
+
         if (!map || !mapLoaded) {
             console.log('Map is not fully loaded yet.');
             return;
@@ -17,26 +23,38 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
         console.log('MarkerLayer useEffect executed after map and style are loaded');
         console.log('Selected type:', selectedType);
 
-        // Очищаем предыдущие маркеры и маршруты
+        // Clear previous markers and routes
         markers.forEach(marker => marker.remove());
         setMarkers([]);
 
-        if (popup) popup.remove();
+        if (popup) {
+            popup.remove();
+            setPopup(null);
+        }
 
         const removeExistingRoute = () => {
-            if (map.getLayer('route-border-layer')) {
-                map.removeLayer('route-border-layer');
+            if (!map || !map.getStyle || !map.getSource) {
+                return;
             }
+
+            if (!map.isStyleLoaded()) {
+                return;
+            }
+
             if (map.getLayer('route-layer')) {
                 map.removeLayer('route-layer');
+            }
+            if (map.getLayer('route-border-layer')) {
+                map.removeLayer('route-border-layer');
             }
             if (map.getSource('route')) {
                 map.removeSource('route');
             }
 
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
+            // Cancel the animation frame if it exists
+            if (animationFrameId.current) {
+                cancelAnimationFrame(animationFrameId.current);
+                animationFrameId.current = null;
             }
         };
 
@@ -46,13 +64,12 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
 
         console.log('Requests:', requests);
 
-        // Проверка наличия данных
         if (!requests || requests.length === 0) {
             console.warn('No requests available');
             return;
         }
 
-        // Проверка на валидность координат
+        // Function to check if coordinates are valid
         const isValidCoordinates = (coordinates) => {
             return Array.isArray(coordinates) &&
                 coordinates.length === 2 &&
@@ -62,12 +79,13 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
                 !isNaN(coordinates[1]);
         };
 
+        // Function to get and display the route
         const getRoute = async (coordinates) => {
             try {
-                // Удаляем предыдущий маршрут и его слои перед добавлением нового маршрута
+                // Remove previous route
                 removeExistingRoute();
 
-                // Убедитесь, что все координаты валидные
+                // Ensure all coordinates are valid
                 const validCoordinates = coordinates.filter(isValidCoordinates);
                 if (validCoordinates.length < 2) {
                     console.warn('Not enough valid coordinates for route');
@@ -82,17 +100,17 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
                 if (data.routes && data.routes.length > 0) {
                     const route = data.routes[0].geometry;
 
-                    // Добавляем маршрут на карту как GeoJSON слой с поддержкой lineMetrics
+                    // Add route source with lineMetrics enabled
                     map.addSource('route', {
                         type: 'geojson',
                         data: {
                             type: 'Feature',
                             geometry: route,
                         },
-                        lineMetrics: true, // Добавляем поддержку line metrics
+                        lineMetrics: true, // Enable line metrics for animation
                     });
 
-                    // Добавляем слой границы маршрута (широкий слой)
+                    // Add route border layer
                     map.addLayer({
                         id: 'route-border-layer',
                         type: 'line',
@@ -102,13 +120,13 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
                             'line-join': 'round',
                         },
                         paint: {
-                            'line-color': '#000000', // Черный цвет для границы маршрута
-                            'line-width': 7,         // Ширина границы
+                            'line-color': '#000000', // Black border
+                            'line-width': 7,          // Border width
                             'line-opacity': 0.6,
                         },
                     });
 
-                    // Добавляем слой с градиентом, который будет анимирован
+                    // Add animated route layer with line-gradient
                     map.addLayer({
                         id: 'route-layer',
                         type: 'line',
@@ -122,18 +140,18 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
                                 'interpolate',
                                 ['linear'],
                                 ['line-progress'],
-                                0, '#FFFFFF',         // Белый в начале линии
-                                0.45, '#FFFFFF',      // Белый до пучка
-                                0.5, '#D2691E',       // Шоколадный цвет "пучка"
-                                0.55, '#FFFFFF',      // Белый после "пучка"
-                                1, '#FFFFFF'          // Белый до конца
+                                0, '#FFFFFF',         // White start
+                                0.45, '#FFFFFF',      // White before beam
+                                0.5, '#D2691E',       // Chocolate beam
+                                0.55, '#FFFFFF',      // White after beam
+                                1, '#FFFFFF'          // White end
                             ],
                             'line-width': 5,
                             'line-opacity': 1.0,
                         },
                     });
 
-                    // Масштабируем карту, чтобы охватить весь маршрут
+                    // Fit map to route
                     const bounds = new mapboxgl.LngLatBounds();
                     route.coordinates.forEach(coord => bounds.extend(coord));
                     map.fitBounds(bounds, {
@@ -142,32 +160,71 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
                         duration: 1000,
                     });
 
-                    // Анимация "пучка" по маршруту
+                    // Animation loop
                     let lineProgress = 0.0;
 
                     const animateLine = () => {
-                        lineProgress += 0.01; // Скорость анимации (можно изменить)
-                        if (lineProgress > 1.0) {
-                            lineProgress = 0.0; // Перезапускаем анимацию
+                        if (!isMounted.current || !map || !map.getLayer('route-layer')) {
+                            // Stop animation if the component is not mounted, the map is not available, or the layer is missing
+                            if (animationFrameId.current) {
+                                cancelAnimationFrame(animationFrameId.current);
+                                animationFrameId.current = null;
+                            }
+                            return;
                         }
 
-                        // Обновляем градиент линии для создания эффекта движения пучка
-                        map.setPaintProperty('route-layer', 'line-gradient', [
+                        lineProgress += 0.01; // Animation speed
+                        if (lineProgress > 1.0) {
+                            lineProgress = 0.0; // Restart animation
+                        }
+
+                        // Define beam positions
+                        const beamStart = lineProgress - 0.05;
+                        const beamEnd = lineProgress + 0.05;
+
+                        // Construct gradient array ensuring strictly ascending inputs
+                        let gradientArray = [
                             'interpolate',
                             ['linear'],
                             ['line-progress'],
-                            0, '#FFFFFF',
-                            Math.max(0, lineProgress - 0.05), '#FFFFFF', // Белый до пучка
-                            lineProgress, '#D2691E',                   // Шоколадный цвет в текущем положении "пучка"
-                            Math.min(1, lineProgress + 0.05), '#FFFFFF', // Белый после пучка
-                            1, '#FFFFFF'
-                        ]);
+                        ];
 
-                        // Запрашиваем следующий кадр анимации
-                        animationFrameId = requestAnimationFrame(animateLine);
+                        if (lineProgress <= 0.05) {
+                            // At the start, no beamStart
+                            gradientArray.push(
+                                0, '#D2691E',
+                                beamEnd, '#FFFFFF',
+                                1, '#FFFFFF'
+                            );
+                        } else if (lineProgress >= 0.95) {
+                            // At the end, no beamEnd
+                            gradientArray.push(
+                                0, '#FFFFFF',
+                                beamStart, '#FFFFFF',
+                                1, '#D2691E'
+                            );
+                        } else {
+                            // Middle of the line
+                            gradientArray.push(
+                                0, '#FFFFFF',
+                                beamStart, '#FFFFFF',
+                                lineProgress, '#D2691E',
+                                beamEnd, '#FFFFFF',
+                                1, '#FFFFFF'
+                            );
+                        }
+
+                        try {
+                            map.setPaintProperty('route-layer', 'line-gradient', gradientArray);
+                        } catch (error) {
+                            console.error('Error setting line-gradient:', error);
+                        }
+
+                        // Request next animation frame
+                        animationFrameId.current = requestAnimationFrame(animateLine);
                     };
 
-                    // Запускаем анимацию
+                    // Start the animation
                     animateLine();
                 } else {
                     console.error('No route found');
@@ -177,7 +234,75 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
             }
         };
 
-        // Добавляем все маркеры для каждой пары отправления и назначения
+        // Function to display the popup
+        const showPopup = (request, coordinates) => {
+            // Remove existing popup
+            if (popup) {
+                popup.remove();
+                setPopup(null);
+            }
+
+            // Create a container for the popup content
+            const popupNode = document.createElement('div');
+
+            // Define handlers
+            const handleClose = () => {
+                if (popup) {
+                    popup.remove();
+                    ReactDOM.unmountComponentAtNode(popupNode);
+                    setPopup(null);
+                }
+                removeExistingRoute();
+                map.flyTo({center: [0, 0], zoom: 2});
+            };
+
+            const handleDetails = () => {
+                const requestId = selectedType === 'parcel' ? request.idParcel : request.idTrip;
+                console.log('Request object:', request);
+                console.log('Request ID:', requestId);
+                if (!requestId) {
+                    console.error('Request ID is undefined');
+                    return;
+                }
+                onRequestSelect(requestId, selectedType);
+            };
+
+            // Render the React component into the popupNode
+            ReactDOM.render(
+                <PopupContent
+                    request={request}
+                    selectedType={selectedType}
+                    onClose={handleClose}
+                    onDetails={handleDetails}
+                />,
+                popupNode
+            );
+
+            // Create and show the popup
+            const newPopup = new mapboxgl.Popup({closeOnClick: false, closeButton: false})
+                .setLngLat(coordinates[Math.floor(coordinates.length / 2)])
+                .setDOMContent(popupNode)
+                .addTo(map);
+
+            setPopup(newPopup);
+
+            // Ensure React component is unmounted when the popup is closed
+            newPopup.on('close', () => {
+                ReactDOM.unmountComponentAtNode(popupNode);
+                setPopup(null);
+                removeExistingRoute();
+                map.flyTo({center: [0, 0], zoom: 2});
+            });
+        };
+
+        // Handler for marker click
+        const handleMarkerClick = (request, allCoordinates) => {
+            removeExistingRoute();
+            getRoute(allCoordinates);
+            showPopup(request, allCoordinates);
+        };
+
+        // Add markers for each request
         requests.forEach((request) => {
             let startCoordinates, endCoordinates;
 
@@ -195,10 +320,10 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
                     .map(loc => [loc.longitude, loc.latitude])
                 : [];
 
-            // Все координаты маршрута (начальная, промежуточные, конечная)
+            // All coordinates (start, intermediate, end)
             const allCoordinates = [startCoordinates, ...intermediateCoordinates, endCoordinates];
 
-            // Создаем кастомные маркеры для начальных и конечных точек
+            // Function to create a custom marker
             const createCustomMarker = (coordinates, type) => {
                 if (!isValidCoordinates(coordinates)) {
                     console.warn(`Invalid coordinates for ${type}:`, coordinates);
@@ -208,75 +333,45 @@ const MarkerLayer = ({ map, mapLoaded, mapParcels, mapDrivers, selectedType }) =
                 const el = document.createElement('div');
                 el.className = `marker ${type} ${selectedType}`;
 
-                // Создаем и добавляем кастомный маркер на карту
+                // Add click handler to the marker
+                el.addEventListener('click', () => handleMarkerClick(request, allCoordinates));
+
+                // Create and add the marker to the map
                 const marker = new mapboxgl.Marker(el)
                     .setLngLat(coordinates)
-                    .setPopup(
-                        new mapboxgl.Popup({ offset: 25 })
-                            .setHTML(`<h3>${request.departureAddress}</h3><p>${request.departureAddress}</p>`)
-                    )
                     .addTo(map);
 
                 setMarkers(prevMarkers => [...prevMarkers, marker]);
-
-                // Добавляем событие клика для маркера
-                el.addEventListener('click', () => handleClick(coordinates, type, allCoordinates));
             };
 
+            // Create markers for start and end points
             createCustomMarker(startCoordinates, 'start');
             createCustomMarker(endCoordinates, 'end');
 
-            intermediateCoordinates.forEach((coord, index) => {
-                if (isValidCoordinates(coord)) {
-                    createCustomMarker(coord, 'intermediate');
-                } else {
-                    console.warn('Invalid intermediate coordinates:', coord);
-                }
+            // Create markers for intermediate points
+            intermediateCoordinates.forEach((coord) => {
+                createCustomMarker(coord, 'intermediate');
             });
-
-            // Обработчик для построения маршрута, отображения попапа и приближения
-            const handleClick = (coordinates, pointType, allCoordinates) => {
-                // Удаляем предыдущий попап, если он существует
-                if (popup) popup.remove();
-
-                // Создаем новое всплывающее окно с информацией
-                const newPopup = new mapboxgl.Popup({ offset: 25 })
-                    .setLngLat(coordinates)
-                    .setHTML(`
-                        <div>
-                            <strong>${pointType === 'start' ? 'Departure' : 'Arrival'}:</strong><br/>
-                            ${pointType === 'start' ? request.startLocation || 'Not set' : request.endLocation || 'Not set'}
-                            <br/>
-                            <strong>Стоимость:</strong> ${request.cost || 'Not set'} €
-                        </div>
-                    `)
-                    .addTo(map);
-
-                setPopup(newPopup);
-
-                // Строим маршрут при клике на маркер
-                getRoute(allCoordinates);
-            };
         });
 
-        console.log('Markers and popups added successfully.');
-
-        // Очистка при размонтировании
+        // Cleanup on unmount
         return () => {
-            if (map) {
-                if (popup) popup.remove();
-                markers.forEach(marker => marker.remove());
-                setMarkers([]);
-
-                removeExistingRoute();
+            isMounted.current = false; // Mark as unmounted
+            if (popup) {
+                popup.remove();
+                setPopup(null);
             }
+            markers.forEach(marker => marker.remove());
+            setMarkers([]);
+
+            removeExistingRoute();
         };
     }, [map, mapLoaded, mapParcels, mapDrivers, selectedType]);
 
     return null;
 };
 
-// Константы для кастомных иконок маркеров
+// Constants for custom marker icons
 document.documentElement.style.setProperty('--parcel-start-icon', `url(${ICON_URLS.PARCEL_START})`);
 document.documentElement.style.setProperty('--trip-start-icon', `url(${ICON_URLS.TRIP_START})`);
 document.documentElement.style.setProperty('--parcel-end-icon', `url(${ICON_URLS.PARCEL_END})`);

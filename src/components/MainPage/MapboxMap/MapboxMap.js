@@ -4,7 +4,7 @@ import useMapbox from './useMapbox';
 import MarkerLayer from './MarkerLayer';
 import './MapboxMap.css';
 
-const MapboxMap = ({mapParcels, mapDrivers, selectedType}) => {
+const MapboxMap = ({mapParcels, mapDrivers, selectedType, onRequestSelect}) => {
     const mapContainerRef = useRef(null);
     const {map, mapLoaded} = useMapbox(mapContainerRef, [37.618423, 55.751244], 3);
 
@@ -16,6 +16,7 @@ const MapboxMap = ({mapParcels, mapDrivers, selectedType}) => {
                 mapParcels={mapParcels}
                 mapDrivers={mapDrivers}
                 selectedType={selectedType}
+                onRequestSelect={onRequestSelect}
             />
         </div>
     );

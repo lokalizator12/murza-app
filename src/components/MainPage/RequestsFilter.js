@@ -1,23 +1,32 @@
 // RequestsFilter.js
 import React from 'react';
-import { Box, Button } from '@mui/material';
+import {ToggleButton, ToggleButtonGroup} from '@mui/material';
+import {DirectionsCar, LocalShipping} from '@mui/icons-material';
 
-const RequestsFilter = ({ currentFilter, onFilterChange }) => {
+const RequestsFilter = ({currentFilter, onFilterChange}) => {
+    const handleFilterChange = (event, newFilter) => {
+        if (newFilter !== null) {
+            onFilterChange(newFilter);
+        }
+    };
+
     return (
-        <Box sx={{ display: 'flex', gap: 1, padding: 1 }}>
-            <Button
-                variant={currentFilter === 'parcel' ? 'contained' : 'outlined'}
-                onClick={() => onFilterChange('parcel')}
-            >
-                Посылки
-            </Button>
-            <Button
-                variant={currentFilter === 'trip' ? 'contained' : 'outlined'}
-                onClick={() => onFilterChange('trip')}
-            >
-                Водители
-            </Button>
-        </Box>
+        <ToggleButtonGroup
+            value={currentFilter}
+            exclusive
+            onChange={handleFilterChange}
+            fullWidth
+            sx={{mb: 2}}
+        >
+            <ToggleButton value="parcel">
+                <LocalShipping sx={{mr: 1}}/>
+                Parcels
+            </ToggleButton>
+            <ToggleButton value="trip">
+                <DirectionsCar sx={{mr: 1}}/>
+                Drivers
+            </ToggleButton>
+        </ToggleButtonGroup>
     );
 };
 

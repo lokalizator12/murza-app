@@ -1,7 +1,6 @@
 import React, {Fragment} from 'react'
 
 import {Helmet} from 'react-helmet'
-import Hero11 from '../../components/hero11'
 import Features24 from '../../components/features24'
 import CTA26 from '../../components/cta26'
 import CTA261 from '../../components/cta261'
@@ -13,8 +12,6 @@ import Contact11 from '../../components/contact11'
 import Footer15 from '../../components/footer15'
 import './home.css'
 import Hero17 from "../../components/hero17";
-import {useNavigate} from "react-router-dom";
-import {useAuth} from "../../context/AuthContext";
 
 const Home = (props) => {
 

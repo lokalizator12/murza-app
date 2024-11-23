@@ -79,8 +79,7 @@ const TripStep2 = ({formData, handleChange, setIsNextEnabled}) => {
         if (!isNaN(numericValue) && numericValue >= 0) {
             handleChange(field, numericValue);
 
-            // Calculate volume if all three dimensions are provided
-            const {maxLength = 0, maxWidth = 0, maxHeight = 0} = formData;
+
             const updatedDimensions = {
                 ...formData,
                 [field]: numericValue
