@@ -1,39 +1,39 @@
 import React from "react";
-import { Dialog, Box, Typography, Button, Grid, Divider, Stack } from "@mui/material";
+import {Box, Button, Dialog, Divider, Grid, Stack, Typography} from "@mui/material";
 
-const ProfileDetailsDialog = ({ open, onClose, selectedItem, type }) => {
+const ProfileDetailsDialog = ({open, onClose, selectedItem, type}) => {
     if (!selectedItem) return null;
 
     const isTrip = type === "trip";
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <Box sx={{ padding: 3 }}>
+            <Box sx={{padding: 3}}>
                 <Typography
                     variant="h5"
                     gutterBottom
-                    sx={{ textAlign: "center", fontWeight: "bold" }}
+                    sx={{textAlign: "center", fontWeight: "bold"}}
                 >
                     {isTrip ? "Trip Details" : "Parcel Details"}
                 </Typography>
-                <Divider sx={{ mb: 3 }} />
+                <Divider sx={{mb: 3}}/>
 
                 {/* Общие поля */}
                 <Grid container spacing={2}>
                     <Grid item xs={6}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                        <Typography variant="body1" sx={{fontWeight: "bold"}}>
                             From:
                         </Typography>
                         <Typography>{selectedItem.origin}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                        <Typography variant="body1" sx={{fontWeight: "bold"}}>
                             To:
                         </Typography>
                         <Typography>{selectedItem.destination}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                        <Typography variant="body1" sx={{fontWeight: "bold"}}>
                             Departure Date:
                         </Typography>
                         <Typography>
@@ -41,7 +41,7 @@ const ProfileDetailsDialog = ({ open, onClose, selectedItem, type }) => {
                         </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                        <Typography variant="body1" sx={{fontWeight: "bold"}}>
                             Arrival Date:
                         </Typography>
                         <Typography>
@@ -52,16 +52,16 @@ const ProfileDetailsDialog = ({ open, onClose, selectedItem, type }) => {
 
                 {/* Динамические поля для Trip */}
                 {isTrip && (
-                    <Grid container spacing={2} sx={{ mt: 2 }}>
+                    <Grid container spacing={2} sx={{mt: 2}}>
 
                     </Grid>
                 )}
 
                 {/* Динамические поля для Parcel */}
                 {!isTrip && (
-                    <Grid container spacing={2} sx={{ mt: 2 }}>
+                    <Grid container spacing={2} sx={{mt: 2}}>
                         <Grid item xs={12}>
-                            <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                            <Typography variant="body1" sx={{fontWeight: "bold"}}>
                                 Title:
                             </Typography>
                             <Typography>{selectedItem.title || "N/A"}</Typography>
@@ -71,8 +71,8 @@ const ProfileDetailsDialog = ({ open, onClose, selectedItem, type }) => {
                 )}
 
                 {/* Статус */}
-                <Box sx={{ mt: 2 }}>
-                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                <Box sx={{mt: 2}}>
+                    <Typography variant="body1" sx={{fontWeight: "bold"}}>
                         Status:
                     </Typography>
                     <Typography
@@ -85,7 +85,7 @@ const ProfileDetailsDialog = ({ open, onClose, selectedItem, type }) => {
                     </Typography>
                 </Box>
 
-                <Divider sx={{ my: 3 }} />
+                <Divider sx={{my: 3}}/>
 
                 <Stack direction="row" spacing={2} justifyContent="center">
                     <Button
@@ -95,7 +95,7 @@ const ProfileDetailsDialog = ({ open, onClose, selectedItem, type }) => {
                         sx={{
                             borderRadius: "20px",
                             background: "linear-gradient(to right, #1976d2, #2196f3)",
-                            "&:hover": { background: "linear-gradient(to right, #1565c0, #1e88e5)" },
+                            "&:hover": {background: "linear-gradient(to right, #1565c0, #1e88e5)"},
                         }}
                     >
                         Close

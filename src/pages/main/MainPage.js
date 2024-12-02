@@ -1,15 +1,15 @@
 // MainPage.js
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import MapboxMap from '../../components/MainPage/MapboxMap/MapboxMap';
 import RequestsFilter from '../../components/MainPage/RequestsFilter';
 import RequestsList from '../../components/MainPage/RequestsList';
 import RequestDetailsModal from '../../components/MainPage/RequestDetailsModal';
-import { Box, Button, Divider, IconButton, Pagination, Tooltip } from '@mui/material';
+import {Box, Button, Divider, IconButton, Pagination, Tooltip} from '@mui/material';
 import axios from 'axios';
 import Dialog from "@mui/material/Dialog";
 import RequestForm from "../test-wizard/MainFormRequest";
 import RequestsFilterPanel from "../../components/MainPage/RequestsFilterPanel";
-import { Add, FilterList } from "@mui/icons-material";
+import {Add, FilterList} from "@mui/icons-material";
 
 const MainPage = () => {
     const [parcels, setParcels] = useState([]);
@@ -90,7 +90,7 @@ const MainPage = () => {
 
     const fetchParcelRequests = async (page = 0, filters = {}) => {
         try {
-            const params = new URLSearchParams({ page, size: 7 });
+            const params = new URLSearchParams({page, size: 7});
             Object.entries(filters).forEach(([key, value]) => {
                 if (value !== null && value !== undefined && value !== '') {
                     params.append(key, value);
@@ -106,7 +106,7 @@ const MainPage = () => {
 
     const fetchTripRequests = async (page = 0, filters = {}) => {
         try {
-            const params = new URLSearchParams({ page, size: 7 });
+            const params = new URLSearchParams({page, size: 7});
             Object.entries(filters).forEach(([key, value]) => {
                 if (value !== null && value !== undefined && value !== '') {
                     params.append(key, value);
@@ -173,34 +173,34 @@ const MainPage = () => {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+        <div style={{display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden'}}>
             <Dialog
                 open={showRequestDialog}
                 onClose={handleCloseRequestDialog}
                 fullWidth
             >
-                <RequestForm onClose={handleCloseRequestDialog} onRefreshData={refreshRequestsData} />
+                <RequestForm onClose={handleCloseRequestDialog} onRefreshData={refreshRequestsData}/>
             </Dialog>
 
-            <div style={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
-                <div style={{ width: 550, padding: 15, borderRight: '1px solid #ddd', overflowY: 'auto' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+            <div style={{display: 'flex', flexGrow: 1, overflow: 'hidden'}}>
+                <div style={{width: 550, padding: 15, borderRight: '1px solid #ddd', overflowY: 'auto'}}>
+                    <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2}}>
                         <Button
                             variant="contained"
                             color="primary"
-                            startIcon={<Add />}
+                            startIcon={<Add/>}
                             onClick={handleOpenRequestDialog}
                         >
                             Create Request
                         </Button>
                         <Tooltip title={isFilterPanelOpen ? 'Hide Filters' : 'Show Filters'}>
                             <IconButton onClick={toggleFilterPanel}>
-                                <FilterList />
+                                <FilterList/>
                             </IconButton>
                         </Tooltip>
                     </Box>
-                    <Divider sx={{ my: 2 }} />
-                    <RequestsFilter currentFilter={currentFilter} onFilterChange={setCurrentFilter} />
+                    <Divider sx={{my: 2}}/>
+                    <RequestsFilter currentFilter={currentFilter} onFilterChange={setCurrentFilter}/>
                     {isFilterPanelOpen && (
                         <RequestsFilterPanel
                             onApplyFilters={handleApplyFilters}
@@ -213,7 +213,7 @@ const MainPage = () => {
                         currentFilter={currentFilter}
                         onSelectRequest={(id) => handleRequestSelect(id, currentFilter)}
                     />
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <Box sx={{display: 'flex', justifyContent: 'center', mt: 2}}>
                         <Pagination
                             count={currentFilter === 'parcel' ? totalPagesParcel : totalPagesTrip}
                             page={currentFilter === 'parcel' ? currentPageParcel + 1 : currentPageTrip + 1}
@@ -226,7 +226,7 @@ const MainPage = () => {
                         />
                     </Box>
                 </div>
-                <div style={{ flexGrow: 1, overflow: 'hidden' }}>
+                <div style={{flexGrow: 1, overflow: 'hidden'}}>
                     <MapboxMap
                         mapParcels={mapParcels}
                         mapDrivers={mapDrivers}

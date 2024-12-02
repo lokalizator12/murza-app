@@ -1,0 +1,49 @@
+.message-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%; /* Ограничьте максимальную ширину */
+    margin: 0 auto; /* Центрирование */
+}
+
+.message-item {
+    max-width: 100%; /* Ограничение ширины сообщений */
+    word-wrap: break-word; /* Перенос длинных слов */
+    overflow-wrap: break-word;
+}
+
+
+/* Сообщения отправителя */
+.message-item.sent {
+    align-self: flex-end;
+    background-color: #e0ffe5;
+}
+
+/* Сообщения собеседника */
+.message-item.received {
+    align-self: flex-start;
+    background-color: #f0f0f0;
+}
+
+/* Добавляем мета-информацию (время и статус) */
+.message-meta {
+    display: none; /* Скрыто по умолчанию */
+    font-size: 0.8em;
+    color: #888;
+}
+
+/* Показываем время при наведении на сообщение */
+.message-item:hover .message-meta {
+    display: block;
+    position: relative;
+    text-align: right; /* По умолчанию для ваших сообщений */
+    margin-top: 5px;
+}
+
+.message-item.received:hover .message-meta {
+    text-align: left; /* Для собеседника выравнивание слева */
+}
+
+.message-status {
+    color: #888;
+}

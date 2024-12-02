@@ -10,6 +10,17 @@ const RequestDetailsModal = ({open, onClose, request, requestType}) => {
     const navigate = useNavigate();
     const isParcel = requestType === 'parcel';
 
+    const handleContact = () => {
+        const interlocutorId = isParcel ? request.sender.id : request.driver.id;
+        if (interlocutorId) {
+            onClose();
+            setTimeout(() => {
+                navigate(`/chat/${interlocutorId}`);
+            }, 100);
+        } else {
+            console.error('User ID is not available for redirection.');
+        }
+    };
     const handleProfileRedirect = () => {
         if (isParcel && request?.sender?.id) {
             onClose();
@@ -105,7 +116,7 @@ const RequestDetailsModal = ({open, onClose, request, requestType}) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button variant="contained" color="primary" startIcon={<ContactMail/>}>
+                <Button variant="contained" color="primary" startIcon={<ContactMail/>} onClick={handleContact}>
                     Contact
                 </Button>
                 <Button

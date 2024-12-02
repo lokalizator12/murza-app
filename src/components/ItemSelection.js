@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {Box, Button, Typography} from '@mui/material';
 import axios from '../axiosConfig';
 
-const ItemSelection = ({ selectedItems = [], setSelectedItems, label }) => {
+const ItemSelection = ({selectedItems = [], setSelectedItems, label}) => {
     const [items, setItems] = useState([]);
 
     useEffect(() => {
@@ -34,9 +34,9 @@ const ItemSelection = ({ selectedItems = [], setSelectedItems, label }) => {
     }, [selectedItems]);
 
     return (
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h6" gutterBottom>{label}</Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
+            <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center'}}>
                 {items.map((item) => (
                     <Button
                         key={item.id}

@@ -1,12 +1,12 @@
 // ReadOnlyImageCarousel.js
-import React, { useState } from 'react';
-import { Box } from '@mui/material';
+import React, {useState} from 'react';
+import {Box} from '@mui/material';
 import Slider from 'react-slick';
 import Lightbox from 'yet-another-react-lightbox';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-const ReadOnlyImageCarousel = ({ images }) => {
+const ReadOnlyImageCarousel = ({images}) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -29,8 +29,8 @@ const ReadOnlyImageCarousel = ({ images }) => {
             {/* Slider for Images */}
             <Slider {...settings}>
                 {images.map((imageSrc, index) => (
-                    <Box key={index} onClick={() => handleImageClick(index)} sx={{ cursor: 'pointer', p: 1 }}>
-                        <img src={imageSrc} alt={`Image ${index}`} style={{ width: '100%', borderRadius: 4 }} />
+                    <Box key={index} onClick={() => handleImageClick(index)} sx={{cursor: 'pointer', p: 1}}>
+                        <img src={imageSrc} alt={`Image ${index}`} style={{width: '100%', borderRadius: 4}}/>
                     </Box>
                 ))}
             </Slider>
@@ -40,7 +40,7 @@ const ReadOnlyImageCarousel = ({ images }) => {
                 <Lightbox
                     open={isOpen}
                     close={() => setIsOpen(false)}
-                    slides={images.map(src => ({ src }))}
+                    slides={images.map(src => ({src}))}
                     currentIndex={currentIndex}
                     onCurrentIndexChange={setCurrentIndex}
                 />

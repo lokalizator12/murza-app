@@ -15,7 +15,7 @@ export default function SignIn1() {
     const [showPassword, setShowPassword] = React.useState(false);
     const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const {login} = useAuth();
 
     const validateInputs = useCallback(() => {
         const email = document.getElementById('thq-sign-in-2-email').value;

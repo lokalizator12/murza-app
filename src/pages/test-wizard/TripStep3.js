@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, TextField } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {Box, TextField, Typography} from '@mui/material';
 
-const TripStep3 = ({ formData, handleChange, setIsNextEnabled, onSubmit }) => {
+const TripStep3 = ({formData, handleChange, setIsNextEnabled, onSubmit}) => {
     const [validationErrors, setValidationErrors] = useState({});
     const [touchedFields, setTouchedFields] = useState({});
 
     const validateForm = () => {
         const errors = {};
-        const { title, description, departureDate, destinationDate } = formData;
+        const {title, description, departureDate, destinationDate} = formData;
 
         if (!title && touchedFields.title) errors.title = "Title is required";
         if (!description && touchedFields.description) errors.description = "Description is required";
@@ -27,11 +27,11 @@ const TripStep3 = ({ formData, handleChange, setIsNextEnabled, onSubmit }) => {
     }, [formData, touchedFields, setIsNextEnabled]);
 
     const handleBlur = (field) => {
-        setTouchedFields((prev) => ({ ...prev, [field]: true }));
+        setTouchedFields((prev) => ({...prev, [field]: true}));
     };
 
     return (
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
                 Step 3: Details and Completion
             </Typography>
@@ -68,7 +68,7 @@ const TripStep3 = ({ formData, handleChange, setIsNextEnabled, onSubmit }) => {
                 value={formData.departureDate || ''}
                 onChange={(e) => handleChange('departureDate', e.target.value)}
                 onBlur={() => handleBlur('departureDate')}
-                InputLabelProps={{ shrink: true }}
+                InputLabelProps={{shrink: true}}
                 error={!!validationErrors.departureDate}
                 helperText={validationErrors.departureDate}
             />
@@ -81,7 +81,7 @@ const TripStep3 = ({ formData, handleChange, setIsNextEnabled, onSubmit }) => {
                 value={formData.destinationDate || ''}
                 onChange={(e) => handleChange('destinationDate', e.target.value)}
                 onBlur={() => handleBlur('destinationDate')}
-                InputLabelProps={{ shrink: true }}
+                InputLabelProps={{shrink: true}}
                 error={!!validationErrors.destinationDate}
                 helperText={validationErrors.destinationDate}
             />

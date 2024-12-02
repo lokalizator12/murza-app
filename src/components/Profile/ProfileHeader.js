@@ -19,6 +19,7 @@ const ProfileHeader = ({
                            onEditClick,
                            onSubscribe,
                            onUnsubscribe,
+                           message,
                        }) => {
     // Format the registration date
     const registrationDate = profile.dateRegistered
@@ -91,6 +92,7 @@ const ProfileHeader = ({
                             <Button
                                 variant="outlined"
                                 color="secondary"
+                                onClick={message}
                                 sx={{
                                     borderRadius: "20px",
                                     border: "2px solid #FF5722",

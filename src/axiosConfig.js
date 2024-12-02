@@ -40,7 +40,7 @@ axios.interceptors.response.use(
         const originalRequest = error.config;
 
         if (error.response) {
-            const { status } = error.response;
+            const {status} = error.response;
 
             if (status === 401 && !originalRequest._retry) {
                 originalRequest._retry = true;
@@ -49,10 +49,10 @@ axios.interceptors.response.use(
                     isRefreshing = true;
 
                     try {
-                        const refreshResponse = await axios.post('/auth/refresh', {}, { withCredentials: true });
+                        const refreshResponse = await axios.post('/auth/refresh', {}, {withCredentials: true});
                         const newAccessToken = refreshResponse.data.token;
 
-                        Cookies.set('token', newAccessToken, { expires: 1, secure: true }); // Set new token (1-day expiry)
+                        Cookies.set('token', newAccessToken, {expires: 1, secure: true}); // Set new token (1-day expiry)
                         axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
                         processQueue(null, newAccessToken);
                         isRefreshing = false;
@@ -74,7 +74,7 @@ axios.interceptors.response.use(
                 }
 
                 return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
+                    failedQueue.push({resolve, reject});
                 })
                     .then((token) => {
                         originalRequest.headers['Authorization'] = `Bearer ${token}`;

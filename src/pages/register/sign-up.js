@@ -29,7 +29,7 @@ const SignUp = (props) => {
         }),
         onSubmit: async (values) => {
             try {
-               await authService.register(values);
+                await authService.register(values);
                 setSuccessMessage('User registered successfully');
                 setErrorMessage('');
                 navigate('/success');

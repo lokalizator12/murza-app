@@ -1,9 +1,9 @@
 // ParcelStep2.js
-import React, { useEffect, useState } from 'react';
-import { Box, Checkbox, FormControlLabel, TextField, Typography } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {Box, Checkbox, FormControlLabel, TextField, Typography} from '@mui/material';
 import ImageCarousel from './../../components/ImageCarousel';
 
-const ParcelStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
+const ParcelStep2 = ({formData, handleChange, setIsNextEnabled}) => {
     const [images, setImages] = useState([]);
 
     const handlePositiveNumberChange = (field, value) => {
@@ -43,7 +43,7 @@ const ParcelStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
     }, [images, formData, handleChange]);
 
     return (
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
                 Step 2: Parcel Information
             </Typography>
@@ -56,7 +56,7 @@ const ParcelStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
                 value={formData.weight || ''}
                 onChange={(e) => handlePositiveNumberChange('weight', e.target.value)}
             />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 2}}>
                 <TextField
                     label="Length"
                     type="number"
@@ -90,7 +90,7 @@ const ParcelStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
                 InputProps={{
                     readOnly: true,
                 }}
-                sx={{ mt: 2 }}
+                sx={{mt: 2}}
             />
 
             <FormControlLabel
@@ -104,7 +104,7 @@ const ParcelStep2 = ({ formData, handleChange, setIsNextEnabled }) => {
             />
 
             {/* Image Carousel Component */}
-            <ImageCarousel images={images} setImages={setImages} maxImages={10} />
+            <ImageCarousel images={images} setImages={setImages} maxImages={10}/>
         </Box>
     );
 };

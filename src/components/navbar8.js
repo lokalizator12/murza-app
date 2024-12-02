@@ -28,6 +28,7 @@ const Navbar8 = (props) => {
                   <span className="navbar8-text19 thq-body-small thq-link">
                     Login
                   </span>
+                                    <Link to="/inbox">Inbox</Link>
                                 </Fragment>
                             )}
                         </a>

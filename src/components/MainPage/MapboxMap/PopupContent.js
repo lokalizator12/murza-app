@@ -1,8 +1,8 @@
 // PopupContent.js
 import React from 'react';
-import { Button, Typography, Box, Avatar } from '@mui/material';
+import {Avatar, Box, Button, Typography} from '@mui/material';
 
-const PopupContent = ({ request, selectedType, onClose, onDetails }) => {
+const PopupContent = ({request, selectedType, onClose, onDetails}) => {
     const isParcel = selectedType === 'parcel';
 
     // Determine the photo URL
@@ -11,19 +11,19 @@ const PopupContent = ({ request, selectedType, onClose, onDetails }) => {
         : (request.driverPhoto || '/default-driver.png');
 
     return (
-        <Box sx={{ width: 200, padding: 1, fontFamily: 'Arial', position: 'relative' }}>
+        <Box sx={{width: 200, padding: 1, fontFamily: 'Arial', position: 'relative'}}>
             <Button
                 onClick={onClose}
-                sx={{ position: 'absolute', top: 5, right: 5, minWidth: 'auto', padding: 0, fontSize: '1.2rem' }}
+                sx={{position: 'absolute', top: 5, right: 5, minWidth: 'auto', padding: 0, fontSize: '1.2rem'}}
             >
                 ×
             </Button>
             <Avatar
                 src={photoUrl}
                 alt="Request Avatar"
-                sx={{ width: 60, height: 60, mx: 'auto', mb: 1 }}
+                sx={{width: 60, height: 60, mx: 'auto', mb: 1}}
             />
-            <Typography variant="subtitle1" align="center" sx={{ fontWeight: 'bold' }}>
+            <Typography variant="subtitle1" align="center" sx={{fontWeight: 'bold'}}>
                 {request.title || (isParcel ? 'Parcel' : 'Trip')}
             </Typography>
             <Typography variant="body2">
@@ -38,7 +38,7 @@ const PopupContent = ({ request, selectedType, onClose, onDetails }) => {
                 size="small"
                 fullWidth
                 onClick={onDetails}
-                sx={{ mt: 1 }}
+                sx={{mt: 1}}
             >
                 Details
             </Button>

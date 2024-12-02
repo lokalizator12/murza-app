@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import '../pages/Main-Form/CreateRouteForm.css'
 
-const ParcelRequestPageTwo = ({ formData, setFormData, nextStep, prevStep }) => {
+const ParcelRequestPageTwo = ({formData, setFormData, nextStep, prevStep}) => {
     const [photos, setPhotos] = useState(formData.photos || []);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
+        const {name, value} = e.target;
+        setFormData((prevData) => ({...prevData, [name]: value}));
     };
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
         setPhotos(files);
-        setFormData((prevData) => ({ ...prevData, photos: files }));
+        setFormData((prevData) => ({...prevData, photos: files}));
     };
 
     return (
@@ -25,7 +25,7 @@ const ParcelRequestPageTwo = ({ formData, setFormData, nextStep, prevStep }) => 
                     type="checkbox"
                     name="declaration"
                     checked={formData.declaration || false}
-                    onChange={(e) => setFormData((prevData) => ({ ...prevData, declaration: e.target.checked }))}
+                    onChange={(e) => setFormData((prevData) => ({...prevData, declaration: e.target.checked}))}
                 />
             </label>
 
@@ -98,7 +98,7 @@ const ParcelRequestPageTwo = ({ formData, setFormData, nextStep, prevStep }) => 
                         key={index}
                         src={URL.createObjectURL(photo)}
                         alt={`Photo ${index + 1}`}
-                        style={{ width: '100px', height: '100px', margin: '5px', borderRadius: '8px' }}
+                        style={{width: '100px', height: '100px', margin: '5px', borderRadius: '8px'}}
                     />
                 ))}
             </div>

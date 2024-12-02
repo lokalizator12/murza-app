@@ -54,10 +54,12 @@ const RequestsList = ({requests, currentFilter, onSelectRequest}) => {
                                                 To: {request.deliveryAddress}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Pickup Date: {request.pickupDate ? new Date(request.pickupDate).toLocaleDateString() : 'N/A'}
+                                                Pickup
+                                                Date: {request.pickupDate ? new Date(request.pickupDate).toLocaleDateString() : 'N/A'}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Delivery Date: {request.deliveryDate ? new Date(request.deliveryDate).toLocaleDateString() : 'N/A'}
+                                                Delivery
+                                                Date: {request.deliveryDate ? new Date(request.deliveryDate).toLocaleDateString() : 'N/A'}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
                                                 Size: {request.size || 'N/A'} cm | Price: {request.price || 'N/A'} €

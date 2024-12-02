@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import axios from "../../axiosConfig";
 import ProfileHeader from "../../components/Profile/ProfileHeader";
 import ProfileTabs from "../../components/Profile/ProfileTabs";
@@ -15,6 +15,7 @@ import SubscriptionsPanel from "../../components/Profile/panels/SubscriptionsPan
 
 const ProfilePage = () => {
     const {userId} = useParams();
+    const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [isOwnProfile, setIsOwnProfile] = useState(false);
     const [isFollowing, setIsFollowing] = useState(false);
@@ -102,6 +103,17 @@ const ProfilePage = () => {
         }
     };
 
+    const handleMessaging = () => {
+        if (userId) {
+            setTimeout(() => {
+                navigate(`/chat/${userId}`);
+            }, 100);
+        } else {
+            console.error('User ID is not available for redirection.');
+        }
+    };
+
+
     const handleSaveChanges = async (updatedProfile, updatedPhoto) => {
         try {
             const formData = new FormData();
@@ -183,6 +195,7 @@ const ProfilePage = () => {
                                 onEditClick={() => setActiveTab(1)}
                                 onSubscribe={handleSubscribe}
                                 onUnsubscribe={handleUnsubscribe}
+                                message={handleMessaging}
                             />
                         </Paper>
                     </Grid>
@@ -235,7 +248,7 @@ const ProfilePage = () => {
                                 }}
                             />
                         )}
-                        {activeTab === 3 && isOwnProfile && <SubscriptionsPanel />}
+                        {activeTab === 3 && isOwnProfile && <SubscriptionsPanel/>}
                         {modalType === "active" && (
                             <RequestDetailsModal
                                 open={modalOpen}

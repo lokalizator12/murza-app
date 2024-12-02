@@ -11,9 +11,9 @@ const WizardForm = ({steps, initialData, onSubmit}) => {
             setActiveStep((prevStep) => prevStep + 1);
         }
     };
-/*    React.useEffect(() => {
-        setIsNextEnabled(true);
-    }, []);*/
+    /*    React.useEffect(() => {
+            setIsNextEnabled(true);
+        }, []);*/
     const handleBack = () => {
         setActiveStep((prevStep) => prevStep - 1);
     };

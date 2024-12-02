@@ -15,6 +15,9 @@ import RequestForm from "./pages/test-wizard/MainFormRequest";
 import ProfilePage from "./pages/profile/ProfilePage";
 import {AuthProvider} from "./context/AuthContext";
 import Navbar8 from "./components/navbar8";
+import ChatPage from "./components/chat/ChatPage";
+import PrivateRoute from "./services/PrivateRoute";
+import ConversationList from "./components/chat/Conversations/ConversationList";
 
 function AppContent() {
     const location = useLocation(); // Получаем текущий путь
@@ -36,6 +39,14 @@ function AppContent() {
                 <Route path="/register" element={<SignUp/>}/>
                 <Route path="/success" element={<Success/>}/>
                 <Route path="/about" element={<About/>}/>
+                <Route
+                    path="/chat/:userId"
+                    element={
+                        <PrivateRoute>
+                            <ChatPage/>
+                        </PrivateRoute>
+                    }
+                />
                 <Route path="/legal" element={<Legal/>}/>
                 <Route
                     path="/profile/:userId"
@@ -43,6 +54,14 @@ function AppContent() {
 
                         <ProfilePage/>
 
+                    }
+                />
+                <Route
+                    path="/inbox"
+                    element={
+                        <PrivateRoute>
+                            <ConversationList/>
+                        </PrivateRoute>
                     }
                 />
                 <Route path="*" element={<NotFound/>}/>

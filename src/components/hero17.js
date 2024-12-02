@@ -11,7 +11,7 @@ const Hero17 = (props) => {
 
 
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
+    const {isAuthenticated} = useAuth();
 
     const handleFindDriverClick = () => {
         if (isAuthenticated) {

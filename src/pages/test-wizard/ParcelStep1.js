@@ -1,10 +1,10 @@
 // ParcelStep1.js
-import React, { useEffect, useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {Box, Button, Typography} from '@mui/material';
 import MapModal from './../../components/MapModal';
 import RouteMap from './../../components/RouteMap';
 
-const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
+const ParcelStep1 = ({formData, handleChange, setIsNextEnabled}) => {
     const [isPickupModalOpen, setPickupModalOpen] = useState(false);
     const [isDestinationModalOpen, setDestinationModalOpen] = useState(false);
     const [pickupAddress, setPickupAddress] = useState(formData.pickupAddress || '');
@@ -23,7 +23,7 @@ const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
     const handleCloseDestinationModal = () => setDestinationModalOpen(false);
 
     const updatePickupAddressFromMap = (location) => {
-        const { address, coordinates } = location;
+        const {address, coordinates} = location;
         setPickupAddress(address);
         setPickupCoordinates(coordinates);
         handleChange('pickupAddress', address);
@@ -33,7 +33,7 @@ const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
     };
 
     const updateDestinationAddressFromMap = (location) => {
-        const { address, coordinates } = location;
+        const {address, coordinates} = location;
         setDestinationAddress(address);
         setDestinationCoordinates(coordinates);
         handleChange('deliveryAddress', address);
@@ -43,31 +43,31 @@ const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
     };
 
     return (
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
                 Step 1: Location and type delivery
             </Typography>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
                 <input
                     type="text"
                     value={pickupAddress}
                     readOnly
                     placeholder="Adres pickup"
-                    style={{ flex: 1, padding: '10px', fontSize: '16px' }}
+                    style={{flex: 1, padding: '10px', fontSize: '16px'}}
                 />
                 <Button variant="contained" onClick={handleOpenPickupModal}>
                     Set
                 </Button>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                 <input
                     type="text"
                     value={destinationAddress}
                     readOnly
                     placeholder="Adres destination"
-                    style={{ flex: 1, padding: '10px', fontSize: '16px' }}
+                    style={{flex: 1, padding: '10px', fontSize: '16px'}}
                 />
                 <Button variant="contained" onClick={handleOpenDestinationModal}>
                     Set
@@ -85,7 +85,7 @@ const ParcelStep1 = ({ formData, handleChange, setIsNextEnabled }) => {
                 setAddress={updateDestinationAddressFromMap}
             />
 
-            <RouteMap pickupCoordinates={pickupCoordinates} destinationCoordinates={destinationCoordinates} />
+            <RouteMap pickupCoordinates={pickupCoordinates} destinationCoordinates={destinationCoordinates}/>
         </Box>
     );
 };

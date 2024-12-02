@@ -7,7 +7,7 @@ const ProfileTabs = ({activeTab, onTabChange, isOwnProfile}) => {
             <Tab label="Profile"/>
             {isOwnProfile && <Tab label="Edit Profile"/>}
             {isOwnProfile && <Tab label="Settings"/>}
-            {isOwnProfile && <Tab label="Subscriptions" />}
+            {isOwnProfile && <Tab label="Subscriptions"/>}
         </Tabs>
     );
 };
