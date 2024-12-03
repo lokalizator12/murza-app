@@ -20,54 +20,69 @@ export const AuthProvider = ({children}) => {
 
     const logout = async () => {
         try {
-            await updateLastSeen(); // Устанавливаем время последнего входа
+            handleBeforeUnload() // Устанавливаем время последнего входа
             await axios.post('/auth/logout');
             Cookies.remove('token');
             setIsAuthenticated(false);
             setUser(null);
-            disconnectFromPresenceWebSocket();
+            await disconnectFromPresenceWebSocket();
             window.location.href = '/';
         } catch (error) {
             console.error('Logout failed:', error);
         }
     };
-
+    const handleBeforeUnload = () => {
+        if (stompClient.current) {
+            stompClient.current.publish({
+                destination: '/app/presence/offline',
+                body: '',
+            });
+        }
+    };
     const connectToPresenceWebSocket = () => {
         const token = Cookies.get('token');
         const socket = new SockJS(`http://localhost:8080/ws/chat?token=${token}`);
         stompClient.current = new Client({
             webSocketFactory: () => socket,
             reconnectDelay: 5000,
-            heartbeatIncoming: 4000,
-            heartbeatOutgoing: 4000,
             debug: (str) => {
                 console.log('STOMP debug:', str);
             },
         });
 
         stompClient.current.onConnect = () => {
-            console.log('Connected to Presence WebSocket');
+            console.log('Connected to Presence WebSocket111');
             stompClient.current.publish({
                 destination: '/app/presence/online',
                 body: '',
+            }, (error) => {
+                console.error('Failed to publish online presence:', error);
             });
         };
 
         stompClient.current.onDisconnect = () => {
             console.log('Disconnected from Presence WebSocket');
-            updateLastSeen(); // Устанавливаем время последнего входа при отключении WebSocket
+            stompClient.current.publish({
+                destination: '/app/presence/offline',
+                body: '',
+            });
         };
 
         stompClient.current.activate();
     };
 
-    const disconnectFromPresenceWebSocket = () => {
+
+    const disconnectFromPresenceWebSocket = async () => {
         if (stompClient.current) {
+            stompClient.current.publish({
+                destination: '/app/presence/offline',
+                body: '',
+            });
             stompClient.current.deactivate();
         }
     };
 
-    const updateLastSeen = async () => {
+   /* const updateLastSeen = async () => {
         try {
             await axios.post('v1/user/updateLastSeen', null, {
                 headers: {'Content-Type': 'application/json'},
@@ -76,7 +91,7 @@ export const AuthProvider = ({children}) => {
         } catch (error) {
             console.error('Failed to update last seen:', error);
         }
-    };
+    };*/
 
     useEffect(() => {
         const token = Cookies.get('token');
@@ -96,7 +111,12 @@ export const AuthProvider = ({children}) => {
         }
 
         const handleBeforeUnload = () => {
-            updateLastSeen(); // Устанавливаем время последнего входа при закрытии страницы
+            if (stompClient.current) {
+                stompClient.current.publish({
+                    destination: '/app/presence/offline',
+                    body: '',
+                });
+            }
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);

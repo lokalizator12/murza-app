@@ -1,25 +1,13 @@
-import React, {useEffect, useRef} from 'react';
+// MessageList.js
+import React, { useEffect, useRef } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import './MessageList.css';
 
 function parseDate(timestamp) {
-    if (Array.isArray(timestamp)) {
-        const [year, month, day, hour, minute, second, nanosecond] = timestamp;
-        return new Date(
-            year,
-            month - 1,
-            day,
-            hour,
-            minute,
-            second,
-            Math.floor(nanosecond / 1e6)
-        );
-    } else {
-        return new Date(timestamp);
-    }
+    return new Date(timestamp);
 }
 
-const MessageList = ({messages, userId, loadMoreMessages, hasMore}) => {
+const MessageList = ({ messages, userId, loadMoreMessages, hasMore }) => {
     const scrollableDivRef = useRef(null);
 
     useEffect(() => {
@@ -39,7 +27,7 @@ const MessageList = ({messages, userId, loadMoreMessages, hasMore}) => {
             id="scrollableDiv"
             className="message-list"
             ref={scrollableDivRef}
-            style={{overflow: 'auto', display: 'flex', flexDirection: 'column'}}
+            style={{ overflow: 'auto', display: 'flex', flexDirection: 'column' }}
         >
             <InfiniteScroll
                 dataLength={sortedMessages.length}
@@ -53,16 +41,16 @@ const MessageList = ({messages, userId, loadMoreMessages, hasMore}) => {
                     <div
                         key={msg.id}
                         className={`message-item ${
-                            Number(msg.sender.id) === Number(userId) ? 'sent' : 'received'
+                            Number(msg.senderId) === Number(userId) ? 'sent' : 'received'
                         }`}
                     >
                         <p>{msg.content}</p>
                         <div className="message-meta">
                             <span>{parseDate(msg.timestamp).toLocaleString()}</span>
-                            {Number(msg.sender.id) === Number(userId) && (
+                            {Number(msg.senderId) === Number(userId) && (
                                 <span className="message-status">
-                {msg.read ? '✓✓ Read' : '✓ Sent'}
-            </span>
+                  {msg.status === 'READ' ? '✓✓ Read' : '✓ Sent'}
+                </span>
                             )}
                         </div>
                     </div>

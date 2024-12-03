@@ -1,9 +1,9 @@
 // MessageInput.js
-import React, {useState} from 'react';
-import {IconButton, TextField} from '@mui/material';
+import React, { useState } from 'react';
+import { TextField, IconButton } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 
-const MessageInput = ({onSendMessage}) => {
+const MessageInput = ({ onSendMessage }) => {
     const [inputMessage, setInputMessage] = useState('');
 
     const handleSendMessage = () => {
@@ -32,7 +32,7 @@ const MessageInput = ({onSendMessage}) => {
                 placeholder="Type a message"
             />
             <IconButton color="primary" onClick={handleSendMessage}>
-                <SendIcon/>
+                <SendIcon />
             </IconButton>
         </div>
     );

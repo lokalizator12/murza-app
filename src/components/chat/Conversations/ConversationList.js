@@ -1,8 +1,8 @@
 // ConversationList.js
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from '../../../axiosConfig';
-import {useNavigate} from 'react-router-dom';
-import {Client} from '@stomp/stompjs';
+import { useNavigate } from 'react-router-dom';
+import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Cookies from 'js-cookie';
 import './ConversationList.css';
@@ -24,16 +24,17 @@ const ConversationList = () => {
     }, []);
 
     const loadConversations = () => {
+        setLoading(true);
         axios
             .get('/conversations')
             .then((response) => {
                 setConversations(response.data);
-                setLoading(false);
             })
             .catch((error) => {
                 console.error('Failed to fetch conversations:', error);
-                setLoading(false);
-            });
+            }).finally(() => {
+            setLoading(false);
+        });
     };
 
     const handleConversationClick = (interlocutorId) => {
@@ -50,7 +51,7 @@ const ConversationList = () => {
         setConversations((prevConversations) =>
             prevConversations.map((conv) =>
                 conv.interlocutorId === interlocutorId
-                    ? {...conv, unreadMessages: 0}
+                    ? { ...conv, unreadMessages: 0 }
                     : conv
             )
         );
@@ -84,11 +85,11 @@ const ConversationList = () => {
 
     const onMessageReceived = (payload) => {
         const message = JSON.parse(payload.body);
-        const senderId = Number(message.sender.id);
+        const senderId = Number(message.senderId);
 
         setConversations((prevConversations) => {
             const existingConversation = prevConversations.find(
-                (conv) => conv.interlocutorId === senderId
+                (conv) => Number(conv.interlocutorId) === senderId
             );
 
             if (existingConversation) {
@@ -101,7 +102,7 @@ const ConversationList = () => {
                         unreadMessages: existingConversation.unreadMessages + 1,
                     },
                     ...prevConversations.filter(
-                        (conv) => conv.interlocutorId !== senderId
+                        (conv) => Number(conv.interlocutorId) !== senderId
                     ),
                 ];
             } else {
@@ -132,14 +133,16 @@ const ConversationList = () => {
                                     className="conversation-avatar"
                                 />
                                 <div className="conversation-details">
-                                  <span className="conversation-name">
-                                    {conv.interlocutorName}
-                                  </span>
+                  <span className="conversation-name">
+                    {conv.interlocutorName}
+                  </span>
                                     <span className="conversation-last-message">
-                                 {conv.lastMessage
-                                     ? `${conv.lastMessage.slice(0, 20)}${conv.lastMessage.length > 20 ? '...' : ''}`
-                                     : 'No messages yet'}
-                                  </span>
+                    {conv.lastMessage
+                        ? `${conv.lastMessage.slice(0, 20)}${
+                            conv.lastMessage.length > 20 ? '...' : ''
+                        }`
+                        : 'No messages yet'}
+                  </span>
                                 </div>
                                 <div className="conversation-meta">
                   <span className="conversation-timestamp">

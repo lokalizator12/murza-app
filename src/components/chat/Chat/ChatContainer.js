@@ -1,17 +1,17 @@
 // ChatContainer.js
-import React, {useEffect} from 'react';
-import {useParams} from 'react-router-dom';
-import {useChat} from '../../hooks/useChat';
-import {useAuth} from '../../../context/AuthContext';
+import React, { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useChat } from '../../hooks/useChat';
+import { useAuth } from '../../../context/AuthContext';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import '../Chat.css';
 
 const ChatContainer = () => {
-    const {userId} = useParams();
+    const { userId } = useParams();
     const receiverId = userId;
-    const {userLocal} = useAuth();
+    const { userLocal } = useAuth();
     const {
         messages,
         sendMessage,
@@ -36,14 +36,14 @@ const ChatContainer = () => {
 
     return (
         <div className="chat-container">
-            <ChatHeader receiverId={receiverId}/>
+            <ChatHeader receiverId={receiverId} />
             <MessageList
                 messages={messages}
                 userId={userLocal}
                 loadMoreMessages={loadMoreMessages}
                 hasMore={hasMore}
             />
-            <MessageInput onSendMessage={handleSendMessage}/>
+            <MessageInput onSendMessage={handleSendMessage} />
         </div>
     );
 };

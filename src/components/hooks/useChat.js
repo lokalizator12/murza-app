@@ -1,5 +1,5 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {Client} from '@stomp/stompjs';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Cookies from 'js-cookie';
 import axios from '../../axiosConfig';
@@ -18,15 +18,18 @@ export const useChat = (receiverId, user) => {
 
     useEffect(() => {
         if (receiverId && user) {
-            // Reset state when receiver changes
-            setMessages([]);
-            setPage(0);
-            setHasMore(true);
+            console.log('Resetting state for new receiver:', receiverId);
+            setMessages([]); // Сбрасываем сообщения
+            setPage(0); // Сбрасываем страницу
+            setHasMore(true); // Сбрасываем флаг
+            loadMessages(); // Загружаем сообщения
+            markMessagesAsRead(); // Помечаем сообщения как прочитанные
         }
     }, [receiverId, user]);
 
     useEffect(() => {
         if (receiverId && user) {
+            console.log('Loading messages and marking as read for receiver:', receiverId);
             loadMessages();
             markMessagesAsRead();
         }
@@ -36,6 +39,7 @@ export const useChat = (receiverId, user) => {
         return () => {
             if (stompClient.current) {
                 stompClient.current.deactivate();
+                console.log('WebSocket client deactivated');
             }
         };
     }, []);
@@ -43,10 +47,13 @@ export const useChat = (receiverId, user) => {
     const loadMessages = useCallback(() => {
         if (!hasMore) return;
 
+        console.log('Loading messages for page:', page);
         axios
             .get(`/messages/${receiverId}?page=${page}&size=${pageSize}`)
             .then((response) => {
-                const newMessages = response.data.content;
+                const newMessages = response.data.content || [];
+                console.log('Loaded messages:', newMessages);
+
                 setMessages((prevMessages) => {
                     const messageIds = new Set(prevMessages.map((msg) => msg.id));
                     const filteredNewMessages = newMessages.filter(
@@ -54,6 +61,7 @@ export const useChat = (receiverId, user) => {
                     );
                     return [...filteredNewMessages, ...prevMessages];
                 });
+
                 setHasMore(!response.data.last);
             })
             .catch((error) => {
@@ -63,32 +71,46 @@ export const useChat = (receiverId, user) => {
     }, [receiverId, page, hasMore]);
 
     const markMessagesAsRead = useCallback(() => {
-        axios
-            .post(`/messages/markAsRead/${receiverId}`, null, {
-                headers: {'Content-Type': 'application/json'},
-            })
-            .then(() => {
-                setMessages((prevMessages) =>
-                    prevMessages.map((msg) => ({...msg, read: true}))
-                );
-            })
-            .catch((error) => {
-                console.error('Failed to mark messages as read:', error);
+        console.log('Marking messages as read for receiverId:', receiverId);
+
+        if (
+            receiverId &&
+            stompClient.current &&
+            stompClient.current.connected
+        ) {
+            console.log('Sending read receipt for receiverId:', receiverId);
+            stompClient.current.publish({
+                destination: '/app/chat.readReceipt',
+                body: String(receiverId), // Отправляем как строку
             });
+        } else {
+            console.error('Unable to send read receipt. WebSocket not connected or receiverId is null.');
+        }
+
+        // Локальное обновление статусов сообщений
+        setMessages((prevMessages) =>
+            prevMessages.map((msg) => ({ ...msg, status: 'READ' }))
+        );
     }, [receiverId]);
 
     const onMessageReceived = useCallback(
         (payload) => {
             const message = JSON.parse(payload.body);
-            const senderId = Number(message.sender.id);
-            const receiverId = Number(message.receiver.id);
+            console.log('Message received:', message);
+
+            const senderId = Number(message.senderId);
+            const receiverId = Number(message.receiverId);
             const currentUserId = Number(user);
             const currentReceiverId = Number(receiverIdRef.current);
+
+            console.log('Sender ID:', senderId, 'Receiver ID:', receiverId);
+            console.log('Current User ID:', currentUserId, 'Current Receiver ID:', currentReceiverId);
 
             if (
                 (senderId === currentReceiverId && receiverId === currentUserId) ||
                 (senderId === currentUserId && receiverId === currentReceiverId)
             ) {
+                console.log('Message matches current conversation');
                 setMessages((prevMessages) => {
                     if (!prevMessages.some((msg) => msg.id === message.id)) {
                         return [...prevMessages, message];
@@ -98,8 +120,11 @@ export const useChat = (receiverId, user) => {
                 });
 
                 if (senderId === currentReceiverId) {
+                    console.log('Marking messages as read for sender:', senderId);
                     markMessagesAsRead();
                 }
+            } else {
+                console.log('Message does not match current conversation');
             }
         },
         [user, markMessagesAsRead]
@@ -108,15 +133,20 @@ export const useChat = (receiverId, user) => {
     const onReadReceiptReceived = useCallback(
         (payload) => {
             const senderId = Number(payload.body);
-            if (senderId === Number(receiverIdRef.current)) {
+            const currentReceiverId = Number(receiverIdRef.current);
+            console.log('Read receipt received from sender:', senderId);
+
+            if (senderId === currentReceiverId) {
+                console.log('Updating messages to READ for sender:', senderId);
                 setMessages((prevMessages) =>
                     prevMessages.map((msg) =>
-                        Number(msg.sender.id) === Number(user) &&
-                        Number(msg.receiver.id) === senderId
-                            ? {...msg, read: true}
+                        Number(msg.senderId) === Number(user) && Number(msg.receiverId) === senderId
+                            ? { ...msg, status: 'READ' }
                             : msg
                     )
                 );
+            } else {
+                console.log('Read receipt does not match current conversation');
             }
         },
         [user]
@@ -140,6 +170,7 @@ export const useChat = (receiverId, user) => {
                 '/user/queue/read-receipts',
                 onReadReceiptReceived
             );
+            console.log('Subscribed to /user/queue/read-receipts');
         };
 
         stompClient.current.activate();
@@ -148,6 +179,7 @@ export const useChat = (receiverId, user) => {
     const disconnectFromWebSocket = useCallback(() => {
         if (stompClient.current) {
             stompClient.current.deactivate();
+            console.log('Disconnected from WebSocket');
         }
     }, []);
 
@@ -158,6 +190,7 @@ export const useChat = (receiverId, user) => {
             stompClient.current &&
             stompClient.current.connected
         ) {
+            console.log('Sending message to receiver:', receiverId);
             const chatMessage = {
                 receiverId,
                 content,
@@ -171,6 +204,7 @@ export const useChat = (receiverId, user) => {
 
     const loadMoreMessages = useCallback(() => {
         if (hasMore) {
+            console.log('Loading more messages');
             setPage((prevPage) => prevPage + 1);
         }
     }, [hasMore]);
