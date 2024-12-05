@@ -46,7 +46,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
             setVerificationDialog({open: true, type, code: ""});
             setSnackbar({
                 open: true,
-                message: `Вы заблокированы до ${blockedStatus[type].blockUntil.toLocaleTimeString()}`,
+                message: `You are blocked until ${blockedStatus[type].blockUntil.toLocaleTimeString()}`,
                 severity: "error",
             });
             return;
@@ -68,7 +68,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
 
                 setSnackbar({
                     open: true,
-                    message: `Код верификации отправлен на ваш ${type}.`,
+                    message: `Verification code sent to your ${type}.`,
                     severity: "success",
                 });
                 setVerificationDialog({open: true, type, code: ""});
@@ -78,14 +78,14 @@ const SettingsPanel = ({onSettingsUpdated}) => {
                 console.error("recaptchaRef.current is null");
                 setSnackbar({
                     open: true,
-                    message: "Ошибка инициализации ReCAPTCHA. Пожалуйста, обновите страницу.",
+                    message: "ReCAPTCHA initialization error. Please refresh the page.",
                     severity: "error",
                 });
             }
         } catch (error) {
             console.error("Error sending verification code:", error);
 
-            let errorMessage = "Ошибка при отправке кода верификации.";
+            let errorMessage = "Error sending verification code.";
             if (error.response) {
                 const apiError = error.response.data;
                 if (apiError && apiError.message) {
@@ -120,8 +120,8 @@ const SettingsPanel = ({onSettingsUpdated}) => {
             setSnackbar({
                 open: true,
                 message: `${
-                    type === "email" ? "Email" : "Телефон"
-                } успешно верифицирован!`,
+                    type === "email" ? "Email" : "Phone"
+                } successfully verified!`,
                 severity: "success",
             });
             setSettings((prevSettings) => ({
@@ -130,11 +130,10 @@ const SettingsPanel = ({onSettingsUpdated}) => {
             }));
             setVerificationDialog({open: false, type: "", code: ""});
             setAttemptsLeft(3);
-            //setIsBlocked(false);
         } catch (error) {
             console.error("Error verifying code:", error);
 
-            let errorMessage = "Ошибка верификации. Пожалуйста, попробуйте снова.";
+            let errorMessage = "Verification error. Please try again.";
 
             if (error.response) {
                 const apiError = error.response.data;
@@ -164,7 +163,6 @@ const SettingsPanel = ({onSettingsUpdated}) => {
                                 [verificationDialog.type]: {isBlocked: true, blockUntil: blockTime},
                             }));
 
-                            // Устанавливаем таймер для снятия блокировки
                             const timeoutDuration = blockTime.getTime() - new Date().getTime();
                             setTimeout(() => {
                                 setBlockedStatus((prevStatus) => ({
@@ -191,14 +189,13 @@ const SettingsPanel = ({onSettingsUpdated}) => {
     };
     const handleResendCode = () => {
         setCanResendCode(false);
-        setCodeExpirationTime(Date.now() + 2 * 60 * 1000); // Обновляем время истечения кода
+        setCodeExpirationTime(Date.now() + 2 * 60 * 1000); // Update code expiration time
         handleVerification(verificationDialog.type);
     };
     const haveSettingsChanged = () => {
         return (
             settings.phoneNumber !== originalSettings.phoneNumber ||
             newPassword !== ''
-
         );
     };
     const validatePhoneNumber = (value) => {
@@ -214,7 +211,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
         setSettings((prevSettings) => ({...prevSettings, phoneNumber: value}));
 
         if (!validatePhoneNumber(value)) {
-            setError("Номер телефона должен начинаться с '+' и содержать от 10 до 15 цифр.");
+            setError("Phone number must start with '+' and contain 10 to 15 digits.");
         } else {
             setError("");
         }
@@ -243,7 +240,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
             } catch (error) {
                 setSnackbar({
                     open: true,
-                    message: "Ошибка загрузки настроек.",
+                    message: "Error loading settings.",
                     severity: "error",
                 });
             }
@@ -260,7 +257,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
         if (!currentPassword) {
             setSnackbar({
                 open: true,
-                message: "Текущий пароль необходим для сохранения изменений.",
+                message: "Current password is required to save changes.",
                 severity: "error",
             });
             setIsSaving(false);
@@ -276,7 +273,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
 
             setSnackbar({
                 open: true,
-                message: "Настройки успешно обновлены!",
+                message: "Settings successfully updated!",
                 severity: "success",
             });
             onSettingsUpdated(response.data);
@@ -290,7 +287,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
             } else {
                 setSnackbar({
                     open: true,
-                    message: "Произошла ошибка. Пожалуйста, попробуйте снова.",
+                    message: "An error occurred. Please try again.",
                     severity: "error",
                 });
             }
@@ -306,7 +303,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
     const renderer = ({minutes, seconds, completed}) => {
         if (completed) {
             setCanResendCode(true);
-            return <span>Время истекло.</span>;
+            return <span>Time's up.</span>;
         } else {
             return (
                 <span>
@@ -317,7 +314,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
     };
 
     if (!settings) {
-        return <Typography>Загрузка настроек...</Typography>;
+        return <Typography>Loading settings...</Typography>;
     }
     const hasPhoneNumberChanged = settings.phoneNumber !== originalPhoneNumber;
     return (
@@ -329,7 +326,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
             </Snackbar>
 
             <Typography variant="h5" gutterBottom>
-                Настройки аккаунта
+                Account Settings
             </Typography>
 
             <Grid container spacing={2}>
@@ -341,15 +338,15 @@ const SettingsPanel = ({onSettingsUpdated}) => {
                         value={settings.email}
                         disabled={settings.emailVerified}
                         helperText={
-                            settings.emailVerified ? "Email верифицирован и не может быть изменен." : ""
+                            settings.emailVerified ? "Email is verified and cannot be changed." : ""
                         }
                     />
                     <Tooltip
                         title={
                             blockedStatus.email.isBlocked
-                                ? `Вы заблокированы до ${blockedStatus.email.blockUntil.toLocaleTimeString()}`
+                                ? `You are blocked until ${blockedStatus.email.blockUntil.toLocaleTimeString()}`
                                 : settings.emailVerified
-                                    ? "Email уже верифицирован"
+                                    ? "Email is already verified"
                                     : ""
                         }
                     >
@@ -368,9 +365,9 @@ const SettingsPanel = ({onSettingsUpdated}) => {
         {loading && verificationDialog.type === "email" ? (
             <CircularProgress size={24}/>
         ) : settings.emailVerified ? (
-            "Верифицировано"
+            "Verified"
         ) : (
-            "Верифицировать Email"
+            "Verify Email"
         )}
       </Button>
     </span>
@@ -381,22 +378,22 @@ const SettingsPanel = ({onSettingsUpdated}) => {
                 <Grid item xs={12}>
                     <TextField
                         fullWidth
-                        label="Номер телефона"
+                        label="Phone Number"
                         type="text"
                         value={settings.phoneNumber}
                         onChange={handlePhoneNumberChange}
                         disabled={settings.phoneVerified}
                         error={!!error}
                         helperText={
-                            error || (settings.phoneVerified ? "Телефон верифицирован и не может быть изменен." : "")
+                            error || (settings.phoneVerified ? "Phone is verified and cannot be changed." : "")
                         }
                     />
                     <Tooltip
                         title={
                             blockedStatus.phone.isBlocked
-                                ? `Вы заблокированы до ${blockedStatus.phone.blockUntil.toLocaleTimeString()}`
+                                ? `You are blocked until ${blockedStatus.phone.blockUntil.toLocaleTimeString()}`
                                 : settings.phoneVerified
-                                    ? "Телефон уже верифицирован"
+                                    ? "Phone is already verified"
                                     : ""
                         }
                     >
@@ -418,9 +415,9 @@ const SettingsPanel = ({onSettingsUpdated}) => {
   {loading && verificationDialog.type === "phone" ? (
       <CircularProgress size={24}/>
   ) : settings.phoneVerified ? (
-      "Верифицировано"
+      "Verified"
   ) : (
-      "Верифицировать Телефон"
+      "Verify Phone"
   )}
 </Button>
     </span>
@@ -430,26 +427,26 @@ const SettingsPanel = ({onSettingsUpdated}) => {
                 <Grid item xs={12}>
                     <TextField
                         fullWidth
-                        label="Текущий пароль"
+                        label="Current Password"
                         type="password"
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         required
                         error={!!fieldErrors.currentPassword}
-                        helperText={fieldErrors.currentPassword || "Необходим для сохранения изменений."}
+                        helperText={fieldErrors.currentPassword || "Required to save changes."}
                     />
                 </Grid>
 
                 <Grid item xs={12}>
                     <TextField
                         fullWidth
-                        label="Новый пароль (необязательно)"
+                        label="New Password (optional)"
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         error={!!fieldErrors.newPassword}
                         helperText={
-                            fieldErrors.newPassword || "Оставьте пустым, если не хотите менять пароль."
+                            fieldErrors.newPassword || "Leave empty if you don't want to change the password."
                         }
                     />
                 </Grid>
@@ -468,28 +465,29 @@ const SettingsPanel = ({onSettingsUpdated}) => {
                             !haveSettingsChanged()
                         }
                     >
-                        {isSaving ? <CircularProgress size={24}/> : "Сохранить изменения"}
+                        {isSaving ? <CircularProgress size={24}/> : "Save Changes"}
                     </Button>
                 </Grid>
             </Grid>
 
-            {/* Диалог ввода кода верификации */}
+            {/* Verification Code Dialog */}
             <Dialog
                 open={verificationDialog.open}
                 onClose={() => setVerificationDialog({open: false, type: "", code: ""})}
             >
-                <DialogTitle>Введите код верификации</DialogTitle>
+                <DialogTitle>Enter Verification Code</DialogTitle>
                 <DialogContent>
                     {blockedStatus[verificationDialog.type]?.isBlocked ? (
                         <Typography variant="body1">
-                            Вы заблокированы до {blockedStatus[verificationDialog.type].blockUntil.toLocaleTimeString()}
+                            You are blocked
+                            until {blockedStatus[verificationDialog.type].blockUntil.toLocaleTimeString()}
                         </Typography>
                     ) : (
                         <>
                             <TextField
                                 autoFocus
                                 margin="dense"
-                                label="Код верификации"
+                                label="Verification Code"
                                 type="text"
                                 fullWidth
                                 value={verificationDialog.code}
@@ -501,13 +499,13 @@ const SettingsPanel = ({onSettingsUpdated}) => {
                                 }
                                 helperText={
                                     verificationDialog.code !== '' && !isCodeValid(verificationDialog.code)
-                                        ? 'Код должен состоять из 6 цифр.'
-                                        : `Осталось попыток: ${attemptsLeft}`
+                                        ? 'Code must be 6 digits long.'
+                                        : `Attempts remaining: ${attemptsLeft}`
                                 }
                             />
                             {codeExpirationTime && (
                                 <Typography variant="body2" color="textSecondary">
-                                    Код истекает через:{" "}
+                                    Code expires in:{" "}
                                     <Countdown date={codeExpirationTime} renderer={renderer}/>
                                 </Typography>
                             )}
@@ -519,7 +517,7 @@ const SettingsPanel = ({onSettingsUpdated}) => {
                         onClick={() => setVerificationDialog({open: false, type: "", code: ""})}
                         disabled={loading}
                     >
-                        Отмена
+                        Cancel
                     </Button>
                     {!blockedStatus[verificationDialog.type]?.isBlocked && (
                         <Button
@@ -530,25 +528,25 @@ const SettingsPanel = ({onSettingsUpdated}) => {
                                 !isCodeValid(verificationDialog.code)
                             }
                         >
-                            {loading ? <CircularProgress size={24}/> : "Верифицировать"}
+                            {loading ? <CircularProgress size={24}/> : "Verify"}
                         </Button>
                     )}
                 </DialogActions>
                 {!blockedStatus[verificationDialog.type]?.isBlocked && (
                     <DialogActions>
                         <Button onClick={handleResendCode} disabled={!canResendCode || loading}>
-                            Отправить код снова
+                            Resend Code
                         </Button>
                     </DialogActions>
                 )}
             </Dialog>
 
-            {/* Компонент ReCAPTCHA */}
+            {/* ReCAPTCHA Component */}
             <ReCAPTCHA
                 ref={recaptchaRef}
                 sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
                 size="invisible"
-                hl="ru"
+                hl="en"
             />
         </Box>
     );

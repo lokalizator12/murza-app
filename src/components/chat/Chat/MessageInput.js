@@ -9,9 +9,10 @@ const MessageInput = ({onSendMessage}) => {
     const [inputMessage, setInputMessage] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
 
-    const handleSendMessage = () => {
+
+    const handleSendMessage = async () => {
         if (inputMessage.trim() !== '') {
-            onSendMessage(inputMessage); // Send the message to the parent component
+            onSendMessage(inputMessage);
             setInputMessage(''); // Clear the input field
         }
     };
@@ -23,9 +24,7 @@ const MessageInput = ({onSendMessage}) => {
     };
 
     const handleEmojiClick = (emojiData) => {
-        // Append the selected emoji to the message
         setInputMessage((prev) => prev + emojiData.emoji);
-        setAnchorEl(null); // Close the emoji picker
     };
 
     const openEmojiPicker = (e) => {

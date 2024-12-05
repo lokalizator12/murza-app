@@ -1,7 +1,9 @@
-import React, {Fragment, useState} from 'react'
+import React, {Fragment, useEffect, useState} from 'react'
 import {Link} from 'react-router-dom'
 import {useAuth} from '../context/AuthContext';
 import './navbar8.css'
+import {Badge, IconButton, Tooltip} from "@mui/material";
+import MailIcon from '@mui/icons-material/Mail';
 
 const Navbar8 = (props) => {
 
@@ -9,6 +11,21 @@ const Navbar8 = (props) => {
     const [link5DropdownVisible, setLink5DropdownVisible] = useState(false)
     const [link5AccordionOpen, setLink5AccordionOpen] = useState(false)
     const currentUserId = localStorage.getItem("currentUserId");
+    const [hovered, setHovered] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(localStorage.getItem('currentCountMessages') || 0);
+    const handleMouseEnter = () => setHovered(true);
+    const handleMouseLeave = () => setHovered(false);
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            setUnreadCount(localStorage.getItem('currentCountMessages') || 0);
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
     return (
         <header className={`navbar8-container1 ${props.rootClassName} `}>
             <header data-thq="thq-navbar" className="navbar8-navbar-interactive">
@@ -28,7 +45,7 @@ const Navbar8 = (props) => {
                   <span className="navbar8-text19 thq-body-small thq-link">
                     Login
                   </span>
-                                    <Link to="/inbox">Inbox</Link>
+
                                 </Fragment>
                             )}
                         </a>
@@ -96,6 +113,27 @@ const Navbar8 = (props) => {
                     <div className="navbar8-buttons1">
                         {isAuthenticated ? (
                             <>
+                                <Link to="/inbox" style={{textDecoration: 'none', color: 'inherit'}}>
+                                    <Tooltip title="Go to your Inbox" arrow>
+                                        <IconButton
+                                            onMouseEnter={handleMouseEnter}
+                                            onMouseLeave={handleMouseLeave}
+                                            sx={{
+                                                transition: 'transform 0.3s',
+                                                transform: hovered ? 'scale(1.2)' : 'scale(1)',
+                                                color: hovered ? '#1976d2' : 'inherit',
+                                            }}
+                                        >
+                                            {unreadCount > 0 ? (
+                                                <Badge badgeContent={unreadCount} color="error" max={99}>
+                                                    <MailIcon fontSize="large"/>
+                                                </Badge>
+                                            ) : (
+                                                <MailIcon fontSize="large"/>
+                                            )}
+                                        </IconButton>
+                                    </Tooltip>
+                                </Link>
                                 <Link to={`/profile/${currentUserId}`}
                                       className="navbar8-action11 thq-button-filled thq-button-animated">
                                     My Profile

@@ -22,6 +22,11 @@ const ConversationList = () => {
             disconnectFromWebSocket();
         };
     }, []);
+    const updateUnreadCount = (conversations) => {
+        const totalUnread = conversations.reduce((acc, conv) => acc + conv.unreadMessages, 0);
+        localStorage.setItem('currentCountMessages', totalUnread); // Save to localStorage
+        window.dispatchEvent(new Event('storage')); // Notify other components about the change
+    };
 
     const loadConversations = () => {
         setLoading(true);
@@ -29,6 +34,8 @@ const ConversationList = () => {
             .get('/conversations')
             .then((response) => {
                 setConversations(response.data);
+                console.log(response.data)
+                updateUnreadCount(response.data);
             })
             .catch((error) => {
                 console.error('Failed to fetch conversations:', error);
@@ -55,6 +62,7 @@ const ConversationList = () => {
                     : conv
             )
         );
+        updateUnreadCount(conversations);
     };
 
     const connectToWebSocket = () => {
@@ -94,7 +102,7 @@ const ConversationList = () => {
 
             if (existingConversation) {
                 // Move the conversation to the top and update last message and unread count
-                return [
+                const updatedConversations = [
                     {
                         ...existingConversation,
                         lastMessage: message.content,
@@ -105,6 +113,8 @@ const ConversationList = () => {
                         (conv) => Number(conv.interlocutorId) !== senderId
                     ),
                 ];
+                updateUnreadCount(updatedConversations); // Update unread messages count
+                return updatedConversations;
             } else {
                 // Load the conversation from the server
                 loadConversations();

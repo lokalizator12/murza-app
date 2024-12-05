@@ -3,7 +3,7 @@ import {Client} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Cookies from 'js-cookie';
 import axios from '../../axiosConfig';
-
+/* global grecaptcha */
 export const useChat = (receiverId, user) => {
     const [messages, setMessages] = useState([]);
     const [page, setPage] = useState(0);
@@ -11,11 +11,19 @@ export const useChat = (receiverId, user) => {
     const pageSize = 20;
     const stompClient = useRef(null);
     const receiverIdRef = useRef(receiverId);
-
+    const key_captcha = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
     useEffect(() => {
         receiverIdRef.current = receiverId;
     }, [receiverId]);
-
+    useEffect(() => {
+        const script = document.createElement("script");
+        script.src = `https://www.google.com/recaptcha/api.js?render=${key_captcha}`;
+        script.async = true;
+        document.body.appendChild(script);
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, []);
     useEffect(() => {
         if (receiverId && user) {
             console.log('Resetting state for new receiver:', receiverId);
@@ -183,7 +191,7 @@ export const useChat = (receiverId, user) => {
         }
     }, []);
 
-    const sendMessage = (content) => {
+    const sendMessage = async (content) => {
         if (
             content.trim() !== '' &&
             receiverId &&
@@ -191,14 +199,26 @@ export const useChat = (receiverId, user) => {
             stompClient.current.connected
         ) {
             console.log('Sending message to receiver:', receiverId);
-            const chatMessage = {
-                receiverId,
-                content,
-            };
-            stompClient.current.publish({
-                destination: '/app/chat.sendMessage',
-                body: JSON.stringify(chatMessage),
-            });
+            try {
+                const token = await grecaptcha.execute(key_captcha, {
+                    action: 'send_message',
+                });
+
+
+                const chatMessage = {
+                    receiverId,
+                    content,
+                    captchaToken: token, // Include the CAPTCHA token
+                };
+                stompClient.current.publish({
+                    destination: '/app/chat.sendMessage',
+                    body: JSON.stringify(chatMessage),
+                });
+
+                markMessagesAsRead();
+            } catch (error) {
+                console.error('Failed to generate reCAPTCHA token:', error);
+            }
         }
     };
 

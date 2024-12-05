@@ -59,17 +59,17 @@ const ChatHeader = ({receiverId}) => {
     };
 
     const formatLastSeen = (timestamp) => {
-        if (!timestamp) return 'Недавно';
+        if (!timestamp) return 'Recently';
 
         const lastSeenDate = new Date(timestamp);
         const now = new Date();
         const diffMs = now - lastSeenDate;
 
         if (diffMs < 60 * 1000) {
-            return 'Только что';
+            return 'Just now';
         } else if (diffMs < 60 * 60 * 1000) {
             const minutes = Math.floor(diffMs / (60 * 1000));
-            return `${minutes} минут назад`;
+            return `${minutes} minutes ago`;
         } else {
             return lastSeenDate.toLocaleString();
         }
