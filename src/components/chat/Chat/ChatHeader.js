@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import axios from '../../../axiosConfig';
-import { Link } from 'react-router-dom';
-import { Client } from '@stomp/stompjs';
+import {Link} from 'react-router-dom';
+import {Client} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Cookies from 'js-cookie';
+import './ChatHeader.css'
 
-const ChatHeader = ({ receiverId }) => {
+const ChatHeader = ({receiverId}) => {
     const [receiver, setReceiver] = useState(null);
     const [isOnline, setIsOnline] = useState(false);
     const [lastSeen, setLastSeen] = useState(null);
@@ -78,7 +79,7 @@ const ChatHeader = ({ receiverId }) => {
         <div className="chat-header">
             {receiver ? (
                 <>
-                    <img src={receiver.userPhoto} alt="User Avatar" className="chat-header-avatar" />
+                    <img src={receiver.userPhoto} alt="User Avatar" className="chat-header-avatar"/>
                     <div className="chat-header-info">
                         <h2>{`${receiver.firstName} ${receiver.lastName}`}</h2>
                         <p>
@@ -89,7 +90,8 @@ const ChatHeader = ({ receiverId }) => {
                             )}
                         </p>
                     </div>
-                    <Link to={`/profile/${receiverId}`} className="chat-header-profile-link">View Profile</Link>
+                    <Link to={`/profile/${receiverId}`}
+                          className="navbar8-action11 thq-button-filled thq-button-animated">View Profile</Link>
                 </>
             ) : (
                 <h2>Loading...</h2>

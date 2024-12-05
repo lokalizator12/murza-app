@@ -1,8 +1,8 @@
 // ConversationList.js
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import axios from '../../../axiosConfig';
-import { useNavigate } from 'react-router-dom';
-import { Client } from '@stomp/stompjs';
+import {useNavigate} from 'react-router-dom';
+import {Client} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Cookies from 'js-cookie';
 import './ConversationList.css';
@@ -51,7 +51,7 @@ const ConversationList = () => {
         setConversations((prevConversations) =>
             prevConversations.map((conv) =>
                 conv.interlocutorId === interlocutorId
-                    ? { ...conv, unreadMessages: 0 }
+                    ? {...conv, unreadMessages: 0}
                     : conv
             )
         );

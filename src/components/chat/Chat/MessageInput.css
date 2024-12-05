@@ -15,7 +15,7 @@
 }
 
 .message-input button {
-    background-color: #0078ff;
+    background-color: #64431c;
     color: #ffffff;
     border: none;
     border-radius: 50%;
@@ -27,5 +27,5 @@
 }
 
 .message-input button:hover {
-    background-color: #0056cc;
+    background-color: #573a18;
 }

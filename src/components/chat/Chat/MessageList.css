@@ -16,13 +16,11 @@
 /* Сообщения отправителя */
 .message-item.sent {
     align-self: flex-end;
-    background-color: #e0ffe5;
 }
 
 /* Сообщения собеседника */
 .message-item.received {
     align-self: flex-start;
-    background-color: #f0f0f0;
 }
 
 /* Добавляем мета-информацию (время и статус) */

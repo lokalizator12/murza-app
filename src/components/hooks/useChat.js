@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Client } from '@stomp/stompjs';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {Client} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Cookies from 'js-cookie';
 import axios from '../../axiosConfig';
@@ -89,7 +89,7 @@ export const useChat = (receiverId, user) => {
 
         // Локальное обновление статусов сообщений
         setMessages((prevMessages) =>
-            prevMessages.map((msg) => ({ ...msg, status: 'READ' }))
+            prevMessages.map((msg) => ({...msg, status: 'READ'}))
         );
     }, [receiverId]);
 
@@ -141,7 +141,7 @@ export const useChat = (receiverId, user) => {
                 setMessages((prevMessages) =>
                     prevMessages.map((msg) =>
                         Number(msg.senderId) === Number(user) && Number(msg.receiverId) === senderId
-                            ? { ...msg, status: 'READ' }
+                            ? {...msg, status: 'READ'}
                             : msg
                     )
                 );

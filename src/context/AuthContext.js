@@ -12,6 +12,16 @@ export const AuthProvider = ({children}) => {
     const [user, setUser] = useState(null);
     const stompClient = useRef(null);
 
+    // Function to notify presence status
+    const updatePresenceStatus = (status) => {
+        if (stompClient.current && stompClient.current.connected) {
+            stompClient.current.publish({
+                destination: `/app/presence/${status}`,
+                body: JSON.stringify({userId: userLocal}),
+            });
+        }
+    };
+
     const login = (userData) => {
         setIsAuthenticated(true);
         setUser(userData);
@@ -20,27 +30,26 @@ export const AuthProvider = ({children}) => {
 
     const logout = async () => {
         try {
-            handleBeforeUnload() // Устанавливаем время последнего входа
+            // Notify server about going offline
+            updatePresenceStatus('offline');
             await axios.post('/auth/logout');
             Cookies.remove('token');
             setIsAuthenticated(false);
             setUser(null);
-            await disconnectFromPresenceWebSocket();
+            disconnectFromPresenceWebSocket();
             window.location.href = '/';
         } catch (error) {
             console.error('Logout failed:', error);
         }
     };
-    const handleBeforeUnload = () => {
-        if (stompClient.current) {
-            stompClient.current.publish({
-                destination: '/app/presence/offline',
-                body: '',
-            });
-        }
-    };
+
     const connectToPresenceWebSocket = () => {
         const token = Cookies.get('token');
+        if (!token) {
+            console.error('No token found. Cannot establish WebSocket connection.');
+            return;
+        }
+
         const socket = new SockJS(`http://localhost:8080/ws/chat?token=${token}`);
         stompClient.current = new Client({
             webSocketFactory: () => socket,
@@ -51,47 +60,25 @@ export const AuthProvider = ({children}) => {
         });
 
         stompClient.current.onConnect = () => {
-            console.log('Connected to Presence WebSocket111');
-            stompClient.current.publish({
-                destination: '/app/presence/online',
-                body: '',
-            }, (error) => {
-                console.error('Failed to publish online presence:', error);
-            });
+            console.log('Connected to Presence WebSocket');
+            updatePresenceStatus('online'); // Notify online status
         };
 
         stompClient.current.onDisconnect = () => {
             console.log('Disconnected from Presence WebSocket');
-            stompClient.current.publish({
-                destination: '/app/presence/offline',
-                body: '',
-            });
+            updatePresenceStatus('offline'); // Notify offline status
         };
 
         stompClient.current.activate();
     };
 
-
-    const disconnectFromPresenceWebSocket = async () => {
+    const disconnectFromPresenceWebSocket = () => {
         if (stompClient.current) {
-            stompClient.current.publish({
-                destination: '/app/presence/offline',
-                body: '',
-            });
+            updatePresenceStatus('offline'); // Notify offline status before disconnecting
             stompClient.current.deactivate();
+            stompClient.current = null;
         }
     };
-
-   /* const updateLastSeen = async () => {
-        try {
-            await axios.post('v1/user/updateLastSeen', null, {
-                headers: {'Content-Type': 'application/json'},
-            });
-            console.log('Last seen updated');
-        } catch (error) {
-            console.error('Failed to update last seen:', error);
-        }
-    };*/
 
     useEffect(() => {
         const token = Cookies.get('token');
@@ -111,12 +98,7 @@ export const AuthProvider = ({children}) => {
         }
 
         const handleBeforeUnload = () => {
-            if (stompClient.current) {
-                stompClient.current.publish({
-                    destination: '/app/presence/offline',
-                    body: '',
-                });
-            }
+            updatePresenceStatus('offline'); // Notify server of offline status when closing the page
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
@@ -135,3 +117,4 @@ export const AuthProvider = ({children}) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+

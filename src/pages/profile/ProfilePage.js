@@ -28,7 +28,7 @@ const ProfilePage = () => {
     const [parcelsPage, setParcelsPage] = useState(1);
     const [modalOpen, setModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
-    const itemsPerPage = 5;
+    const itemsPerPage = 3;
     const [selectedItem, setSelectedItem] = useState(null);
     const [totalTrips, setTotalTrips] = useState(0);
     const [totalParcels, setTotalParcels] = useState(0);
@@ -161,7 +161,23 @@ const ProfilePage = () => {
         setSelectedItem(null);
         setModalType(null);
     };
+    const refreshTrips = async () => {
+        try {
+            const response = await axios.get(`/trip-requests/user/${userId}?page=${tripsPage - 1}&size=${itemsPerPage}`);
+            setTrips(response.data.content || []);
+        } catch (error) {
+            console.error("Error refreshing trips:", error);
+        }
+    };
 
+    const refreshParcels = async () => {
+        try {
+            const response = await axios.get(`/parcel-requests/user/${userId}?page=${tripsPage - 1}&size=${itemsPerPage}`);
+            setParcels(response.data.content || []);
+        } catch (error) {
+            console.error("Error refreshing parcels:", error);
+        }
+    };
     useEffect(() => {
         fetchProfileData();
         fetchTripsAndParcels();
@@ -216,14 +232,18 @@ const ProfilePage = () => {
                                     totalTrips={totalTrips}
                                     itemsPerPage={itemsPerPage}
                                     onTripsPageChange={setTripsPage}
+                                    isOwnProfile={isOwnProfile}
                                     onItemClick={(item) => handleOpenModal(item, "trip")}
+                                    refreshTrips={refreshTrips}
                                 />
                                 <ProfileParcels
                                     parcels={parcels}
                                     parcelsPage={parcelsPage}
                                     totalParcels={totalParcels}
                                     itemsPerPage={itemsPerPage}
+                                    isOwnProfile={isOwnProfile}
                                     onParcelsPageChange={setParcelsPage}
+                                    refreshParcels={refreshParcels}
                                     onItemClick={(item) => handleOpenModal(item, "parcel")}
                                 />
                             </Box>

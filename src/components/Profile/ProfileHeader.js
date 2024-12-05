@@ -1,12 +1,12 @@
-// ProfileHeader.js
 import React from "react";
-import {Avatar, Box, Button, Chip, Stack, Tooltip, Typography,} from "@mui/material";
+import {Avatar, Box, Button, Chip, Stack, Tooltip, Typography} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import EmailIcon from "@mui/icons-material/Email";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import PhoneIcon from "@mui/icons-material/Phone";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import {motion} from "framer-motion";
 import {format} from "date-fns";
 
@@ -25,6 +25,30 @@ const ProfileHeader = ({
     const registrationDate = profile.dateRegistered
         ? format(new Date(profile.dateRegistered), "dd MMMM yyyy")
         : "N/A";
+
+    const lastSeenDate = profile.lastActivityDate
+        ? format(new Date(profile.lastActivityDate), "EEE, MMM dd yyyy HH:mm:ss")
+        : "N/A";
+
+    const formatLastSeen = (timestamp) => {
+        if (!timestamp) return "Just now";
+
+        const lastSeenDate = new Date(timestamp);
+        const now = new Date();
+        const diffMs = now - lastSeenDate;
+
+        if (diffMs < 60 * 1000) {
+            return "Just now";
+        } else if (diffMs < 60 * 60 * 1000) {
+            const minutes = Math.floor(diffMs / (60 * 1000));
+            return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+        } else if (diffMs < 24 * 60 * 60 * 1000) {
+            const hours = Math.floor(diffMs / (60 * 60 * 1000));
+            return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+        } else {
+            return lastSeenDate.toLocaleString();
+        }
+    };
 
     return (
         <motion.div
@@ -53,14 +77,14 @@ const ProfileHeader = ({
                             variant="contained"
                             color="primary"
                             sx={{
-                                background: "linear-gradient(to right, #1976d2, #2196f3)",
+                                background: "linear-gradient(to right, #64431c, #8d6f4c)",
                                 color: "white",
                                 fontWeight: "bold",
                                 borderRadius: "20px",
                                 "&:hover": {
-                                    background: "linear-gradient(to right, #1565c0, #1e88e5)",
+                                    background: "linear-gradient(to right, #51320d, #804b0c)",
                                 },
-                                transition: "background 0.3s ease",
+                                transition: "background 0.5s ease",
                             }}
                         >
                             Edit Profile
@@ -113,19 +137,10 @@ const ProfileHeader = ({
 
                 {/* Verification Status and Registration Date */}
                 <Box sx={{mt: 2}}>
-                    <Stack
-                        direction="column"
-                        justifyContent="center"
-                        alignItems="center"
-                        spacing={1}
-                    >
+                    <Stack direction="column" justifyContent="center" alignItems="center" spacing={1}>
                         {/* Email Verification Status */}
                         <Tooltip
-                            title={
-                                profile.emailVerified
-                                    ? "Email is verified"
-                                    : "Email is not verified"
-                            }
+                            title={profile.emailVerified ? "Email is verified" : "Email is not verified"}
                         >
                             <Chip
                                 icon={
@@ -146,11 +161,7 @@ const ProfileHeader = ({
 
                         {/* Phone Verification Status */}
                         <Tooltip
-                            title={
-                                profile.phoneVerified
-                                    ? "Phone number is verified"
-                                    : "Phone number is not verified"
-                            }
+                            title={profile.phoneVerified ? "Phone number is verified" : "Phone number is not verified"}
                         >
                             <Chip
                                 icon={
@@ -171,11 +182,44 @@ const ProfileHeader = ({
 
                         <Tooltip title="Registration Date">
                             <Chip
-                                icon={<CalendarTodayIcon sx={{color: "#1e88e5"}}/>}
+                                icon={<CalendarTodayIcon sx={{color: "#896c49"}}/>}
                                 label={`Joined ${registrationDate}`}
                                 sx={{
                                     backgroundColor: "#e3f2fd",
-                                    color: "#1e88e5",
+                                    color: "#64431c",
+                                    fontWeight: "bold",
+                                }}
+                            />
+                        </Tooltip>
+
+                        {/* Online Status */}
+                        <Tooltip title={profile.online ? "User is online" : "User is offline"}>
+                            <Chip
+                                icon={
+                                    profile.online ? (
+                                        <FiberManualRecordIcon
+                                            sx={{
+                                                color: "#039108",
+                                                animation: "blinker 1.5s linear infinite",
+                                                "@keyframes blinker": {
+                                                    "50%": {
+                                                        opacity: 0.5,
+                                                    },
+                                                },
+                                            }}
+                                        />
+                                    ) : (
+                                        <FiberManualRecordIcon sx={{color: "#9e9e9e"}}/>
+                                    )
+                                }
+                                label={
+                                    profile.online
+                                        ? "Online"
+                                        : `Last seen ${formatLastSeen(lastSeenDate)}`
+                                }
+                                sx={{
+                                    backgroundColor: profile.online ? "#e8f5e9" : "#f5f5f5",
+                                    color: profile.online ? "#4caf50" : "gray",
                                     fontWeight: "bold",
                                 }}
                             />
