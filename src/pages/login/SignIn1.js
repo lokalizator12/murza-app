@@ -1,6 +1,6 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import './sign-in2.css';
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import Cookies from "js-cookie";
 import axios from "../../axiosConfig";
 import {Helmet} from "react-helmet";
@@ -16,7 +16,13 @@ export default function SignIn1() {
     const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
     const navigate = useNavigate();
     const {login} = useAuth();
+    const location = useLocation();
 
+    useEffect(() => {
+        if (location.state?.openForgotPassword) {
+            setIsForgotPasswordOpen(true);
+        }
+    }, [location.state]);
     const validateInputs = useCallback(() => {
         const email = document.getElementById('thq-sign-in-2-email').value;
         const password = document.getElementById('thq-sign-in-2-password').value;
@@ -196,6 +202,7 @@ export default function SignIn1() {
                 </div>
             </div>
             <ForgotPassword open={isForgotPasswordOpen} handleClose={handleForgotPasswordClose}/>
+
         </div>
     );
 }

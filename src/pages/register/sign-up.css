@@ -108,6 +108,22 @@
     justify-content: space-between;
 }
 
+/*.react-international-phone-input-container {
+    width: 100% !important;
+    background-color: rgba(253, 253, 253, 0) !important;
+    border: rgba(255, 255, 255, 0);
+}*/
+.react-international-phone-input {
+    width: 100% !important;
+    background-color: rgba(253, 253, 253, 0) !important;
+    border: rgba(255, 255, 255, 0) !important;
+    font-size: 18px !important;
+}
+
+.react-international-phone-country-selector-button {
+    background-color: rgba(255, 255, 255, 0) !important;
+}
+
 .sign-up10-hide-password {
     gap: var(--dl-space-space-halfunit);
     width: auto;

@@ -18,6 +18,8 @@ import Navbar8 from "./components/navbar8";
 import ChatPage from "./components/chat/ChatPage";
 import PrivateRoute from "./services/PrivateRoute";
 import ConversationList from "./components/chat/Conversations/ConversationList";
+import Activate from "./pages/register/Activate";
+import ResetPassword from "./pages/login/ResetPassword";
 
 function AppContent() {
     const location = useLocation(); // Получаем текущий путь
@@ -48,6 +50,7 @@ function AppContent() {
                     }
                 />
                 <Route path="/legal" element={<Legal/>}/>
+
                 <Route
                     path="/profile/:userId"
                     element={
@@ -65,6 +68,8 @@ function AppContent() {
                     }
                 />
                 <Route path="*" element={<NotFound/>}/>
+                <Route path="/activate" element={<Activate/>}/>
+                <Route path="/reset-password" element={<ResetPassword/>}/>
             </Routes>
         </>
     );

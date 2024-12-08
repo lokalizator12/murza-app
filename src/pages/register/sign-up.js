@@ -4,6 +4,10 @@ import './sign-up.css'
 import * as Yup from "yup";
 import authService from "../../services/authService";
 import {useNavigate} from "react-router-dom";
+import {toast, ToastContainer} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import {PhoneInput} from 'react-international-phone';
+import 'react-international-phone/style.css';
 
 import {Helmet} from "react-helmet";
 
@@ -22,21 +26,32 @@ const SignUp = (props) => {
         },
         validationSchema: Yup.object({
             email: Yup.string().email('Invalid email address').required('Email is required'),
-            password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+            password: Yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
             firstName: Yup.string().max(50, 'First name should not exceed 50 characters').required('First name is required'),
             lastName: Yup.string().max(50, 'Last name should not exceed 50 characters').required('Last name is required'),
-            phoneNumber: Yup.string().matches(/^\d{10}$/, 'Phone number should be 10 digits').required('Phone number is required')
+            phoneNumber: Yup.string().required('Phone number is required')
         }),
         onSubmit: async (values) => {
             try {
                 await authService.register(values);
                 setSuccessMessage('User registered successfully');
                 setErrorMessage('');
+                toast.success('User registered successfully');
                 navigate('/success');
             } catch (error) {
+                const errors = error.response?.data?.errors;
 
-                const message = error.response?.data?.message || 'Registration failed';
-                setErrorMessage(message); // Устанавливаем сообщение об ошибке
+                if (errors && Array.isArray(errors)) {
+                    const messages = errors.map((err) => err.message).join(', ');
+                    setErrorMessage(messages);
+                    toast.error(messages);
+                } else {
+                    // Если структура ошибки другая, используем общее сообщение
+                    const fallbackMessage = error.response?.data?.message || 'Registration failed';
+                    setErrorMessage(fallbackMessage);
+                    toast.error(fallbackMessage);
+                }
+
                 setSuccessMessage('');
             }
         }
@@ -128,17 +143,20 @@ const SignUp = (props) => {
                                 <label htmlFor="phoneNumber" className="thq-body-large">
                                     Phone number
                                 </label>
-                                <input
-                                    type="text"
-                                    autoComplete="off"
-                                    id="phoneNumber"
-                                    name="phoneNumber"
-                                    placeholder="Phone number (10 symbols)"
+                                <PhoneInput
                                     className="sign-up10-textinput1 thq-input thq-body-large"
+                                    containerClass="sign-up10-container"
+                                    inputClass="sign-up10-textinput1 thq-input thq-body-large"
                                     value={formik.values.phoneNumber}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
+                                    onChange={(value) =>
+                                        formik.setFieldValue(
+                                            'phoneNumber',
+                                            value.replace(/[\s-]/g, '') // Removes spaces and dashes
+                                        )
+                                    }
+                                    defaultCountry="pl"
                                 />
+
                                 {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
                                     <div className="error-message">{formik.errors.phoneNumber}</div>
                                 ) : null}
@@ -180,9 +198,19 @@ const SignUp = (props) => {
                             <button type="submit" className="sign-up10-button1 thq-button-filled">
                                 Get Started
                             </button>
-                            {errorMessage && <div className="error-message">{errorMessage}</div>}
-                            {successMessage && <div className="success-message">{successMessage}</div>}
                         </form>
+                        <ToastContainer
+                            position="top-right" // Позиция (можно top-left, bottom-right и т.д.)
+                            autoClose={5000} // Автозакрытие через 5 секунд
+                            hideProgressBar={false} // Прогресс-бар
+                            newestOnTop={false} // Показывать новые уведомления сверху
+                            closeOnClick // Закрытие по клику
+                            rtl={false} // Направление текста
+                            pauseOnFocusLoss // Пауза при потере фокуса
+                            draggable // Перетаскивание
+                            pauseOnHover // Пауза при наведении
+                        />
+
                         <div className="sign-up10-divider1">
                             <div className="sign-up10-divider2"></div>
                             <p className="thq-body-large">Or continue with</p>

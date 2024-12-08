@@ -37,27 +37,31 @@ const Navbar8 = (props) => {
                         style={{cursor: 'pointer'}}
                     />
                 </Link>
+
                 <div data-thq="thq-navbar-nav" className="navbar8-desktop-menu">
                     <nav className="navbar8-links1">
-                        <a href={props.link1Url}>
-                            {props.link1 ?? (
-                                <Fragment>
-                  <span className="navbar8-text19 thq-body-small thq-link">
-                    Login
-                  </span>
-
-                                </Fragment>
-                            )}
-                        </a>
-                        <a href={props.link2Url}>
-                            {props.link2 ?? (
-                                <Fragment>
-                  <span className="navbar8-text20 thq-body-small thq-link">
-                    Register
-                  </span>
-                                </Fragment>
-                            )}
-                        </a>
+                        {!isAuthenticated && (
+                            <>
+                                <a href={props.link1Url}>
+                                    {props.link1 ?? (
+                                        <Fragment>
+                                      <span className="navbar8-text19 thq-body-small thq-link">
+                                        Login
+                                      </span>
+                                        </Fragment>
+                                    )}
+                                </a>
+                                <a href={props.link2Url}>
+                                    {props.link2 ?? (
+                                        <Fragment>
+                                  <span className="navbar8-text20 thq-body-small thq-link">
+                                    Register
+                                  </span>
+                                        </Fragment>
+                                    )}
+                                </a>
+                            </>
+                        )}
                         <a href={props.linkAbout} target="_blank" rel="noreferrer noopener">
                             {props.link3 ?? (
                                 <Fragment>
@@ -157,49 +161,6 @@ const Navbar8 = (props) => {
                             </>
                         )}
                     </div>
-
-                    {/* <div className="navbar8-buttons1">
-                        <div className="navbar-actions">
-                            {isAuthenticated ? (
-                                <>
-                                    <Link to="/profile" className="button">My Profile</Link>
-                                    <button className="navbar8-action21 thq-button-outline thq-button-animated"
-                                        onClick={logout} >Logout</button>
-                                </>
-                            ) : (
-                                <>
-                                    <Link to="/login" className="button">Sign in</Link>
-                                    <Link to="/register" className="button button-outline">Sign up</Link>
-                                </>
-                            )}
-                        </div>
-                        <button className="navbar8-action11 thq-button-filled thq-button-animated"
-                                onClick={() => {
-                                    window.location.href = '/login';
-                                }}>
-
-              <span className="thq-body-small">
-                {props.action1 ?? (
-                    <Fragment>
-                        <span className="navbar8-text18">Main Action</span>
-                    </Fragment>
-                )}
-              </span>
-                        </button>
-
-                        <button className="navbar8-action21 thq-button-outline thq-button-animated"
-                                onClick={() => {
-                                    window.location.href = '/register';
-                                }}>
-              <span className="thq-body-small">
-                {props.action2 ?? (
-                    <Fragment>
-                        <span className="navbar8-text22">Secondary Action</span>
-                    </Fragment>
-                )}
-              </span>
-                        </button>
-                    </div>*/}
                 </div>
                 <div data-thq="thq-burger-menu" className="navbar8-burger-menu">
                     <svg viewBox="0 0 1024 1024" className="navbar8-icon14">
