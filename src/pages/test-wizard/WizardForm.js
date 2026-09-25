@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {Box, Button, Paper, Step, StepLabel, Stepper, Typography} from '@mui/material';
 
 const WizardForm = ({steps, initialData, onSubmit}) => {
@@ -18,9 +18,9 @@ const WizardForm = ({steps, initialData, onSubmit}) => {
         setActiveStep((prevStep) => prevStep - 1);
     };
 
-    const handleChange = (name, value) => {
-        setFormData((prevData) => ({...prevData, [name]: value}));
-    };
+    const handleChange = useCallback((name, value) => {
+        setFormData((prevData) => prevData[name] === value ? prevData : {...prevData, [name]: value});
+    }, []);
 
     const handleSubmit = () => {
         onSubmit(formData);

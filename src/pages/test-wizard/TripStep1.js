@@ -2,6 +2,7 @@
 import React, {useEffect, useState} from 'react';
 import MapModal from './../../components/MapModal';
 import RouteMap from './../../components/RouteMap';
+import axios from '../../axiosConfig';
 import './TripStep1.css';
 
 const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
@@ -10,21 +11,29 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
     const [selectedDeparture, setSelectedDeparture] = useState(formData.departureAddress || '');
     const [selectedDestination, setSelectedDestination] = useState(formData.destinationAddress || '');
     const [waypoints, setWaypoints] = useState(formData.intermediateLocations || []);
+    const [shippingMethods, setShippingMethods] = useState([]);
 
     // Инициализация типа транспорта из formData
-    const [transportType, setTransportType] = useState(
-        formData.shippingMethodId === 1 ? 'walking' :
-            formData.shippingMethodId === 2 ? 'cycling' : 'driving'
-    );
+    const [transportType, setTransportType] = useState(formData.transportType || 'driving');
+
     useEffect(() => {
-        const shippingMethodId = transportType === 'walking' ? 1 : transportType === 'cycling' ? 2 : 3;
-        handleChange('shippingMethodId', shippingMethodId);
-    }, [transportType, handleChange]);
+        axios.get('/shipping-methods')
+            .then(({data}) => setShippingMethods(data))
+            .catch((error) => console.error('Failed to load shipping methods:', error));
+    }, []);
+
+    useEffect(() => {
+        const methodName = {walking: 'Walking', cycling: 'Bicycle', driving: 'Car'}[transportType];
+        const method = shippingMethods.find(({methodName: name}) => name.toLowerCase() === methodName.toLowerCase());
+        if (method && formData.shippingMethodId !== method.id) {
+            handleChange('shippingMethodId', method.id);
+        }
+    }, [shippingMethods, transportType, formData.shippingMethodId, handleChange]);
 
     // Валидация для активации кнопки "Next"
     useEffect(() => {
-        setIsNextEnabled(!!selectedDeparture && !!selectedDestination);
-    }, [selectedDeparture, selectedDestination, setIsNextEnabled]);
+        setIsNextEnabled(!!selectedDeparture && !!selectedDestination && !!formData.shippingMethodId);
+    }, [selectedDeparture, selectedDestination, formData.shippingMethodId, setIsNextEnabled]);
 
     const handleOpenModal = (type) => {
         setModalType(type);
@@ -75,8 +84,7 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
     // Обработка изменения типа транспорта
     const handleTransportTypeChange = (type) => {
         setTransportType(type);
-        const shippingMethodId = type === 'walking' ? 1 : type === 'cycling' ? 2 : 3; // Пример: 1 = walking, 2 = cycling, 3 = driving
-        handleChange('shippingMethodId', shippingMethodId);
+        handleChange('transportType', type);
     };
 
     return (

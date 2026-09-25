@@ -69,18 +69,16 @@ export default function SignIn1() {
         };
 
         try {
-            const token = Cookies.get('token');
             const response = await axios.post('auth/login', loginUserDto, {
-                headers: {
-                    'Authorization': token ? `Bearer ${token}` : '',
-                },
                 withCredentials: true,
             });
-            login(response.data.token);
+            Cookies.set('token', response.data.token, {
+                expires: response.data.expiresIn / 86400000,
+                secure: window.location.protocol === 'https:',
+                sameSite: 'Lax',
+            });
             localStorage.setItem('currentUserId', response.data.userId);
-            Cookies.set('token', response.data.token, {expires: response.data.expiresIn, secure: true});
-            console.log('Token saved:', Cookies.get('token'));
-            console.log('Login successful:', response.data);
+            login(response.data.token);
             navigate('/main');
         } catch (error) {
             const errorMessage = error.response ? error.response.data : error.message;

@@ -6,6 +6,7 @@ import {Client} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Cookies from 'js-cookie';
 import './ConversationList.css';
+import {CHAT_URL} from '../../../services/endpoints';
 
 const ConversationList = () => {
     const [conversations, setConversations] = useState([]);
@@ -67,7 +68,7 @@ const ConversationList = () => {
 
     const connectToWebSocket = () => {
         const token = Cookies.get('token');
-        const socket = new SockJS(`http://localhost:8080/ws/chat?token=${token}`);
+        const socket = new SockJS(`${CHAT_URL}?token=${token}`);
         stompClient.current = new Client({
             webSocketFactory: () => socket,
             reconnectDelay: 5000,
