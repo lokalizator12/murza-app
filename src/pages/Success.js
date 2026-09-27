@@ -32,20 +32,13 @@ const Success = () => {
                 </Typography>
             </Box>
 
-            <Box sx={{mb: 4}}>
-                <Typography variant="body2" align="center">
-                    If you have any questions or need assistance, feel free to contact our support team at <a
-                    href="mailto:support@example.com">support@example.com</a>.
-                </Typography>
-            </Box>
-
             <Button
                 fullWidth
                 variant="contained"
                 color="primary"
                 onClick={handleRedirect}
             >
-                Go to Login
+                Go to log in
             </Button>
         </Container>
     );

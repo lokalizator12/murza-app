@@ -45,7 +45,7 @@ const ParcelStep1 = ({formData, handleChange, setIsNextEnabled}) => {
     return (
         <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
-                Step 1: Location and type delivery
+                Where should the parcel travel?
             </Typography>
 
             <Box sx={{display: 'flex', alignItems: 'center', gap: 2, mb: 2}}>
@@ -53,11 +53,11 @@ const ParcelStep1 = ({formData, handleChange, setIsNextEnabled}) => {
                     type="text"
                     value={pickupAddress}
                     readOnly
-                    placeholder="Adres pickup"
+                    placeholder="Pickup address"
                     style={{flex: 1, padding: '10px', fontSize: '16px'}}
                 />
                 <Button variant="contained" onClick={handleOpenPickupModal}>
-                    Set
+                    Choose on map
                 </Button>
             </Box>
 
@@ -66,11 +66,11 @@ const ParcelStep1 = ({formData, handleChange, setIsNextEnabled}) => {
                     type="text"
                     value={destinationAddress}
                     readOnly
-                    placeholder="Adres destination"
+                    placeholder="Delivery address"
                     style={{flex: 1, padding: '10px', fontSize: '16px'}}
                 />
                 <Button variant="contained" onClick={handleOpenDestinationModal}>
-                    Set
+                    Choose on map
                 </Button>
             </Box>
 

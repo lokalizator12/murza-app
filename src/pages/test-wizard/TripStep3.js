@@ -33,10 +33,10 @@ const TripStep3 = ({formData, handleChange, setIsNextEnabled, onSubmit}) => {
     return (
         <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
-                Step 3: Details and Completion
+                Trip dates and details
             </Typography>
             <TextField
-                label="Request Title"
+                label="Trip title"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -47,7 +47,7 @@ const TripStep3 = ({formData, handleChange, setIsNextEnabled, onSubmit}) => {
                 helperText={validationErrors.title}
             />
             <TextField
-                label="Description"
+                label="Trip details"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -73,7 +73,7 @@ const TripStep3 = ({formData, handleChange, setIsNextEnabled, onSubmit}) => {
                 helperText={validationErrors.departureDate}
             />
             <TextField
-                label="Destination Date"
+                label="Arrival date"
                 type="datetime-local"
                 variant="outlined"
                 fullWidth

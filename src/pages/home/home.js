@@ -1,525 +1,163 @@
-import React, {Fragment} from 'react'
+import React, {useEffect, useState} from 'react';
+import {Helmet} from 'react-helmet';
+import {Link} from 'react-router-dom';
+import {useAuth} from '../../context/AuthContext';
+import {appDestination} from '../../services/routeAccess';
+import SiteFooter from '../../components/SiteFooter';
+import './home.css';
 
-import {Helmet} from 'react-helmet'
-import Features24 from '../../components/features24'
-import CTA26 from '../../components/cta26'
-import CTA261 from '../../components/cta261'
-import Features25 from '../../components/features25'
-import FAQ141 from '../../components/faq141'
-import Steps21 from '../../components/steps21'
-import Testimonial17 from '../../components/testimonial17'
-import Contact11 from '../../components/contact11'
-import Footer15 from '../../components/footer15'
-import './home.css'
-import Hero17 from "../../components/hero17";
+const stories = [
+    {
+        image: '/images/murza-parcel-city.webp',
+        alt: 'Illustrated Siamese cat resting on a parcel above a city route',
+        label: 'For senders',
+        title: 'A parcel with somewhere to go',
+        copy: 'Post your route, dates and parcel details so a traveller can find you.'
+    },
+    {
+        image: '/images/murza-trip.webp',
+        alt: 'Illustrated Siamese cat beside a parcel and route map in a car',
+        label: 'For travellers',
+        title: 'Going that way anyway?',
+        copy: 'Share your journey and the space you can offer.'
+    },
+    {
+        image: '/images/murza-delivery.webp',
+        alt: 'Illustrated Siamese cat welcoming a parcel at a front door',
+        label: 'For the connection',
+        title: 'Make the next move together',
+        copy: 'Find a match on the map, then agree the details in messages.'
+    }
+];
 
-const Home = (props) => {
+const steps = [
+    ['01', 'Choose your side', 'Look for a trip that fits your parcel, or browse parcels along your route.'],
+    ['02', 'Share the details', 'Post pickup and destination points, dates and the information someone needs to decide.'],
+    ['03', 'Talk it through', 'Open a profile and message the other person to arrange the handoff.']
+];
+
+const Home = () => {
+    const {isAuthenticated} = useAuth();
+    const [activeSlide, setActiveSlide] = useState(0);
+    const [paused, setPaused] = useState(false);
+    const nextSlide = () => setActiveSlide(index => (index + 1) % stories.length);
+    const previousSlide = () => setActiveSlide(index => (index - 1 + stories.length) % stories.length);
+
+    useEffect(() => {
+        if (paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+        const timer = window.setInterval(() => setActiveSlide(index => (index + 1) % stories.length), 6000);
+        return () => window.clearInterval(timer);
+    }, [paused]);
 
     return (
-        <div className="home-container">
+        <div className="murza-home">
             <Helmet>
-                <title>Murza</title>
-                <meta property="og:title" content="Apprehensive Euphoric Hamster"/>
+                <title>Murza — parcels meet people on the move</title>
+                <meta name="description" content="Find a trip for your parcel or share your journey with someone who needs to send one. Explore requests and connect on Murza."/>
+                <meta property="og:title" content="Murza — parcels meet people on the move"/>
             </Helmet>
-            <Hero17
-                action2={
-                    <Fragment>
-                        <span className="home-text31">Find a driver</span>
-                    </Fragment>
-                }
-                action1={
-                    <Fragment>
-                        <span className="home-text32">Find a parcel</span>
-                    </Fragment>
-                }
-                heading1={
-                    <Fragment>
-                        <span className="home-text33">Find a driver or a parcel</span>
-                    </Fragment>
-                }
-                content1={
-                    <Fragment>
-                        <span className="home-text34">Choose a driver to deliver your package or find a package to deliver.</span>
-                    </Fragment>
-                }
-            ></Hero17>
-            {/*<Hero11
-                action1={
-                    <Fragment>
-            <span className="home-text31 thq-body-small">
-              <span>Find parcel</span>
-              <br></br>
-            </span>
-                    </Fragment>
-                }
-                action2={
-                    <Fragment>
-            <span className="home-text34 thq-body-small">
-              <span>Find driver</span>
-              <br></br>
-            </span>
-                    </Fragment>
-                }
-                content1={
-                    <Fragment>
-                        <span className="home-text37 thq-body-large">Default value</span>
-                    </Fragment>
-                }
-                heading1={
-                    <Fragment>
-                        <span className="home-text38 thq-heading-1">Default value</span>
-                    </Fragment>
-                }
-            ></Hero11>*/}
-            <Features24
-                feature1Title={
-                    <Fragment>
-                        <span className="home-text39 thq-heading-2">Find a Driver</span>
-                    </Fragment>
-                }
-                feature2Title={
-                    <Fragment>
-                        <span className="home-text40 thq-heading-2">Interactive Map</span>
-                    </Fragment>
-                }
-                feature3Title={
-                    <Fragment>
-                        <span className="home-text41 thq-heading-2">Search and Filter</span>
-                    </Fragment>
-                }
-                feature1Description={
-                    <Fragment>
-            <span className="home-text42 thq-body-small">
-              Quickly search for drivers who can deliver your parcel to its
-              destination with our user-friendly platform.
-            </span>
-                    </Fragment>
-                }
-                feature2Description={
-                    <Fragment>
-            <span className="home-text43 thq-body-small">
-              Easily locate available drivers and parcels on the interactive map
-              for real-time tracking and delivery updates.
-            </span>
-                    </Fragment>
-                }
-                feature3Description={
-                    <Fragment>
-            <span className="home-text44 thq-body-small">
-              Filter drivers and parcels by destination, size, and date to find
-              the perfect match for your delivery needs.
-            </span>
-                    </Fragment>
-                }
-            ></Features24>
-            <CTA26
-                action1={
-                    <Fragment>
-                        <span className="home-text45">Find a Driver</span>
-                    </Fragment>
-                }
-                content1={
-                    <Fragment>
-            <span className="home-text46 thq-body-large">
-              Find a driver to deliver your parcel quickly and securely.
-            </span>
-                    </Fragment>
-                }
-                heading1={
-                    <Fragment>
-            <span className="home-text47 thq-heading-2">
-              Need a Parcel Delivered?
-            </span>
-                    </Fragment>
-                }
-            ></CTA26>
-            <CTA261
-                action1={
-                    <Fragment>
-            <span className="home-text48">
-              <span>Find a Parcel</span>
-              <br></br>
-            </span>
-                    </Fragment>
-                }
-                content1={
-                    <Fragment>
-            <span className="home-text51 thq-body-large">
-              Join our platform today to experience seamless parcel deliveries
-            </span>
-                    </Fragment>
-                }
-                heading1={
-                    <Fragment>
-            <span className="home-text52 thq-heading-2">
-              Start sending and receiving parcels with ease
-            </span>
-                    </Fragment>
-                }
-            ></CTA261>
-            <Features25
-                feature1Title={
-                    <Fragment>
-                        <span className="home-text53 thq-heading-2">Find a Driver</span>
-                    </Fragment>
-                }
-                feature2Title={
-                    <Fragment>
-                        <span className="home-text54 thq-heading-2">Find a Parcel</span>
-                    </Fragment>
-                }
-                feature3Title={
-                    <Fragment>
-                        <span className="home-text55 thq-heading-2">Interactive Map</span>
-                    </Fragment>
-                }
-                feature1ImgSrc="https://images.unsplash.com/photo-1728327510029-c7358ff50e4f?ixid=M3w5MTMyMXwwfDF8YWxsfDU1fHx8fHx8fHwxNzI5NzA4MzgwfA&amp;ixlib=rb-4.0.3&amp;w=1500"
-                feature1Description={
-                    <Fragment>
-            <span className="home-text56 thq-body-small">
-              Easily locate a driver to deliver your parcel with just a few
-              clicks.
-            </span>
-                    </Fragment>
-                }
-                feature2Description={
-                    <Fragment>
-            <span className="home-text57 thq-body-small">
-              Search for available parcels that need to be delivered to your
-              desired destination.
-            </span>
-                    </Fragment>
-                }
-                feature3Description={
-                    <Fragment>
-            <span className="home-text58 thq-body-small">
-              Track the real-time locations of drivers and parcels on an
-              interactive map for efficient delivery.
-            </span>
-                    </Fragment>
-                }
-            ></Features25>
-            <FAQ141
-                action1={
-                    <Fragment>
-                        <span className="home-text59">Contact</span>
-                    </Fragment>
-                }
-                action2={
-                    <Fragment>
-                        <span className="home-text60">Email us</span>
-                    </Fragment>
-                }
-                content1={
-                    <Fragment>
-            <span className="home-text61 thq-body-large">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Suspendisse varius enim in eros elementum tristique.
-            </span>
-                    </Fragment>
-                }
-                content2={
-                    <Fragment>
-            <span className="home-text62 thq-body-large">
-              <span>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                <span
-                    dangerouslySetInnerHTML={{
-                        __html: ' ',
-                    }}
-                />
-              </span>
-              <span>
-                <span
-                    dangerouslySetInnerHTML={{
-                        __html: ' ',
-                    }}
-                />
-              </span>
-            </span>
-                    </Fragment>
-                }
-                heading1={
-                    <Fragment>
-                        <span className="home-text65 thq-heading-2">FAQs</span>
-                    </Fragment>
-                }
-                heading2={
-                    <Fragment>
-            <span className="home-text66 thq-heading-2">
-              Still have a question?
-            </span>
-                    </Fragment>
-                }
-                faq1Question={
-                    <Fragment>
-            <span className="home-text67 thq-body-large">
-              How can I find a driver to deliver my parcel?
-            </span>
-                    </Fragment>
-                }
-                faq2Question={
-                    <Fragment>
-            <span className="home-text68 thq-body-large">
-              Can I track my parcel in real-time?
-            </span>
-                    </Fragment>
-                }
-                faq3Question={
-                    <Fragment>
-            <span className="home-text69 thq-body-large">
-              What pricing plans do you offer?
-            </span>
-                    </Fragment>
-                }
-                faq4Question={
-                    <Fragment>
-            <span className="home-text70 thq-body-large">
-              How can I trust the drivers on your platform?
-            </span>
-                    </Fragment>
-                }
-                faq5Question={
-                    <Fragment>
-            <span className="home-text71 thq-body-large">
-              Can I read testimonials from other users?
-            </span>
-                    </Fragment>
-                }
-            ></FAQ141>
-            <Steps21
-                step1Title={
-                    <Fragment>
-                        <span className="home-text72 thq-heading-2">Default value</span>
-                    </Fragment>
-                }
-                step2Title={
-                    <Fragment>
-                        <span className="home-text73 thq-heading-2">Default value</span>
-                    </Fragment>
-                }
-                step3Title={
-                    <Fragment>
-                        <span className="home-text74 thq-heading-2">Default value</span>
-                    </Fragment>
-                }
-                step4Title={
-                    <Fragment>
-                        <span className="home-text75 thq-heading-2">Default value</span>
-                    </Fragment>
-                }
-                step1Description={
-                    <Fragment>
-                        <span className="home-text76 thq-body-small">Default value</span>
-                    </Fragment>
-                }
-                step2Description={
-                    <Fragment>
-                        <span className="home-text77 thq-body-small">Default value</span>
-                    </Fragment>
-                }
-                step3Description={
-                    <Fragment>
-                        <span className="home-text78 thq-body-small">Default value</span>
-                    </Fragment>
-                }
-                step4Description={
-                    <Fragment>
-                        <span className="home-text79 thq-body-small">Default value</span>
-                    </Fragment>
-                }
-            ></Steps21>
-            <Testimonial17
-                review1={
-                    <Fragment>
-            <span className="home-text80 thq-body-small">
-              I needed to send an urgent parcel, and within minutes I found a
-              reliable driver through this platform. Highly recommended!
-            </span>
-                    </Fragment>
-                }
-                review2={
-                    <Fragment>
-            <span className="home-text81 thq-body-small">
-              As a small business owner, I rely on this service to deliver my
-              products to customers efficiently. It has never let me down.
-            </span>
-                    </Fragment>
-                }
-                review3={
-                    <Fragment>
-            <span className="home-text82 thq-body-small">
-              I use this platform regularly to earn extra income by delivering
-              parcels in my free time. It&apos;s easy to use and pays well.
-            </span>
-                    </Fragment>
-                }
-                review4={
-                    <Fragment>
-            <span className="home-text83 thq-body-small">
-              Being retired, I enjoy the flexibility of choosing when and where
-              to deliver parcels. This platform has been a great source of
-              income for me.
-            </span>
-                    </Fragment>
-                }
-                content1={
-                    <Fragment>
-            <span className="home-text84 thq-body-small">
-              Read what our users have to say about their experience with our
-              parcel delivery platform.
-            </span>
-                    </Fragment>
-                }
-                heading1={
-                    <Fragment>
-                        <span className="home-text85 thq-heading-2">Testimonials</span>
-                    </Fragment>
-                }
-                author1Name={
-                    <Fragment>
-                        <span className="home-text86 thq-body-large">Alice Johnson</span>
-                    </Fragment>
-                }
-                author2Name={
-                    <Fragment>
-                        <span className="home-text87 thq-body-large">Bob Smith</span>
-                    </Fragment>
-                }
-                author3Name={
-                    <Fragment>
-                        <span className="home-text88 thq-body-large">Emily Davis</span>
-                    </Fragment>
-                }
-                author4Name={
-                    <Fragment>
-                        <span className="home-text89 thq-body-large">David Lee</span>
-                    </Fragment>
-                }
-                author1Position={
-                    <Fragment>
-                        <span className="home-text90 thq-body-small">Freelancer</span>
-                    </Fragment>
-                }
-                author2Position={
-                    <Fragment>
-            <span className="home-text91 thq-body-small">
-              Small Business Owner
-            </span>
-                    </Fragment>
-                }
-                author3Position={
-                    <Fragment>
-                        <span className="home-text92 thq-body-small">Student</span>
-                    </Fragment>
-                }
-                author4Position={
-                    <Fragment>
-                        <span className="home-text93 thq-body-small">Retiree</span>
-                    </Fragment>
-                }
-            ></Testimonial17>
-            <Contact11
-                email={
-                    <Fragment>
-            <span className="home-text94 thq-body-small">
-              hello@teleporthq.io
-            </span>
-                    </Fragment>
-                }
-                phone1={
-                    <Fragment>
-            <span className="home-text95 thq-body-small">
-              +1 (555) 000-0000
-            </span>
-                    </Fragment>
-                }
-                address1={
-                    <Fragment>
-            <span className="home-text96 thq-body-small">
-              456 Test Ave, Bucharest
-            </span>
-                    </Fragment>
-                }
-                content1={
-                    <Fragment>
-                        <span className="home-text97 thq-body-large">Default value</span>
-                    </Fragment>
-                }
-                content2={
-                    <Fragment>
-            <span className="home-text98 thq-body-large">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Suspendisse varius enim in ero.
-            </span>
-                    </Fragment>
-                }
-                content3={
-                    <Fragment>
-            <span className="home-text99 thq-body-large">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Suspendisse varius enim in ero.
-            </span>
-                    </Fragment>
-                }
-                content5={
-                    <Fragment>
-            <span className="home-text100 thq-body-large">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Suspendisse varius enim in ero.
-            </span>
-                    </Fragment>
-                }
-                heading1={
-                    <Fragment>
-                        <span className="home-text101 thq-heading-2">Default value</span>
-                    </Fragment>
-                }
-            ></Contact11>
-            <Footer15
-                action1={
-                    <Fragment>
-                        <span className="home-text102 thq-body-small">Contact Us</span>
-                    </Fragment>
-                }
-                logoSrc="/logo-1500h.png"
-                content1={
-                    <Fragment>
-            <span className="home-text103 thq-body-small">
-              Terms of Service
-            </span>
-                    </Fragment>
-                }
-                content2={
-                    <Fragment>
-                        <span className="home-text104 thq-body-small">Privacy Policy</span>
-                    </Fragment>
-                }
-                copyright={
-                    <Fragment>
-            <span className="home-text105 thq-body-small">
-              © 2023 TeleportHQ. All rights reserved.
-            </span>
-                    </Fragment>
-                }
-                termsLink={
-                    <Fragment>
-                        <span className="home-text106 thq-body-small">Default value</span>
-                    </Fragment>
-                }
-                cookiesLink={
-                    <Fragment>
-                        <span className="home-text107 thq-body-small">Default value</span>
-                    </Fragment>
-                }
-                privacyLink={
-                    <Fragment>
-                        <span className="home-text108 thq-body-small">Default value</span>
-                    </Fragment>
-                }
-            ></Footer15>
-        </div>
-    )
-}
+            <main>
+                <section className="murza-hero">
+                    <div className="murza-container murza-hero-grid">
+                        <div className="murza-hero-copy">
+                            <span className="murza-eyebrow">A little help along the way</span>
+                            <h1>Every parcel has a route. <em>Murza finds the connection.</em></h1>
+                            <p>Bring a parcel and a traveller together. Explore journeys, share yours and arrange the details directly with another person.</p>
+                            <div className="murza-hero-actions">
+                                <Link className="murza-button" to={appDestination('/main?type=trip', isAuthenticated)}>Find a trip <span aria-hidden="true">↗</span></Link>
+                                <Link className="murza-button murza-button-outline" to={appDestination('/main?type=parcel', isAuthenticated)}>Browse parcels</Link>
+                            </div>
+                            <div className="murza-guide"><img className="murza-guide-mascot" src="/images/murza-mascot.webp" alt="" aria-hidden="true"/><span><strong>Meet Murza</strong><br/>Your curious companion for the journey.</span></div>
+                        </div>
+                        <div className="murza-carousel" role="region" aria-roledescription="carousel"
+                             aria-label="Ways to use Murza" onMouseEnter={() => setPaused(true)}
+                             onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)}
+                             onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false); }}>
+                            <div className="murza-carousel-images">
+                                {stories.map((story, index) => (
+                                    <img key={story.image} src={story.image} alt={story.alt}
+                                         className={index === activeSlide ? 'is-active' : ''}
+                                         aria-hidden={index !== activeSlide} loading={index === 0 ? 'eager' : 'lazy'}/>
+                                ))}
+                            </div>
+                            <div className="murza-carousel-caption" aria-live="polite">
+                                <span>{stories[activeSlide].label}</span>
+                                <h2>{stories[activeSlide].title}</h2>
+                                <p>{stories[activeSlide].copy}</p>
+                            </div>
+                            <div className="murza-carousel-controls">
+                                <button type="button" onClick={previousSlide} aria-label="Previous story">←</button>
+                                <div className="murza-carousel-dots" aria-label="Choose a story">
+                                    {stories.map((story, index) => (
+                                        <button key={story.image} type="button" className={index === activeSlide ? 'is-active' : ''}
+                                                onClick={() => setActiveSlide(index)} aria-label={`Show story ${index + 1}`}
+                                                aria-current={index === activeSlide ? 'true' : undefined}/>
+                                    ))}
+                                </div>
+                                <button type="button" onClick={nextSlide} aria-label="Next story">→</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-export default Home
+                <section className="murza-intro murza-container" id="how-it-works">
+                    <span className="murza-eyebrow">How Murza works</span>
+                    <h2>One map. Two ways to help a parcel move.</h2>
+                    <p>Murza is a meeting place for people sending parcels and people making trips. You choose who to contact and arrange the handoff together.</p>
+                    <div className="murza-steps">
+                        {steps.map(([number, title, copy]) => (
+                            <article className="murza-step" key={number}>
+                                <span>{number}</span><h3>{title}</h3><p>{copy}</p>
+                            </article>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="murza-paths">
+                    <div className="murza-container murza-path-grid">
+                        <article className="murza-path-card">
+                            <div className="murza-path-image"><img src="/images/murza-parcel-city.webp" alt="Murza the Siamese cat with a parcel" loading="lazy"/></div>
+                            <div><span className="murza-eyebrow">I have a parcel</span><h2>Find its next route.</h2>
+                                <p>See trips that could work for your pickup and destination, or post a parcel request with the details travellers need.</p>
+                                <div className="murza-path-actions">
+                                    <Link className="murza-button" to={appDestination('/main?type=trip', isAuthenticated)}>Explore trips</Link>
+                                    <Link className="murza-text-link" to={appDestination('/main?create=parcel', isAuthenticated)}>Post a parcel ↗</Link>
+                                </div>
+                            </div>
+                        </article>
+                        <article className="murza-path-card">
+                            <div className="murza-path-image"><img src="/images/murza-trip.webp" alt="Murza the Siamese cat on a journey" loading="lazy"/></div>
+                            <div><span className="murza-eyebrow">I am travelling</span><h2>Make room for something good.</h2>
+                                <p>Browse parcels going your way, or post your trip so senders can find you.</p>
+                                <div className="murza-path-actions">
+                                    <Link className="murza-button" to={appDestination('/main?type=parcel', isAuthenticated)}>Explore parcels</Link>
+                                    <Link className="murza-text-link" to={appDestination('/main?create=trip', isAuthenticated)}>Post a trip ↗</Link>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section className="murza-faq murza-container" id="faq">
+                    <div><span className="murza-eyebrow">Good to know</span><h2>A few things Murza would tell you.</h2>
+                        <p>Clear expectations make a better journey for everyone.</p></div>
+                    <div className="murza-faq-list">
+                        <details><summary>Do I need an account?</summary><p>Yes. Sign in to browse requests, create your own and message other members.</p></details>
+                        <details><summary>Can I follow a parcel live?</summary><p>Murza shows posted routes and locations on a map. Live parcel tracking is not available.</p></details>
+                        <details><summary>How do payment and delivery work?</summary><p>Murza helps you meet and talk. Agree the price, handoff and delivery details directly with the other person before sending anything. Murza does not process payments.</p></details>
+                        <details><summary>What should I check before agreeing?</summary><p>Read the request carefully, check the profile and use messages to confirm dates, addresses, parcel contents and price.</p></details>
+                    </div>
+                </section>
+
+                <section className="murza-last-call murza-container">
+                    <div><span className="murza-eyebrow">Ready when you are</span><h2>There is always another way forward.</h2>
+                        <p>Join Murza to explore the map and make your first connection.</p></div>
+                    <Link className="murza-button" to={isAuthenticated ? '/main' : '/register'}>{isAuthenticated ? 'Open the map' : 'Join Murza'} <span aria-hidden="true">↗</span></Link>
+                </section>
+            </main>
+            <SiteFooter/>
+        </div>
+    );
+};
+
+export default Home;

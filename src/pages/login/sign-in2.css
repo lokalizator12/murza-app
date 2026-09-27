@@ -285,3 +285,10 @@
     display: inline-block;
     text-align: center;
 }
+.sign-in2-login-error {
+    margin: 14px 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: #8b3023;
+    background: #fff0ec;
+}

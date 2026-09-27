@@ -88,48 +88,48 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
     };
 
     return (
-        <div className="container">
-            <div className="subheader">Step 1: Location and Transport Type</div>
+        <div className="trip-route-container">
+            <div className="trip-route-subheader">Your route and travel method</div>
 
             {/* Departure Address */}
-            <div className="input-group">
+            <div className="trip-route-input-group">
                 <input
                     type="text"
-                    className="input-field"
+                    className="trip-route-input"
                     value={selectedDeparture}
                     readOnly
                     placeholder="Departure Address"
                 />
-                <button className="button" onClick={() => handleOpenModal('departure')}>Set</button>
+                <button type="button" className="trip-route-button" onClick={() => handleOpenModal('departure')}>Choose on map</button>
             </div>
 
             {/* Destination Address */}
-            <div className="input-group">
+            <div className="trip-route-input-group">
                 <input
                     type="text"
-                    className="input-field"
+                    className="trip-route-input"
                     value={selectedDestination}
                     readOnly
                     placeholder="Destination Address"
                 />
-                <button className="button" onClick={() => handleOpenModal('destination')}>Set</button>
+                <button type="button" className="trip-route-button" onClick={() => handleOpenModal('destination')}>Choose on map</button>
             </div>
 
             {/* Waypoints */}
             <div>
-                <button className="button" onClick={() => handleOpenModal('waypoint')}>Add Waypoint</button>
-                <div className="waypoints-list">
+                <button type="button" className="trip-route-button" onClick={() => handleOpenModal('waypoint')}>Add a stop</button>
+                <div className="trip-route-waypoints">
                     {waypoints.map((waypoint, index) => (
-                        <div key={index} className="waypoint-item">
+                        <div key={index} className="trip-route-waypoint">
                             <span>{waypoint.address}</span>
-                            <button onClick={() => removeWaypoint(index)}>✕</button>
+                            <button type="button" onClick={() => removeWaypoint(index)} aria-label={`Remove stop ${index + 1}`}>✕</button>
                         </div>
                     ))}
                 </div>
             </div>
 
             {/* Transport Type Selection */}
-            <div className="transport-selection">
+            <div className="trip-route-transport">
                 <label>
                     <input
                         type="radio"
@@ -158,7 +158,7 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
                         checked={transportType === 'driving'}
                         onChange={() => handleTransportTypeChange('driving')}
                     />
-                    Car / Bus
+                    Car
                 </label>
             </div>
 
@@ -184,7 +184,7 @@ const TripStep1 = ({formData, handleChange, setIsNextEnabled}) => {
             />
 
             {/* Route Info */}
-            <div className="route-info">
+            <div className="trip-route-info">
                 {formData.distance && <p>Total distance: {formData.distance} km</p>}
                 {formData.duration && <p>Estimated travel time: {formData.duration} minutes</p>}
             </div>

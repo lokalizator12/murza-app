@@ -75,6 +75,7 @@ const ParcelRequestWizard = ({onClose, onRefreshData}) => {
                 }, 2000);
             }
             console.log('Parcel Request Submitted:', response.data);
+            return response.status === 200;
         } catch (error) {
             setNotification({
                 open: true,
@@ -82,6 +83,7 @@ const ParcelRequestWizard = ({onClose, onRefreshData}) => {
                 severity: 'error'
             });
             console.error('Failed to submit parcel request:', error);
+            return false;
         }
     };
 

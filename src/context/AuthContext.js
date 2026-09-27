@@ -8,8 +8,8 @@ import {CHAT_URL} from '../services/endpoints';
 const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [userLocal, setUserLocal] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(Cookies.get('token')));
+    const [userLocal, setUserLocal] = useState(() => localStorage.getItem('currentUserId'));
     const [user, setUser] = useState(null);
     const stompClient = useRef(null);
 
@@ -23,9 +23,10 @@ export const AuthProvider = ({children}) => {
         }
     };
 
-    const login = (userData) => {
+    const login = (userData, userId) => {
         setIsAuthenticated(true);
         setUser(userData);
+        setUserLocal(userId);
         connectToPresenceWebSocket();
     };
 
@@ -38,8 +39,11 @@ export const AuthProvider = ({children}) => {
             console.error('Logout failed:', error);
         } finally {
             Cookies.remove('token');
+            localStorage.removeItem('currentUserId');
+            localStorage.removeItem('currentCountMessages');
             setIsAuthenticated(false);
             setUser(null);
+            setUserLocal(null);
             disconnectFromPresenceWebSocket();
             window.location.href = '/';
         }

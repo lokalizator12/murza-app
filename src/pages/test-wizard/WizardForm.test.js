@@ -20,7 +20,7 @@ test('keeps request data when advancing and submits it once', () => {
     render(<WizardForm steps={[FirstStep, LastStep]} initialData={{requestType: 'Parcel'}} onSubmit={onSubmit}/>);
 
     fireEvent.click(screen.getByRole('button', {name: 'Next'}));
-    fireEvent.click(screen.getByRole('button', {name: 'Submit'}));
+    fireEvent.click(screen.getByRole('button', {name: 'Post parcel'}));
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onSubmit).toHaveBeenCalledWith({requestType: 'Parcel', title: 'Test request'});

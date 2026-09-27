@@ -1,104 +1,41 @@
 import React from 'react';
-import {Avatar, Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemText, Typography} from '@mui/material';
+import './RequestsList.css';
 
-const RequestsList = ({requests, currentFilter, onSelectRequest}) => {
-    return (
-        <Box sx={{
-            width: '100%',
-            maxWidth: 600,
-            height: '100vh',
-            overflowY: 'auto',
-            padding: 2,
-            borderRight: '1px solid #ccc'
-        }}>
-            <Typography variant="h6" gutterBottom>
-                Request List
-            </Typography>
-            <Divider/>
-            <List>
-                {requests.map(request => (
-                    <ListItem key={request.idParcel || request.idTrip} alignItems="flex-start"
-                              sx={{padding: 1, borderBottom: '1px solid #eee'}}>
-                        <ListItemAvatar>
-                            <Avatar
-                                variant="rounded"
-                                src={request.previewPhoto || ''}
-                                alt="preview"
-                                sx={{width: 64, height: 64, marginRight: 2}}
-                            />
-                        </ListItemAvatar>
-                        <ListItemText
-                            primary={
-                                <>
-                                    {currentFilter === 'parcel' ? (
-                                        <Typography variant="subtitle1" sx={{fontWeight: 'bold'}}>
-                                            {request.title || 'Untitled'}
-                                        </Typography>
-                                    ) : (
-                                        <Typography variant="subtitle1" sx={{fontWeight: 'bold'}}>
-                                            {request.driverFirstName || 'Untitled'}
-                                        </Typography>
-                                    )}
-                                </>
-                            }
-                            secondary={
-                                <>
-                                    {currentFilter === 'parcel' ? (
-                                        <>
-                                            <Typography sx={{display: 'block'}} component="span" variant="body2"
-                                                        color="text.primary">
-                                                From: {request.pickupAddress}
-                                            </Typography>
-                                            <Typography sx={{display: 'block'}} component="span" variant="body2"
-                                                        color="text.primary">
-                                                To: {request.deliveryAddress}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Pickup
-                                                Date: {request.pickupDate ? new Date(request.pickupDate).toLocaleDateString() : 'N/A'}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Delivery
-                                                Date: {request.deliveryDate ? new Date(request.deliveryDate).toLocaleDateString() : 'N/A'}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Size: {request.size || 'N/A'} cm | Price: {request.price || 'N/A'} €
-                                            </Typography>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Typography sx={{display: 'block'}} component="span" variant="body2"
-                                                        color="text.primary">
-                                                From: {request.departureAddress}
-                                            </Typography>
-                                            <Typography sx={{display: 'block'}} component="span" variant="body2"
-                                                        color="text.primary">
-                                                To: {request.destinationAddress}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Departure Date: {new Date(request.departureDate).toLocaleDateString()}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Arrival Date: {new Date(request.destinationDate).toLocaleDateString()}
-                                            </Typography>
-                                        </>
-                                    )}
-                                </>
-                            }
-                        />
-                        <Button
-                            variant="contained"
-                            size="small"
-                            onClick={() => onSelectRequest(request.idParcel || request.idTrip)}
-                            sx={{marginLeft: 1}}
-                        >
-                            Details
-                        </Button>
-                    </ListItem>
-                ))}
-            </List>
-        </Box>
-    );
+const formatDate = value => {
+    if (!value) return 'Date to be confirmed';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? 'Date to be confirmed' : date.toLocaleDateString();
 };
 
+const RequestsList = ({requests, currentFilter, onSelectRequest}) => {
+    if (!requests.length) return (
+        <div className="murza-empty-list">
+            <span aria-hidden="true">✦</span>
+            <h3>No {currentFilter === 'parcel' ? 'parcels' : 'trips'} found yet</h3>
+            <p>Try another filter or post your own {currentFilter === 'parcel' ? 'parcel' : 'trip'} request.</p>
+        </div>
+    );
+
+    return <div className="murza-request-list">
+        {requests.map(request => {
+            const isParcel = currentFilter === 'parcel';
+            const id = isParcel ? request.idParcel : request.idTrip;
+            const title = request.title || (isParcel ? 'Parcel request' : `Trip by ${request.driverFirstName || 'a traveller'}`);
+            const from = isParcel ? request.pickupAddress : request.departureAddress;
+            const to = isParcel ? request.deliveryAddress : request.destinationAddress;
+            const date = isParcel ? request.pickupDate : request.departureDate;
+            return <article className="murza-request-card" key={id}>
+                <div className="murza-request-card-top">
+                    {isParcel && request.previewPhoto
+                        ? <img src={request.previewPhoto} alt="Parcel preview" loading="lazy"/>
+                        : <div className="murza-request-icon" aria-hidden="true">{isParcel ? '▣' : '↗'}</div>}
+                    <div><span className="murza-request-type">{isParcel ? 'Parcel' : 'Trip'}</span><h3>{title}</h3></div>
+                </div>
+                <p className="murza-request-route"><span>{from || 'Origin to be confirmed'}</span><span className="murza-route-arrow" aria-hidden="true">→</span><span>{to || 'Destination to be confirmed'}</span></p>
+                <div className="murza-request-card-bottom"><span>{formatDate(date)}</span>
+                    <button type="button" onClick={() => onSelectRequest(id)}>View details ↗</button></div>
+            </article>;
+        })}
+    </div>;
+};
 export default RequestsList;

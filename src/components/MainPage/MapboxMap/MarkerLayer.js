@@ -1,5 +1,5 @@
 // MarkerLayer.js
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import mapboxgl from 'mapbox-gl';
 import './MarkerLayer.css';
@@ -7,8 +7,8 @@ import {ICON_URLS} from '../../../utils/constants';
 import PopupContent from './PopupContent';
 
 const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRequestSelect}) => {
-    const [popup, setPopup] = useState(null);
-    const [markers, setMarkers] = useState([]);
+    const popupRef = useRef(null);
+    const markersRef = useRef([]);
     const animationFrameId = useRef(null); // Use ref to persist across renders
     const isMounted = useRef(true); // Track if the component is mounted
 
@@ -16,20 +16,17 @@ const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRe
         isMounted.current = true; // Mark as mounted when the component is loaded
 
         if (!map || !mapLoaded) {
-            console.log('Map is not fully loaded yet.');
             return;
         }
 
-        console.log('MarkerLayer useEffect executed after map and style are loaded');
-        console.log('Selected type:', selectedType);
 
         // Clear previous markers and routes
-        markers.forEach(marker => marker.remove());
-        setMarkers([]);
+        markersRef.current.forEach(marker => marker.remove());
+        markersRef.current = [];
 
-        if (popup) {
-            popup.remove();
-            setPopup(null);
+        if (popupRef.current) {
+            popupRef.current.remove();
+            popupRef.current = null;
         }
 
         const removeExistingRoute = () => {
@@ -62,10 +59,7 @@ const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRe
 
         const requests = selectedType === 'parcel' ? mapParcels : mapDrivers;
 
-        console.log('Requests:', requests);
-
         if (!requests || requests.length === 0) {
-            console.warn('No requests available');
             return;
         }
 
@@ -237,9 +231,9 @@ const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRe
         // Function to display the popup
         const showPopup = (request, coordinates) => {
             // Remove existing popup
-            if (popup) {
-                popup.remove();
-                setPopup(null);
+            if (popupRef.current) {
+                popupRef.current.remove();
+                popupRef.current = null;
             }
 
             // Create a container for the popup content
@@ -247,10 +241,9 @@ const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRe
 
             // Define handlers
             const handleClose = () => {
-                if (popup) {
-                    popup.remove();
-                    ReactDOM.unmountComponentAtNode(popupNode);
-                    setPopup(null);
+                if (popupRef.current) {
+                    popupRef.current.remove();
+                    popupRef.current = null;
                 }
                 removeExistingRoute();
                 map.flyTo({center: [0, 0], zoom: 2});
@@ -258,8 +251,6 @@ const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRe
 
             const handleDetails = () => {
                 const requestId = selectedType === 'parcel' ? request.idParcel : request.idTrip;
-                console.log('Request object:', request);
-                console.log('Request ID:', requestId);
                 if (!requestId) {
                     console.error('Request ID is undefined');
                     return;
@@ -284,12 +275,12 @@ const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRe
                 .setDOMContent(popupNode)
                 .addTo(map);
 
-            setPopup(newPopup);
+            popupRef.current = newPopup;
 
             // Ensure React component is unmounted when the popup is closed
             newPopup.on('close', () => {
                 ReactDOM.unmountComponentAtNode(popupNode);
-                setPopup(null);
+                popupRef.current = null;
                 removeExistingRoute();
                 map.flyTo({center: [0, 0], zoom: 2});
             });
@@ -341,7 +332,7 @@ const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRe
                     .setLngLat(coordinates)
                     .addTo(map);
 
-                setMarkers(prevMarkers => [...prevMarkers, marker]);
+                markersRef.current.push(marker);
             };
 
             // Create markers for start and end points
@@ -357,12 +348,12 @@ const MarkerLayer = ({map, mapLoaded, mapParcels, mapDrivers, selectedType, onRe
         // Cleanup on unmount
         return () => {
             isMounted.current = false; // Mark as unmounted
-            if (popup) {
-                popup.remove();
-                setPopup(null);
+            if (popupRef.current) {
+                popupRef.current.remove();
+                popupRef.current = null;
             }
-            markers.forEach(marker => marker.remove());
-            setMarkers([]);
+            markersRef.current.forEach(marker => marker.remove());
+            markersRef.current = [];
 
             removeExistingRoute();
         };

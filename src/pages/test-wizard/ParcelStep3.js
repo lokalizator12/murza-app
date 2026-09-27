@@ -22,10 +22,10 @@ const ParcelStep3 = ({formData, handleChange, setIsNextEnabled}) => {
     return (
         <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
-                Step 3: Details and Completion
+                Dates and proposed price
             </Typography>
             <TextField
-                label="Request Title"
+                label="Parcel title"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -33,7 +33,7 @@ const ParcelStep3 = ({formData, handleChange, setIsNextEnabled}) => {
                 onChange={(e) => handleChange('title', e.target.value)}
             />
             <TextField
-                label="Full Request Description"
+                label="Parcel description"
                 variant="outlined"
                 fullWidth
                 margin="normal"
@@ -67,7 +67,7 @@ const ParcelStep3 = ({formData, handleChange, setIsNextEnabled}) => {
                 }}
             />
             <TextField
-                label="Final Price"
+                label="Proposed price (€)"
                 type="number"
                 variant="outlined"
                 fullWidth

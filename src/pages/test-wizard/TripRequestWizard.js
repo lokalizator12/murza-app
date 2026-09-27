@@ -49,6 +49,7 @@ const TripRequestWizard = ({onClose, onRefreshData}) => {
                 }, 2000);
             }
             console.log('Trip Request Submitted:', response.data);
+            return response.status === 200;
         } catch (error) {
 
             setNotification({
@@ -57,6 +58,7 @@ const TripRequestWizard = ({onClose, onRefreshData}) => {
                 severity: 'error'
             });
             console.error('Failed to submit trip request:', error);
+            return false;
         }
     };
 
