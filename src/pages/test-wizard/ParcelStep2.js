@@ -45,7 +45,7 @@ const ParcelStep2 = ({formData, handleChange, setIsNextEnabled}) => {
     return (
         <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
-                Step 2: Parcel Information
+                Tell travellers about the parcel
             </Typography>
             <TextField
                 label="Weight (kg)"

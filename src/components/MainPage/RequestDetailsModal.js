@@ -4,14 +4,14 @@ import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Ty
 import ReadOnlyImageCarousel from '../ReadOnlyImageCarousel';
 import RouteMap from '../RouteMap';
 import {useNavigate} from 'react-router-dom';
-import {AccountCircle, Close, ContactMail, Map} from '@mui/icons-material';
+import {AccountCircle, Close, ContactMail} from '@mui/icons-material';
 
 const RequestDetailsModal = ({open, onClose, request, requestType}) => {
     const navigate = useNavigate();
     const isParcel = requestType === 'parcel';
 
     const handleContact = () => {
-        const interlocutorId = isParcel ? request.sender.id : request.driver.id;
+        const interlocutorId = isParcel ? request?.sender?.id : request?.driver?.id;
         if (interlocutorId) {
             onClose();
             setTimeout(() => {
@@ -39,28 +39,26 @@ const RequestDetailsModal = ({open, onClose, request, requestType}) => {
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle>Request Details</DialogTitle>
+            <DialogTitle>{isParcel ? 'Parcel details' : 'Trip details'}</DialogTitle>
             <DialogContent dividers>
                 <Typography variant="h5" gutterBottom>
-                    {request.title || 'Untitled'}
+                    {request.title || (isParcel ? 'Parcel request' : 'Trip request')}
                 </Typography>
                 {isParcel && request.photos && request.photos.length > 0 && (
                     <ReadOnlyImageCarousel images={request.photos}/>
                 )}
                 <Grid container spacing={2} sx={{mt: 1}}>
                     <Grid item xs={12} sm={6}>
-                        <Typography variant="body1" gutterBottom>
-                            <strong>Description:</strong> {request.description}
-                        </Typography>
-                        <Typography variant="body1" gutterBottom>
-                            <strong>Price:</strong> {request.price ? `${request.price} €` : 'N/A'}
-                        </Typography>
-                        <Typography variant="body1" gutterBottom>
-                            <strong>Volume:</strong> {request.volume ? `${request.volume} m³` : 'N/A'}
-                        </Typography>
-                        <Typography variant="body1" gutterBottom>
-                            <strong>Weight:</strong> {request.weight ? `${request.weight} kg` : 'N/A'}
-                        </Typography>
+                        <Typography variant="body1" gutterBottom><strong>Description:</strong> {request.description || 'No description provided'}</Typography>
+                        {isParcel ? <>
+                            <Typography variant="body1" gutterBottom><strong>Proposed price:</strong> {request.price != null ? `${request.price} €` : 'To be agreed'}</Typography>
+                            <Typography variant="body1" gutterBottom><strong>Size:</strong> {request.size || 'Not specified'}</Typography>
+                            {request.weight > 0 && <Typography variant="body1" gutterBottom><strong>Weight:</strong> {request.weight} kg</Typography>}
+                            {request.volume > 0 && <Typography variant="body1" gutterBottom><strong>Volume:</strong> {request.volume} m³</Typography>}
+                        </> : <>
+                            {request.maxWeight > 0 && <Typography variant="body1" gutterBottom><strong>Available weight:</strong> {request.maxWeight} kg</Typography>}
+                            {request.maxVolume > 0 && <Typography variant="body1" gutterBottom><strong>Available volume:</strong> {request.maxVolume} m³</Typography>}
+                        </>}
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         {isParcel ? (
@@ -117,7 +115,7 @@ const RequestDetailsModal = ({open, onClose, request, requestType}) => {
             </DialogContent>
             <DialogActions>
                 <Button variant="contained" color="primary" startIcon={<ContactMail/>} onClick={handleContact}>
-                    Contact
+                    Message {isParcel ? 'sender' : 'traveller'}
                 </Button>
                 <Button
                     variant="contained"
@@ -125,10 +123,7 @@ const RequestDetailsModal = ({open, onClose, request, requestType}) => {
                     startIcon={<AccountCircle/>}
                     onClick={handleProfileRedirect}
                 >
-                    Profile
-                </Button>
-                <Button variant="outlined" color="info" startIcon={<Map/>}>
-                    Route on Map
+                    View profile
                 </Button>
                 <Button variant="text" color="inherit" startIcon={<Close/>} onClick={onClose}>
                     Close

@@ -3,12 +3,13 @@ import Cookies from 'js-cookie';
 import axios from '../axiosConfig';
 import {Client} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import {CHAT_URL} from '../services/endpoints';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [userLocal, setUserLocal] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(Cookies.get('token')));
+    const [userLocal, setUserLocal] = useState(() => localStorage.getItem('currentUserId'));
     const [user, setUser] = useState(null);
     const stompClient = useRef(null);
 
@@ -22,9 +23,10 @@ export const AuthProvider = ({children}) => {
         }
     };
 
-    const login = (userData) => {
+    const login = (userData, userId) => {
         setIsAuthenticated(true);
         setUser(userData);
+        setUserLocal(userId);
         connectToPresenceWebSocket();
     };
 
@@ -33,13 +35,17 @@ export const AuthProvider = ({children}) => {
             // Notify server about going offline
             updatePresenceStatus('offline');
             await axios.post('/auth/logout');
-            Cookies.remove('token');
-            setIsAuthenticated(false);
-            setUser(null);
-            disconnectFromPresenceWebSocket();
-            window.location.href = '/';
         } catch (error) {
             console.error('Logout failed:', error);
+        } finally {
+            Cookies.remove('token');
+            localStorage.removeItem('currentUserId');
+            localStorage.removeItem('currentCountMessages');
+            setIsAuthenticated(false);
+            setUser(null);
+            setUserLocal(null);
+            disconnectFromPresenceWebSocket();
+            window.location.href = '/';
         }
     };
 
@@ -50,9 +56,8 @@ export const AuthProvider = ({children}) => {
             return;
         }
 
-        const socket = new SockJS(`http://localhost:8080/ws/chat?token=${token}`);
         stompClient.current = new Client({
-            webSocketFactory: () => socket,
+            webSocketFactory: () => new SockJS(`${CHAT_URL}?token=${token}`),
             reconnectDelay: 5000,
             debug: (str) => {
                 console.log('STOMP debug:', str);
@@ -117,4 +122,3 @@ export const AuthProvider = ({children}) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-

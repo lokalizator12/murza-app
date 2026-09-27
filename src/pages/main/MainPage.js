@@ -1,251 +1,165 @@
-// MainPage.js
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
+import {Dialog, Pagination} from '@mui/material';
 import MapboxMap from '../../components/MainPage/MapboxMap/MapboxMap';
 import RequestsFilter from '../../components/MainPage/RequestsFilter';
 import RequestsList from '../../components/MainPage/RequestsList';
 import RequestDetailsModal from '../../components/MainPage/RequestDetailsModal';
-import {Box, Button, Divider, IconButton, Pagination, Tooltip} from '@mui/material';
-import axios from 'axios';
-import Dialog from "@mui/material/Dialog";
-import RequestForm from "../test-wizard/MainFormRequest";
-import RequestsFilterPanel from "../../components/MainPage/RequestsFilterPanel";
-import {Add, FilterList} from "@mui/icons-material";
+import RequestsFilterPanel from '../../components/MainPage/RequestsFilterPanel';
+import RequestForm from '../test-wizard/MainFormRequest';
+import axios from '../../axiosConfig';
+import './MainPage.css';
 
 const MainPage = () => {
-    const [parcels, setParcels] = useState([]);
-    const [drivers, setDrivers] = useState([]);
-    const [filteredRequests, setFilteredRequests] = useState([]);
-    const [selectedRequest, setSelectedRequest] = useState(null);
-    const [currentFilter, setCurrentFilter] = useState('parcel');
-    const [isModalOpen, setModalOpen] = useState(false);
-
-    const [currentPageParcel, setCurrentPageParcel] = useState(0);
-    const [currentPageTrip, setCurrentPageTrip] = useState(0);
-    const [totalPagesParcel, setTotalPagesParcel] = useState(0);
-    const [totalPagesTrip, setTotalPagesTrip] = useState(0);
-
-    // State for map-specific data
-    const [mapParcels, setMapParcels] = useState([]);
-    const [mapDrivers, setMapDrivers] = useState([]);
-    const [showRequestDialog, setShowRequestDialog] = useState(false); // state for showing the dialog
-
-    // Function to open and close the dialog
-    const handleOpenRequestDialog = () => setShowRequestDialog(true);
-    const handleCloseRequestDialog = () => setShowRequestDialog(false);
-
+    const [searchParams, setSearchParams] = useSearchParams();
+    const requestedType = searchParams.get('type') === 'trip' ? 'trip' : 'parcel';
+    const requestedCreate = searchParams.get('create');
+    const [currentFilter, setCurrentFilter] = useState(requestedType);
+    const [requests, setRequests] = useState({parcel: [], trip: []});
+    const [mapRequests, setMapRequests] = useState({parcel: [], trip: []});
+    const [totalPages, setTotalPages] = useState({parcel: 0, trip: 0});
+    const [pages, setPages] = useState({parcel: 0, trip: 0});
     const [filters, setFilters] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [showRequestDialog, setShowRequestDialog] = useState(false);
+    const [requestKind, setRequestKind] = useState(null);
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
-    const handleApplyFilters = (newFilters) => {
-        setFilters(newFilters);
-        // Reset current page to the first one
-        if (currentFilter === 'parcel') {
-            setCurrentPageParcel(0);
-        } else if (currentFilter === 'trip') {
-            setCurrentPageTrip(0);
-        }
-    };
-
-    const handleResetFilters = () => {
-        setFilters({});
-        // Reset current page to the first one
-        if (currentFilter === 'parcel') {
-            setCurrentPageParcel(0);
-        } else if (currentFilter === 'trip') {
-            setCurrentPageTrip(0);
-        }
-    };
-
-    const toggleFilterPanel = () => {
-        setIsFilterPanelOpen(!isFilterPanelOpen);
-    };
-
+    useEffect(() => setCurrentFilter(requestedType), [requestedType]);
     useEffect(() => {
-        setFilters({});
-        if (currentFilter === 'parcel') {
-            setCurrentPageParcel(0);
-        } else if (currentFilter === 'trip') {
-            setCurrentPageTrip(0);
+        if (requestedCreate === 'parcel' || requestedCreate === 'trip') {
+            setRequestKind(requestedCreate);
+            setShowRequestDialog(true);
         }
-    }, [currentFilter]);
+    }, [requestedCreate]);
 
-    // Fetch requests when component mounts or page changes
-    useEffect(() => {
-        if (currentFilter === 'parcel') {
-            fetchParcelRequests(currentPageParcel, filters);
-        } else if (currentFilter === 'trip') {
-            fetchTripRequests(currentPageTrip, filters);
+    const fetchMapRequests = useCallback(async () => {
+        try {
+            const [trips, parcels] = await Promise.all([
+                axios.get('/trip-requests/list-map'),
+                axios.get('/parcel-requests/list-map')
+            ]);
+            setMapRequests({trip: trips.data || [], parcel: parcels.data || []});
+        } catch (fetchError) {
+            // The list remains usable when map markers fail to load.
+            console.error('Unable to load map markers', fetchError);
         }
-    }, [currentFilter, currentPageParcel, currentPageTrip, filters]);
-
-    // Update filtered requests when filter or data changes
-    useEffect(() => {
-        filterRequests();
-    }, [currentFilter, parcels, drivers]);
-
-    // Fetch map-specific data
-    useEffect(() => {
-        fetchMapRequests();
     }, []);
 
-    const fetchParcelRequests = async (page = 0, filters = {}) => {
+    const fetchRequests = useCallback(async (type, page, activeFilters) => {
+        setLoading(true);
+        setError('');
         try {
-            const params = new URLSearchParams({page, size: 7});
-            Object.entries(filters).forEach(([key, value]) => {
-                if (value !== null && value !== undefined && value !== '') {
-                    params.append(key, value);
-                }
+            const params = new URLSearchParams({page: String(page), size: '7'});
+            Object.entries(activeFilters).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') params.set(key, String(value));
             });
-            const parcelsResponse = await axios.get(`/parcel-requests/list-summary?${params.toString()}`);
-            setParcels(parcelsResponse.data.content);
-            setTotalPagesParcel(parcelsResponse.data.totalPages);
-        } catch (error) {
-            console.error("Error fetching parcel requests:", error);
+            const endpoint = type === 'parcel' ? 'parcel-requests' : 'trip-requests';
+            const response = await axios.get(`/${endpoint}/list-summary?${params}`);
+            setRequests(previous => ({...previous, [type]: response.data.content || []}));
+            setTotalPages(previous => ({...previous, [type]: response.data.totalPages || 0}));
+        } catch (fetchError) {
+            setError('Requests could not be loaded. Please try again.');
+            setRequests(previous => ({...previous, [type]: []}));
+            console.error('Unable to load requests', fetchError);
+        } finally {
+            setLoading(false);
         }
-    };
+    }, []);
 
-    const fetchTripRequests = async (page = 0, filters = {}) => {
-        try {
-            const params = new URLSearchParams({page, size: 7});
-            Object.entries(filters).forEach(([key, value]) => {
-                if (value !== null && value !== undefined && value !== '') {
-                    params.append(key, value);
-                }
-            });
-            const driversResponse = await axios.get(`/trip-requests/list-summary?${params.toString()}`);
-            setDrivers(driversResponse.data.content);
-            setTotalPagesTrip(driversResponse.data.totalPages);
-        } catch (error) {
-            console.error("Error fetching trip requests:", error);
-        }
-    };
+    useEffect(() => {
+        fetchRequests(currentFilter, pages[currentFilter], filters);
+    }, [currentFilter, pages, filters, fetchRequests]);
+    useEffect(() => { fetchMapRequests(); }, [fetchMapRequests]);
 
-    const fetchMapRequests = async () => {
-        try {
-            const mapDriversResponse = await axios.get('/trip-requests/list-map');
-            const mapParcelsResponse = await axios.get('/parcel-requests/list-map');
-            setMapDrivers(mapDriversResponse.data);
-            setMapParcels(mapParcelsResponse.data);
-        } catch (error) {
-            console.error("Error fetching map-specific requests:", error);
-        }
+    const handleFilterChange = (type) => {
+        setCurrentFilter(type);
+        setFilters({});
+        setPages(previous => ({...previous, [type]: 0}));
+        setSearchParams({type});
     };
-
+    const handleApplyFilters = (nextFilters) => {
+        setPages(previous => ({...previous, [currentFilter]: 0}));
+        setFilters(nextFilters);
+    };
+    const handleOpenRequestDialog = (kind) => {
+        setRequestKind(kind);
+        setShowRequestDialog(true);
+        setSearchParams({type: currentFilter, create: kind});
+    };
+    const handleCloseRequestDialog = () => {
+        setShowRequestDialog(false);
+        setRequestKind(null);
+        setSearchParams({type: currentFilter});
+    };
     const refreshRequestsData = () => {
-        fetchParcelRequests(currentPageParcel);
-        fetchTripRequests(currentPageTrip);
+        fetchRequests(currentFilter, pages[currentFilter], filters);
         fetchMapRequests();
     };
-
-    const filterRequests = () => {
-        if (currentFilter === 'parcel') {
-            setFilteredRequests(parcels);
-        } else if (currentFilter === 'trip') {
-            setFilteredRequests(drivers);
-        }
-    };
-
-    // Updated handleRequestSelect to accept id and type
-    const handleRequestSelect = async (requestId, type) => {
+    const handleRequestSelect = async (requestId, type = currentFilter) => {
         try {
-            let response;
-            if (type === 'parcel') {
-                response = await axios.get(`/parcel-requests/${requestId}`);
-            } else if (type === 'trip') {
-                response = await axios.get(`/trip-requests/${requestId}`);
-            } else {
-                console.error('Unknown request type:', type);
-                return;
-            }
-            setSelectedRequest(response.data);
-            setModalOpen(true);
-        } catch (error) {
-            console.error("Error fetching request details:", error);
-        }
-    };
-
-    const handlePageChange = (event, newPage) => {
-        if (currentFilter === 'parcel') {
-            setCurrentPageParcel(newPage - 1);
-        } else if (currentFilter === 'trip') {
-            setCurrentPageTrip(newPage - 1);
+            const endpoint = type === 'parcel' ? 'parcel-requests' : 'trip-requests';
+            const response = await axios.get(`/${endpoint}/${requestId}`);
+            setSelectedRequest({data: response.data, type});
+        } catch (fetchError) {
+            setError('Request details could not be loaded. Please try again.');
+            console.error('Unable to load request details', fetchError);
         }
     };
 
     return (
-        <div style={{display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden'}}>
-            <Dialog
-                open={showRequestDialog}
-                onClose={handleCloseRequestDialog}
-                fullWidth
-            >
-                <RequestForm onClose={handleCloseRequestDialog} onRefreshData={refreshRequestsData}/>
-            </Dialog>
-
-            <div style={{display: 'flex', flexGrow: 1, overflow: 'hidden'}}>
-                <div style={{width: 550, padding: 15, borderRight: '1px solid #ddd', overflowY: 'auto'}}>
-                    <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2}}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            startIcon={<Add/>}
-                            onClick={handleOpenRequestDialog}
-                        >
-                            Create Request
-                        </Button>
-                        <Tooltip title={isFilterPanelOpen ? 'Hide Filters' : 'Show Filters'}>
-                            <IconButton onClick={toggleFilterPanel}>
-                                <FilterList/>
-                            </IconButton>
-                        </Tooltip>
-                    </Box>
-                    <Divider sx={{my: 2}}/>
-                    <RequestsFilter currentFilter={currentFilter} onFilterChange={setCurrentFilter}/>
-                    {isFilterPanelOpen && (
-                        <RequestsFilterPanel
-                            onApplyFilters={handleApplyFilters}
-                            onResetFilters={handleResetFilters}
-                            currentFilter={currentFilter}
-                        />
-                    )}
-                    <RequestsList
-                        requests={filteredRequests}
-                        currentFilter={currentFilter}
-                        onSelectRequest={(id) => handleRequestSelect(id, currentFilter)}
-                    />
-                    <Box sx={{display: 'flex', justifyContent: 'center', mt: 2}}>
-                        <Pagination
-                            count={currentFilter === 'parcel' ? totalPagesParcel : totalPagesTrip}
-                            page={currentFilter === 'parcel' ? currentPageParcel + 1 : currentPageTrip + 1}
-                            onChange={handlePageChange}
-                            color="primary"
-                            disabled={
-                                (currentFilter === 'parcel' && totalPagesParcel === 0) ||
-                                (currentFilter === 'trip' && totalPagesTrip === 0)
-                            }
-                        />
-                    </Box>
-                </div>
-                <div style={{flexGrow: 1, overflow: 'hidden'}}>
-                    <MapboxMap
-                        mapParcels={mapParcels}
-                        mapDrivers={mapDrivers}
-                        selectedType={currentFilter}
-                        onRequestSelect={handleRequestSelect} // Pass the handler here
-                    />
+        <main className="murza-board">
+            <div className="murza-board-head">
+                <div className="murza-container murza-board-head-inner">
+                    <div>
+                        <span className="murza-eyebrow">The Murza map</span>
+                        <h1>Find the route that fits.</h1>
+                        <p>Browse posted parcels and trips, then open a request to connect.</p>
+                    </div>
+                    <img src="/images/murza-delivery.webp" alt="" aria-hidden="true"/>
                 </div>
             </div>
-            {selectedRequest && (
-                <RequestDetailsModal
-                    open={isModalOpen}
-                    onClose={() => setModalOpen(false)}
-                    request={selectedRequest}
-                    requestType={currentFilter}
-                />
-            )}
-        </div>
+            <div className="murza-board-workspace">
+                <aside className="murza-board-sidebar" aria-label="Requests">
+                    <div className="murza-board-actions">
+                        <button className="murza-button murza-button-small" type="button" onClick={() => handleOpenRequestDialog('parcel')}>+ Post a parcel</button>
+                        <button className="murza-button murza-button-outline murza-button-small" type="button" onClick={() => handleOpenRequestDialog('trip')}>+ Post a trip</button>
+                    </div>
+                    <RequestsFilter currentFilter={currentFilter} onFilterChange={handleFilterChange}/>
+                    <button className="murza-filter-toggle" type="button" onClick={() => setIsFilterPanelOpen(open => !open)}
+                            aria-expanded={isFilterPanelOpen} aria-controls="murza-filters">
+                        {isFilterPanelOpen ? 'Hide filters' : 'Show filters'} <span aria-hidden="true">{isFilterPanelOpen ? '−' : '+'}</span>
+                    </button>
+                    {isFilterPanelOpen && <div id="murza-filters"><RequestsFilterPanel
+                        onApplyFilters={handleApplyFilters} onResetFilters={() => handleApplyFilters({})}
+                        currentFilter={currentFilter}/></div>}
+                    <div className="murza-list-heading">
+                        <h2>{currentFilter === 'parcel' ? 'Parcel requests' : 'Available trips'}</h2>
+                        <span>{loading ? 'Loading…' : `${requests[currentFilter].length} shown`}</span>
+                    </div>
+                    {error && <div className="murza-board-error" role="alert">{error} <button type="button" onClick={() => fetchRequests(currentFilter, pages[currentFilter], filters)}>Retry</button></div>}
+                    {loading ? <div className="murza-board-status" role="status">Loading requests…</div> :
+                        <RequestsList requests={requests[currentFilter]} currentFilter={currentFilter}
+                                      onSelectRequest={id => handleRequestSelect(id)}/>}
+                    {totalPages[currentFilter] > 1 && <div className="murza-board-pagination">
+                        <Pagination count={totalPages[currentFilter]} page={pages[currentFilter] + 1}
+                                    onChange={(_, page) => setPages(previous => ({...previous, [currentFilter]: page - 1}))}/>
+                    </div>}
+                </aside>
+                <section className="murza-board-map" aria-label="Request map">
+                    <MapboxMap mapParcels={mapRequests.parcel} mapDrivers={mapRequests.trip}
+                               selectedType={currentFilter} onRequestSelect={handleRequestSelect}/>
+                </section>
+            </div>
+            <Dialog open={showRequestDialog} onClose={handleCloseRequestDialog} fullWidth maxWidth="md">
+                <RequestForm key={requestKind || 'choose'} initialType={requestKind}
+                             onClose={handleCloseRequestDialog} onRefreshData={refreshRequestsData}/>
+            </Dialog>
+            {selectedRequest && <RequestDetailsModal open onClose={() => setSelectedRequest(null)}
+                                                     request={selectedRequest.data} requestType={selectedRequest.type}/>}
+        </main>
     );
-
 };
-
 export default MainPage;

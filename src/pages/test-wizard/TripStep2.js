@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Alert, Box, Button, Checkbox, FormControlLabel, TextField, Typography} from '@mui/material';
+import {Alert, Box, Button, TextField, Typography} from '@mui/material';
 import axios from '../../axiosConfig';
 
 const TripStep2 = ({formData, handleChange, setIsNextEnabled}) => {
@@ -101,18 +101,8 @@ const TripStep2 = ({formData, handleChange, setIsNextEnabled}) => {
     return (
         <Box sx={{textAlign: 'center', mb: 4}}>
             <Typography variant="h5" gutterBottom>
-                Step 2: Cargo Parameters and Items
+                Your available space and accepted items
             </Typography>
-
-            <FormControlLabel
-                control={
-                    <Checkbox
-                        checked={formData.declaration || false}
-                        onChange={(e) => handleChange('declaration', e.target.checked)}
-                    />
-                }
-                label="Going through the red corridor (declaration)"
-            />
 
             <TextField
                 label="Maximum Weight (kg)"

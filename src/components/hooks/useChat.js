@@ -3,6 +3,7 @@ import {Client} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Cookies from 'js-cookie';
 import axios from '../../axiosConfig';
+import {CHAT_URL} from '../../services/endpoints';
 /* global grecaptcha */
 export const useChat = (receiverId, user) => {
     const [messages, setMessages] = useState([]);
@@ -162,7 +163,7 @@ export const useChat = (receiverId, user) => {
 
     const connectToWebSocket = useCallback(() => {
         const token = Cookies.get('token');
-        const socket = new SockJS(`http://localhost:8080/ws/chat?token=${token}`);
+        const socket = new SockJS(`${CHAT_URL}?token=${token}`);
         stompClient.current = new Client({
             webSocketFactory: () => socket,
             reconnectDelay: 5000,

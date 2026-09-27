@@ -3,6 +3,9 @@
     height: 30px;
     background-size: cover;
     cursor: pointer;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px #33272080;
 }
 
 /* MarkerLayer.css */
@@ -39,13 +42,16 @@
 }
 
 :root {
-    --parcel-start-icon: url('');
-    --trip-start-icon: url('');
-    --parcel-end-icon: url('');
-    --trip-intermediate-icon: url('');
-    --trip-end-icon: url('');
+    --parcel-start-icon: none;
+    --trip-start-icon: none;
+    --parcel-end-icon: none;
+    --trip-intermediate-icon: none;
+    --trip-end-icon: none;
 }
 
+.marker.parcel { background-color: #a96038; }
+.marker.trip { background-color: #547568; }
+.marker.end { border-style: double; }
 
 .marker.start.parcel {
     background-image: var(--parcel-start-icon);

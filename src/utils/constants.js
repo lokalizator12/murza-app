@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:3000";
+export const BASE_URL = window.location.origin;
 // iconUrls.js
 const AWS_MAIN_MAP_ICON_BASE_URL = 'https://murza-picture-store.s3.eu-north-1.amazonaws.com/front-end/main-page/map/marker-icons';
 

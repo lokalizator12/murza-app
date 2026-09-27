@@ -24,7 +24,7 @@ const RequestsFilter = ({currentFilter, onFilterChange}) => {
             </ToggleButton>
             <ToggleButton value="trip">
                 <DirectionsCar sx={{mr: 1}}/>
-                Drivers
+                Trips
             </ToggleButton>
         </ToggleButtonGroup>
     );

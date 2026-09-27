@@ -1,0 +1,37 @@
+:root {
+    --murza-ink: #332720;
+    --murza-brown: #62442e;
+    --murza-orange: #b25d35;
+    --murza-cream: #fffaf4;
+    --murza-line: #e8d9c9;
+    --murza-sage: #547568;
+}
+html { scroll-behavior: smooth; }
+body { color: var(--murza-ink); background: var(--murza-cream); }
+input[type="radio"], input[type="checkbox"] { accent-color: var(--murza-brown); }
+.murza-container { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
+.murza-button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    min-height: 52px; padding: 13px 24px; border: 1px solid var(--murza-brown);
+    border-radius: 999px; color: white; background: var(--murza-brown);
+    text-decoration: none; font-size: .95rem; font-weight: 700; line-height: 1.2;
+    cursor: pointer; transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.murza-button:hover { color: white; background: #422d20; transform: translateY(-2px); box-shadow: 0 9px 22px #452b1d25; }
+.murza-button-outline { color: var(--murza-brown); background: transparent; }
+.murza-button-outline:hover { color: var(--murza-brown); background: #f5e7d7; }
+.murza-button-small { min-height: 42px; padding: 10px 18px; }
+.murza-button:focus-visible, .murza-nav a:focus-visible, .murza-nav button:focus-visible,
+.murza-carousel button:focus-visible { outline: 3px solid #c2764b; outline-offset: 3px; }
+.murza-eyebrow { display: block; color: var(--murza-orange); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.murza-footer { margin-top: 64px; padding: 48px 0 28px; background: #2e251f; color: #f6eee6; }
+.murza-footer-inner { display: flex; justify-content: space-between; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+.murza-footer-brand img { width: 160px; filter: brightness(0) invert(1); }
+.murza-footer-brand p { max-width: 280px; margin-top: 15px; color: #d5c3b3; line-height: 1.55; }
+.murza-footer nav { display: flex; flex-direction: column; gap: 14px; }
+.murza-footer a { color: #f6eee6; text-decoration: none; }
+.murza-footer a:hover { text-decoration: underline; }
+.murza-footer-note { color: #d5c3b3; font-size: .88rem; }
+.murza-route-loading { min-height: 50vh; display: grid; place-items: center; color: #6a4b35; font-size: 1.1rem; }
+@media (max-width: 600px) { .murza-container { width: min(100% - 32px, 1180px); } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .murza-button { transition: none; } .murza-button:hover { transform: none; } }

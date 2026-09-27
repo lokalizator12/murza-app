@@ -20,7 +20,6 @@ import {
     ArrowDownward,
     ArrowUpward,
     AttachMoney,
-    CalendarToday,
     ClearAll,
     ExpandMore,
     LocationOn,
@@ -29,7 +28,6 @@ import {
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
-import {format} from "date-fns";
 
 const RequestsFilterPanel = ({onApplyFilters, onResetFilters, currentFilter}) => {
     const initialFilters = {
@@ -39,7 +37,6 @@ const RequestsFilterPanel = ({onApplyFilters, onResetFilters, currentFilter}) =>
         dateFrom: null,
         dateTo: null,
         shippingMethod: '',
-        // Other filters can be defined here
     };
 
     const [filters, setFilters] = useState(initialFilters);
@@ -81,12 +78,12 @@ const RequestsFilterPanel = ({onApplyFilters, onResetFilters, currentFilter}) =>
     };
 
     const handleApply = () => {
+        const {priceRange, shippingMethod, ...selectedFilters} = filters;
         const appliedFilters = {
-            ...filters,
-            priceMin: filters.priceRange[0],
-            priceMax: filters.priceRange[1],
-            dateFrom: filters.dateFrom ? format(filters.dateFrom, 'yyyy-MM-dd') : null,
-            dateTo: filters.dateTo ? format(filters.dateTo, 'yyyy-MM-dd') : null,
+            ...selectedFilters,
+            ...(currentFilter === 'parcel' ? {priceMin: priceRange[0], priceMax: priceRange[1]} : {}),
+            dateFrom: filters.dateFrom ? filters.dateFrom.format('YYYY-MM-DD') : null,
+            dateTo: filters.dateTo ? filters.dateTo.format('YYYY-MM-DD') : null,
         };
         onApplyFilters(appliedFilters);
     };
@@ -173,37 +170,13 @@ const RequestsFilterPanel = ({onApplyFilters, onResetFilters, currentFilter}) =>
                                         label="Pickup date from"
                                         value={filters.dateFrom}
                                         onChange={(date) => handleDateChange('dateFrom', date)}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                fullWidth
-                                                InputProps={{
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <CalendarToday/>
-                                                        </InputAdornment>
-                                                    ),
-                                                }}
-                                            />
-                                        )}
+                                        slotProps={{textField: {fullWidth: true}}}
                                     />
                                     <DatePicker
                                         label="Pickup date to"
                                         value={filters.dateTo}
                                         onChange={(date) => handleDateChange('dateTo', date)}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                fullWidth
-                                                InputProps={{
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <CalendarToday/>
-                                                        </InputAdornment>
-                                                    ),
-                                                }}
-                                            />
-                                        )}
+                                        slotProps={{textField: {fullWidth: true}}}
                                     />
                                 </Box>
                             </LocalizationProvider>
@@ -248,37 +221,13 @@ const RequestsFilterPanel = ({onApplyFilters, onResetFilters, currentFilter}) =>
                                         label="Departure date from"
                                         value={filters.dateFrom}
                                         onChange={(date) => handleDateChange('dateFrom', date)}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                fullWidth
-                                                InputProps={{
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <CalendarToday/>
-                                                        </InputAdornment>
-                                                    ),
-                                                }}
-                                            />
-                                        )}
+                                        slotProps={{textField: {fullWidth: true}}}
                                     />
                                     <DatePicker
                                         label="Departure date to"
                                         value={filters.dateTo}
                                         onChange={(date) => handleDateChange('dateTo', date)}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                fullWidth
-                                                InputProps={{
-                                                    startAdornment: (
-                                                        <InputAdornment position="start">
-                                                            <CalendarToday/>
-                                                        </InputAdornment>
-                                                    ),
-                                                }}
-                                            />
-                                        )}
+                                        slotProps={{textField: {fullWidth: true}}}
                                     />
                                 </Box>
                             </LocalizationProvider>

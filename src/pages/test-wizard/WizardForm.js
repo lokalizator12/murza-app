@@ -1,29 +1,38 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {Box, Button, Paper, Step, StepLabel, Stepper, Typography} from '@mui/material';
 
 const WizardForm = ({steps, initialData, onSubmit}) => {
     const [activeStep, setActiveStep] = useState(0);
     const [formData, setFormData] = useState(initialData || {});
     const [isNextEnabled, setIsNextEnabled] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const isParcel = initialData.requestType === 'Parcel';
+    const stepLabels = isParcel
+        ? ['Route', 'Parcel details', 'Dates & price']
+        : ['Route', 'Space & items', 'Dates & notes'];
 
     const handleNext = () => {
         if (isNextEnabled) {
             setActiveStep((prevStep) => prevStep + 1);
         }
     };
-    /*    React.useEffect(() => {
-            setIsNextEnabled(true);
-        }, []);*/
     const handleBack = () => {
         setActiveStep((prevStep) => prevStep - 1);
     };
 
-    const handleChange = (name, value) => {
-        setFormData((prevData) => ({...prevData, [name]: value}));
-    };
+    const handleChange = useCallback((name, value) => {
+        setFormData((prevData) => prevData[name] === value ? prevData : {...prevData, [name]: value});
+    }, []);
 
-    const handleSubmit = () => {
-        onSubmit(formData);
+    const handleSubmit = async () => {
+        if (submitting) return;
+        setSubmitting(true);
+        try {
+            const successful = await onSubmit(formData);
+            if (successful === false) setSubmitting(false);
+        } catch (error) {
+            setSubmitting(false);
+        }
     };
 
     const renderStepContent = (stepIndex) => {
@@ -38,15 +47,15 @@ const WizardForm = ({steps, initialData, onSubmit}) => {
     };
 
     return (
-        <Paper sx={{padding: 4, maxWidth: '800px', margin: '40px auto', borderRadius: '16px'}}>
+        <Paper sx={{padding: {xs: 2, sm: 3}, maxWidth: '800px', margin: '0 auto', borderRadius: '16px', boxShadow: 'none'}}>
             <Typography variant="h4" sx={{fontWeight: 'bold', mb: 1, textAlign: 'center'}}>
-                Request a {initialData.requestType === 'Parcel' ? 'Parcel' : 'Trip'}
+                Post a {isParcel ? 'parcel' : 'trip'}
             </Typography>
 
             <Stepper activeStep={activeStep} alternativeLabel sx={{mb: 4}}>
                 {steps.map((_, index) => (
                     <Step key={index}>
-                        <StepLabel>{`Step ${index + 1}`}</StepLabel>
+                        <StepLabel>{stepLabels[index] || `Step ${index + 1}`}</StepLabel>
                     </Step>
                 ))}
             </Stepper>
@@ -61,9 +70,9 @@ const WizardForm = ({steps, initialData, onSubmit}) => {
                     variant="contained"
                     color="primary"
                     onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
-                    disabled={!isNextEnabled} // Блокируем кнопку "Next", если не включена
+                    disabled={!isNextEnabled || submitting}
                 >
-                    {activeStep === steps.length - 1 ? 'Submit' : 'Next'}
+                    {activeStep === steps.length - 1 ? (submitting ? 'Posting…' : `Post ${isParcel ? 'parcel' : 'trip'}`) : 'Next'}
                 </Button>
             </Box>
         </Paper>

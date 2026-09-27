@@ -6,6 +6,7 @@ import axios from "../../axiosConfig";
 import {Helmet} from "react-helmet";
 import ForgotPassword from './ForgotPassword';
 import {useAuth} from "../../context/AuthContext";
+import {safeNextDestination} from '../../services/routeAccess';
 
 export default function SignIn1() {
     const [emailError, setEmailError] = useState(false);
@@ -14,6 +15,7 @@ export default function SignIn1() {
     const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
     const [showPassword, setShowPassword] = React.useState(false);
     const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+    const [loginError, setLoginError] = useState('');
     const navigate = useNavigate();
     const {login} = useAuth();
     const location = useLocation();
@@ -61,6 +63,7 @@ export default function SignIn1() {
         event.preventDefault();
 
         if (!validateInputs()) return;
+        setLoginError('');
 
         const formData = new FormData(event.currentTarget);
         const loginUserDto = {
@@ -69,23 +72,19 @@ export default function SignIn1() {
         };
 
         try {
-            const token = Cookies.get('token');
             const response = await axios.post('auth/login', loginUserDto, {
-                headers: {
-                    'Authorization': token ? `Bearer ${token}` : '',
-                },
                 withCredentials: true,
             });
-            login(response.data.token);
+            Cookies.set('token', response.data.token, {
+                expires: response.data.expiresIn / 86400000,
+                secure: window.location.protocol === 'https:',
+                sameSite: 'Lax',
+            });
             localStorage.setItem('currentUserId', response.data.userId);
-            Cookies.set('token', response.data.token, {expires: response.data.expiresIn, secure: true});
-            console.log('Token saved:', Cookies.get('token'));
-            console.log('Login successful:', response.data);
-            navigate('/main');
+            login(response.data.token, response.data.userId);
+            navigate(safeNextDestination(location.search));
         } catch (error) {
-            const errorMessage = error.response ? error.response.data : error.message;
-            console.error('Login failed:', errorMessage);
-            alert('Login failed. Please check your credentials.');
+            setLoginError('We could not log you in. Check your email and password and try again.');
         }
     };
     const togglePasswordVisibility = () => {
@@ -101,27 +100,6 @@ export default function SignIn1() {
                 <div className="sign-in2-max-width thq-section-max-width">
                     <div className="sign-in2-form-root">
                         <h2 className="sign-in2-text25 thq-heading-2">Sign In</h2>
-
-                        <div className="sign-in2-container2">
-                            <button className="sign-in2-button1 thq-button-outline">
-                                <svg viewBox="0 0 877.714 1024" className="sign-in2-icon1">
-                                    <path d="..."/>
-                                </svg>
-                                <span className="thq-body-small">Continue with Facebook</span>
-                            </button>
-                            <button className="sign-in2-button2 thq-button-outline">
-                                <svg viewBox="0 0 860.014 1024" className="sign-in2-icon3">
-                                    <path d="..."/>
-                                </svg>
-                                <span className="thq-body-small">Continue with Google</span>
-                            </button>
-                        </div>
-
-                        <div className="sign-in2-divider1">
-                            <div className="sign-in2-divider2"></div>
-                            <span className="thq-body-large">OR</span>
-                            <div className="sign-in2-divider3"></div>
-                        </div>
 
                         <form className="sign-in2-form2" onSubmit={handleSubmit}>
                             <div className="sign-in2-email">
@@ -146,7 +124,8 @@ export default function SignIn1() {
                                     <label htmlFor="thq-sign-in-2-password" className="thq-body-large">
                                         Password
                                     </label>
-                                    <div className="sign-in2-hide-password" onClick={togglePasswordVisibility}>
+                                    <button className="sign-in2-hide-password" type="button" onClick={togglePasswordVisibility}
+                                            aria-label={showPassword ? 'Hide password' : 'Show password'}>
                                         <svg viewBox="0 0 1024 1024" className="sign-in2-icon5">
                                             <path
                                                 d="M317.143 762.857l44.571-80.571c-66.286-48-105.714-125.143-105.714-206.857 0-45.143 12-89.714 34.857-128.571-89.143 45.714-163.429 117.714-217.714 201.714 59.429 92 143.429 169.143 244 214.286zM539.429 329.143c0-14.857-12.571-27.429-27.429-27.429-95.429 0-173.714 78.286-173.714 173.714 0 14.857 12.571 27.429 27.429 27.429s27.429-12.571 27.429-27.429c0-65.714 53.714-118.857 118.857-118.857 14.857 0 27.429-12.571 27.429-27.429z"
@@ -155,7 +134,7 @@ export default function SignIn1() {
                                         <span className="thq-body-small">
                                                 {showPassword ? "Hide" : "Show"}
                                             </span>
-                                    </div>
+                                    </button>
                                 </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
@@ -171,10 +150,11 @@ export default function SignIn1() {
 
                             <div className="sign-in2-container4">
                                 <button type="submit" className="sign-in2-button3 thq-button-filled">
-                                    <span className="sign-in2-text24 thq-body-small">Submit</span>
+                                    <span className="sign-in2-text24 thq-body-small">Log in</span>
                                 </button>
                             </div>
                         </form>
+                        {loginError && <p className="sign-in2-login-error" role="alert">{loginError}</p>}
                         <div className="sign-in2-container4">
                             <button onClick={handleForgotPasswordOpen} className="forgot-password-btn">
                                 Forgot Password?
@@ -183,14 +163,13 @@ export default function SignIn1() {
 
                         <div className="sign-in2-container4">
                             <div className="sign-in2-terms-agree">
-                                <p className="thq-body-large"> By continuing, you agree to the Terms of use and
-                                    Privacy Policy.</p>
+                                <p className="thq-body-large">New here? Learn <a href="/about">how Murza works</a> before you join.</p>
                             </div>
                         </div>
 
                         <div className="sign-in2-container5">
                             <div className="sign-in2-divider4"></div>
-                            <span className="sign-in2-text23 thq-body-large">Log in to your account to access all features </span>
+                            <span className="sign-in2-text23 thq-body-large">Your next connection starts here.</span>
                         </div>
 
                         <button type="button"
