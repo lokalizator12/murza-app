@@ -8,6 +8,7 @@
 }
 html { scroll-behavior: smooth; }
 body { color: var(--murza-ink); background: var(--murza-cream); }
+input[type="radio"], input[type="checkbox"] { accent-color: var(--murza-brown); }
 .murza-container { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
 .murza-button {
     display: inline-flex; align-items: center; justify-content: center; gap: 9px;
