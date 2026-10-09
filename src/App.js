@@ -13,6 +13,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import {AuthProvider} from "./context/AuthContext";
 import Navbar8 from "./components/navbar8";
 import MurzaGuide from "./components/MurzaGuide";
+import AppErrorBoundary from "./components/AppErrorBoundary";
 import PrivateRoute from "./services/PrivateRoute";
 import Activate from "./pages/register/Activate";
 const SignUp = React.lazy(() => import('./pages/register/sign-up'));
@@ -33,6 +34,7 @@ function AppContent() {
     return (
         <>
             {!shouldHideNavbar && <Navbar8/>}
+            <AppErrorBoundary resetKey={location.pathname + location.search}>
             <Suspense fallback={<div className="murza-route-loading" role="status">Murza is getting things ready…</div>}>
             <Routes>
                 <Route path="" element={<Home/>}/>
@@ -72,6 +74,7 @@ function AppContent() {
                 <Route path="/reset-password" element={<ResetPassword/>}/>
             </Routes>
             </Suspense>
+            </AppErrorBoundary>
             <MurzaGuide/>
         </>
     );

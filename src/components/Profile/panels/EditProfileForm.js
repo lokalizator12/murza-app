@@ -1,142 +1,186 @@
-import React, {useState} from "react";
-import {Alert, Avatar, Box, Button, Grid, Snackbar, TextField} from "@mui/material";
-import UploadIcon from "@mui/icons-material/Upload";
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, Avatar } from "@mui/material";
 import axios from "../../../axiosConfig";
 
-const EditProfileForm = ({initialProfile, onProfileUpdated}) => {
-    const [profile, setProfile] = useState(initialProfile);
-    const [selectedPhoto, setSelectedPhoto] = useState(null);
-    const [isSaving, setIsSaving] = useState(false);
-    const [snackbarOpen, setSnackbarOpen] = useState(false); // Для управления состоянием Snackbar
-    const [snackbarMessage, setSnackbarMessage] = useState("");
-    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
-    const handleInputChange = (field, value) => {
-        setProfile({...profile, [field]: value});
-    };
-
-    const handlePhotoUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            setSelectedPhoto(file);
-            setProfile((prevProfile) => ({
-                ...prevProfile,
-                userPhoto: URL.createObjectURL(file),
-            }));
-        }
-    };
-
-    // Отправка данных на сервер
-    const handleSave = async (event) => {
-        event.preventDefault();
-        setIsSaving(true);
-
-        const formData = new FormData();
-        formData.append("firstName", profile.firstName);
-        formData.append("lastName", profile.lastName);
-        if (selectedPhoto) {
-            formData.append("userPhoto", selectedPhoto);
-        }
-
-        try {
-            const response = await axios.put("/v1/profile", formData, {
-                headers: {"Content-Type": "multipart/form-data"},
-            });
-
-            setSnackbarMessage("Profile updated successfully!");
-            setSnackbarSeverity("success");
-            setSnackbarOpen(true);
-
-            // Обновление данных после успешного обновления
-            onProfileUpdated(response.data);
-        } catch (error) {
-            setSnackbarMessage("Error updating profile. Please try again.");
-            setSnackbarSeverity("error");
-            setSnackbarOpen(true);
-
-            console.error("Error updating profile:", error);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    // Обработчик закрытия Snackbar
-    const handleSnackbarClose = () => {
-        setSnackbarOpen(false);
-    };
-
-    return (
-        <form onSubmit={handleSave} style={{marginTop: "20px"}}>
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={handleSnackbarClose}
+export default function EditProfileForm({ initialProfile, onProfileUpdated }) {
+  const [firstName, setFirstName] = useState(initialProfile.firstName || "");
+  const [lastName, setLastName] = useState(initialProfile.lastName || "");
+  const [photo, setPhoto] = useState(null);
+  const [preview, setPreview] = useState("");
+  const [removePhoto, setRemovePhoto] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const lock = useRef(false);
+  const input = useRef(null);
+  useEffect(() => {
+    if (!photo) {
+      setPreview("");
+      return;
+    }
+    const url = URL.createObjectURL(photo);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photo]);
+  const changed =
+    firstName.trim() !== initialProfile.firstName ||
+    lastName.trim() !== initialProfile.lastName ||
+    photo ||
+    removePhoto;
+  function selectPhoto(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setSuccess("");
+    if (
+      !["image/jpeg", "image/png"].includes(file.type) ||
+      file.size > 5 * 1024 * 1024
+    ) {
+      setError("Choose a JPG or PNG image up to 5 MB.");
+      return;
+    }
+    setError("");
+    setPhoto(file);
+    setRemovePhoto(false);
+  }
+  async function save(event) {
+    event.preventDefault();
+    if (lock.current || !changed) return;
+    if (!firstName.trim() || !lastName.trim()) {
+      setError("Please enter your first and last name.");
+      return;
+    }
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    setSuccess("");
+    const data = new FormData();
+    data.append("firstName", firstName.trim());
+    data.append("lastName", lastName.trim());
+    if (photo) data.append("userPhoto", photo);
+    data.append("removePhoto", String(removePhoto));
+    try {
+      const response = await axios.put("/v1/profile", data);
+      onProfileUpdated(response.data);
+      setFirstName(response.data.firstName);
+      setLastName(response.data.lastName);
+      setPhoto(null);
+      setRemovePhoto(false);
+      setSuccess("Your public profile is up to date.");
+    } catch (e) {
+      setError(
+        e.response?.status === 400
+          ? "Check your name and photo. Images must be JPG or PNG, up to 5 MB."
+          : "Could not save your profile. Your changes are still here; please try again.",
+      );
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+  function reset() {
+    setFirstName(initialProfile.firstName || "");
+    setLastName(initialProfile.lastName || "");
+    setPhoto(null);
+    setRemovePhoto(false);
+    setError("");
+    setSuccess("");
+  }
+  return (
+    <section className="profile-form-panel">
+      <span className="murza-eyebrow">A familiar face</span>
+      <h2>Your public profile</h2>
+      <p>Your name and photo help senders and travellers recognise you.</p>
+      <form onSubmit={save}>
+        <div className="profile-photo-editor">
+          <Avatar
+            src={
+              removePhoto
+                ? undefined
+                : preview || initialProfile.userPhoto || undefined
+            }
+            sx={{ width: 88, height: 88, bgcolor: "#e7d5c3", color: "#62442e" }}
+          >
+            {firstName[0]}
+          </Avatar>
+          <div>
+            <button
+              type="button"
+              className="murza-button murza-button-outline murza-button-small"
+              disabled={busy}
+              onClick={() => input.current?.click()}
             >
-                <Alert
-                    onClose={handleSnackbarClose}
-                    severity={snackbarSeverity}
-                    sx={{width: "100%"}}
-                >
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
-
-            <Grid container spacing={3}>
-                <Grid item xs={12}>
-                    <Box display="flex" flexDirection="column" alignItems="center">
-                        <Avatar
-                            src={profile.userPhoto || "/default-avatar.png"}
-                            alt="User Avatar"
-                            sx={{
-                                width: 120,
-                                height: 120,
-                                mb: 2,
-                                border: "2px solid #ddd",
-                            }}
-                        />
-                        <Button
-                            variant="outlined"
-                            component="label"
-                            startIcon={<UploadIcon/>}
-                            sx={{mb: 2}}
-                        >
-                            Upload Photo
-                            <input type="file" hidden onChange={handlePhotoUpload}/>
-                        </Button>
-                    </Box>
-                </Grid>
-                <Grid item xs={6}>
-                    <TextField
-                        fullWidth
-                        label="First Name"
-                        value={profile.firstName || ""}
-                        onChange={(e) => handleInputChange("firstName", e.target.value)}
-                        required
-                    />
-                </Grid>
-                <Grid item xs={6}>
-                    <TextField
-                        fullWidth
-                        label="Last Name"
-                        value={profile.lastName || ""}
-                        onChange={(e) => handleInputChange("lastName", e.target.value)}
-                        required
-                    />
-                </Grid>
-                <Grid item xs={12}>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        disabled={isSaving}
-                    >
-                        {isSaving ? "Saving..." : "Save Changes"}
-                    </Button>
-                </Grid>
-            </Grid>
-        </form>
-    );
-};
-
-export default EditProfileForm;
+              Choose photo
+            </button>
+            <input
+              ref={input}
+              type="file"
+              accept="image/jpeg,image/png"
+              hidden
+              onChange={selectPhoto}
+            />
+            <p>JPG or PNG · up to 5 MB</p>
+            {(photo || initialProfile.userPhoto) && !removePhoto && (
+              <button
+                className="profile-text-button"
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setPhoto(null);
+                  setRemovePhoto(Boolean(initialProfile.userPhoto));
+                }}
+              >
+                Remove photo
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="profile-field-grid">
+          <label>
+            First name
+            <input
+              autoComplete="given-name"
+              name="firstName"
+              value={firstName}
+              maxLength={50}
+              required
+              disabled={busy}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </label>
+          <label>
+            Last name
+            <input
+              autoComplete="family-name"
+              name="lastName"
+              value={lastName}
+              maxLength={50}
+              required
+              disabled={busy}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </label>
+        </div>
+        {error && <Alert severity="error">{error}</Alert>}
+        {success && <Alert severity="success">{success}</Alert>}
+        <div className="profile-form-actions">
+          <button
+            className="murza-button"
+            type="submit"
+            disabled={busy || !changed}
+          >
+            {busy ? "Saving…" : "Save profile"}
+          </button>
+          <button
+            type="button"
+            className="profile-text-button"
+            disabled={busy || !changed}
+            onClick={reset}
+          >
+            Discard changes
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}

@@ -1,301 +1,302 @@
-import React, {useCallback, useEffect, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Alert, Avatar } from "@mui/material";
 import axios from "../../axiosConfig";
-import ProfileHeader from "../../components/Profile/ProfileHeader";
-import ProfileTabs from "../../components/Profile/ProfileTabs";
 import EditProfileForm from "../../components/Profile/panels/EditProfileForm";
-import ProfileTrips from "../../components/Profile/ProfileTrips";
-import ProfileParcels from "../../components/Profile/ProfileParcels";
-import ProfileDetailsDialog from "../../components/Profile/ProfileDetailsDialog";
-import {Alert, Box, Container, Grid, Paper, Snackbar} from "@mui/material";
-import RequestDetailsModal from "../../components/MainPage/RequestDetailsModal";
 import SettingsPanel from "../../components/Profile/panels/SettingsPanel";
 import SubscriptionsPanel from "../../components/Profile/panels/SubscriptionsPanel";
+import ProfileRequests from "../../components/Profile/ProfileRequests";
+import RequestDetailsModal from "../../components/MainPage/RequestDetailsModal";
+import "./ProfilePage.css";
 
-
-const ProfilePage = () => {
-    const {userId} = useParams();
-    const navigate = useNavigate();
-    const [profile, setProfile] = useState(null);
-    const [isOwnProfile, setIsOwnProfile] = useState(false);
-    const [isFollowing, setIsFollowing] = useState(false);
-    const [followersCount, setFollowersCount] = useState(0);
-    const [followingCount, setFollowingCount] = useState(0);
-    const [trips, setTrips] = useState([]);
-    const [parcels, setParcels] = useState([]);
-    const [error, setError] = useState(null);
-    const [tripsPage, setTripsPage] = useState(1);
-    const [parcelsPage, setParcelsPage] = useState(1);
-    const [modalOpen, setModalOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState(0);
-    const itemsPerPage = 3;
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [totalTrips, setTotalTrips] = useState(0);
-    const [totalParcels, setTotalParcels] = useState(0);
-    const [modalType, setModalType] = useState(null);
-    const [itemType] = useState(null);
-
-
-    const fetchProfileData = useCallback(async () => {
-        try {
-            const isOwnProfileRes = await axios.get(`/v1/profile/is-owner/${userId}`);
-            setIsOwnProfile(isOwnProfileRes.data);
-
-            const profileEndpoint = isOwnProfileRes.data ? "/v1/profile" : `/v1/profile/${userId}`;
-            const profileRes = await axios.get(profileEndpoint);
-            setProfile(profileRes.data);
-
-            const [followersRes, followingRes] = await Promise.all([
-                axios.get(`/v1/subscriptions/${userId}/followers/count`),
-                axios.get(`/v1/subscriptions/${userId}/following/count`),
-            ]);
-            setFollowersCount(followersRes.data);
-            setFollowingCount(followingRes.data);
-
-            if (!isOwnProfileRes.data) {
-                const isFollowingRes = await axios.get(`/v1/subscriptions/${userId}/is-following`, {
-                    withCredentials: true,
-                });
-                setIsFollowing(isFollowingRes.data);
-            }
-        } catch (error) {
-            setError("Error fetching profile data");
-            console.error(error);
-        }
-    }, [userId]);
-
-    const fetchTripsAndParcels = useCallback(async () => {
-        try {
-            const [tripsRes, parcelsRes] = await Promise.all([
-                axios.get(`/trip-requests/user/${userId}?page=${tripsPage - 1}&size=${itemsPerPage}`),
-                axios.get(`/parcel-requests/user/${userId}?page=${parcelsPage - 1}&size=${itemsPerPage}`),
-            ]);
-
-            setTrips(tripsRes.data.content || []);
-            setParcels(parcelsRes.data.content || []);
-            setTotalTrips(tripsRes.data.totalElements || 0);
-            setTotalParcels(parcelsRes.data.totalElements || 0);
-        } catch (error) {
-            setError("Error fetching trips or parcels");
-            console.error(error);
-        }
-    }, [userId, tripsPage, parcelsPage]);
-
-    const handleSubscribe = async () => {
-        try {
-            await axios.post(`/v1/subscriptions/${userId}`, {}, {withCredentials: true});
-            setIsFollowing(true);
-            setFollowersCount((prev) => prev + 1);
-        } catch (error) {
-            setError("Error subscribing");
-            console.error(error);
-        }
-    };
-
-    const handleUnsubscribe = async () => {
-        try {
-            await axios.delete(`/v1/subscriptions/${userId}`, {withCredentials: true});
-            setIsFollowing(false);
-            setFollowersCount((prev) => prev - 1);
-        } catch (error) {
-            setError("Error unsubscribing");
-            console.error(error);
-        }
-    };
-
-    const handleMessaging = () => {
-        if (userId) {
-            setTimeout(() => {
-                navigate(`/chat/${userId}`);
-            }, 100);
-        } else {
-            console.error('User ID is not available for redirection.');
-        }
-    };
-
-
-    const handleSaveChanges = async (updatedProfile, updatedPhoto) => {
-        try {
-            const formData = new FormData();
-            formData.append("firstName", updatedProfile.firstName);
-            formData.append("lastName", updatedProfile.lastName);
-            if (updatedPhoto) formData.append("userPhoto", updatedPhoto);
-
-            const response = await axios.put(`/v1/profile`, formData, {
-                headers: {"Content-Type": "multipart/form-data"},
-                withCredentials: true,
-            });
-
-            setProfile(response.data);
-        } catch (error) {
-            setError("Error saving profile changes");
-            console.error(error);
-        }
-    };
-
-    const handleOpenModal = async (item, type) => {
-        try {
-            const response = type === 'parcel'
-                ? await axios.get(`/parcel-requests/${item.idParcel}`)
-                : await axios.get(`/trip-requests/${item.idTrip}`);
-
-            setSelectedItem({
-                ...response.data,
-                requestType: type, // Тип запроса (parcel или trip)
-                ownerId: userId, // ID владельца профиля
-            });
-            setModalType("active");
-            setModalOpen(true);
-        } catch (error) {
-            console.error("Error fetching request details:", error);
-        }
-    };
-    useEffect(() => {
-        fetchProfileData();
-    }, [userId]);
-    const handleProfileUpdated = (updatedProfile) => {
-        setProfile(updatedProfile); // Обновление данных на странице
-    };
-    const handleCloseModal = () => {
-        setModalOpen(false);
-        setSelectedItem(null);
-        setModalType(null);
-    };
-    const refreshTrips = async () => {
-        try {
-            const response = await axios.get(`/trip-requests/user/${userId}?page=${tripsPage - 1}&size=${itemsPerPage}`);
-            setTrips(response.data.content || []);
-        } catch (error) {
-            console.error("Error refreshing trips:", error);
-        }
-    };
-
-    const refreshParcels = async () => {
-        try {
-            const response = await axios.get(`/parcel-requests/user/${userId}?page=${tripsPage - 1}&size=${itemsPerPage}`);
-            setParcels(response.data.content || []);
-        } catch (error) {
-            console.error("Error refreshing parcels:", error);
-        }
-    };
-    useEffect(() => {
-        fetchProfileData();
-        fetchTripsAndParcels();
-    }, [userId, tripsPage, parcelsPage]);
-
-    if (!profile || isOwnProfile === null) {
-        return <div>Loading...</div>;
+export default function ProfilePage() {
+  const { userId } = useParams();
+  const [profile, setProfile] = useState(null);
+  const [own, setOwn] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [counts, setCounts] = useState({ followers: 0, following: 0 });
+  const [tab, setTab] = useState("requests");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const actionLock = useRef(false);
+  const [selected, setSelected] = useState(null);
+  const [detailBusy, setDetailBusy] = useState(false);
+  const profileRoute = useRef(userId);
+  profileRoute.current = userId;
+  useEffect(() => {
+    const controller = new AbortController();
+    const options = { signal: controller.signal };
+    setLoading(true);
+    setError("");
+    setProfile(null);
+    setTab("requests");
+    setSelected(null);
+    (async () => {
+      try {
+        const [ownership, person, followers, followed] = await Promise.all([
+          axios.get(`/v1/profile/is-owner/${userId}`, options),
+          axios.get(`/v1/profile/${userId}`, options),
+          axios.get(`/v1/subscriptions/${userId}/followers/count`, options),
+          axios.get(`/v1/subscriptions/${userId}/following/count`, options),
+        ]);
+        const subscribed = ownership.data
+          ? false
+          : (
+              await axios.get(
+                `/v1/subscriptions/${userId}/is-following`,
+                options,
+              )
+            ).data;
+        if (controller.signal.aborted) return;
+        setOwn(ownership.data);
+        setProfile(person.data);
+        setFollowing(subscribed);
+        setCounts({ followers: followers.data, following: followed.data });
+      } catch (e) {
+        if (!controller.signal.aborted)
+          setError(
+            e.response?.status === 404
+              ? "This profile is no longer available."
+              : "We could not load this profile. Please try again.",
+          );
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [userId, retry]);
+  async function refreshCounts() {
+    const route = userId;
+    const [a, b] = await Promise.all([
+      axios.get(`/v1/subscriptions/${route}/followers/count`),
+      axios.get(`/v1/subscriptions/${route}/following/count`),
+    ]);
+    if (profileRoute.current === route)
+      setCounts({ followers: a.data, following: b.data });
+  }
+  async function toggleFollow() {
+    if (actionLock.current) return;
+    actionLock.current = true;
+    setBusy(true);
+    setError("");
+    const route = userId;
+    try {
+      if (following) await axios.delete(`/v1/subscriptions/${route}`);
+      else await axios.post(`/v1/subscriptions/${route}`);
+      if (profileRoute.current === route) {
+        setFollowing(!following);
+        await refreshCounts();
+      }
+    } catch (_) {
+      if (profileRoute.current === route)
+        setError("Could not update your following list. Please try again.");
+    } finally {
+      actionLock.current = false;
+      setBusy(false);
     }
-
+  }
+  async function openDetails(item, type) {
+    if (detailBusy) return;
+    setDetailBusy(true);
+    setError("");
+    const route = userId;
+    try {
+      const { data } = await axios.get(
+        `/${type}-requests/${type === "parcel" ? item.idParcel : item.idTrip}`,
+      );
+      if (profileRoute.current === route) setSelected({ request: data, type });
+    } catch (_) {
+      if (profileRoute.current === route)
+        setError(
+          "This listing could not be opened. Refresh the list and try again.",
+        );
+    } finally {
+      setDetailBusy(false);
+    }
+  }
+  if (loading)
     return (
-
-        <>
-
-            <Container maxWidth="lg" sx={{mt: 4, pb: 4}}>
-                <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
-                    <Alert severity="error" onClose={() => setError(null)}>
-                        {error}
-                    </Alert>
-                </Snackbar>
-
-                <Grid container spacing={4}>
-                    {/* Profile Header */}
-                    <Grid item xs={12} md={4}>
-                        <Paper elevation={3} sx={{p: 3, textAlign: "center"}}>
-                            <ProfileHeader
-                                profile={profile}
-                                followersCount={followersCount}
-                                followingCount={followingCount}
-                                isOwnProfile={isOwnProfile}
-                                isFollowing={isFollowing}
-                                onEditClick={() => setActiveTab(1)}
-                                onSubscribe={handleSubscribe}
-                                onUnsubscribe={handleUnsubscribe}
-                                message={handleMessaging}
-                            />
-                        </Paper>
-                    </Grid>
-
-                    {/* Profile Content */}
-                    <Grid item xs={12} md={8}>
-
-                        <ProfileTabs
-                            activeTab={activeTab}
-                            onTabChange={(event, value) => setActiveTab(value)}
-                            isOwnProfile={isOwnProfile}
-                        />
-                        {activeTab === 0 && (
-                            <Box>
-                                <ProfileTrips
-                                    trips={trips}
-                                    tripsPage={tripsPage}
-                                    totalTrips={totalTrips}
-                                    itemsPerPage={itemsPerPage}
-                                    onTripsPageChange={setTripsPage}
-                                    isOwnProfile={isOwnProfile}
-                                    onItemClick={(item) => handleOpenModal(item, "trip")}
-                                    refreshTrips={refreshTrips}
-                                />
-                                <ProfileParcels
-                                    parcels={parcels}
-                                    parcelsPage={parcelsPage}
-                                    totalParcels={totalParcels}
-                                    itemsPerPage={itemsPerPage}
-                                    isOwnProfile={isOwnProfile}
-                                    onParcelsPageChange={setParcelsPage}
-                                    refreshParcels={refreshParcels}
-                                    onItemClick={(item) => handleOpenModal(item, "parcel")}
-                                />
-                            </Box>
-                        )}
-
-                        {activeTab === 1 && isOwnProfile && (
-                            <EditProfileForm
-                                initialProfile={{
-                                    firstName: profile.firstName,
-                                    lastName: profile.lastName,
-                                    userPhoto: profile.userPhoto,
-                                }}
-                                profile={profile}
-                                onSave={(updatedProfile, updatedPhoto) => handleSaveChanges(updatedProfile, updatedPhoto)}
-                                onProfileUpdated={handleProfileUpdated}
-                            />
-                        )}
-                        {activeTab === 2 && isOwnProfile && (
-                            <SettingsPanel
-                                onSettingsUpdated={(updatedSettings) => {
-                                    setProfile((prevProfile) => ({...prevProfile, ...updatedSettings}));
-                                }}
-                            />
-                        )}
-                        {activeTab === 3 && isOwnProfile && <SubscriptionsPanel/>}
-                        {modalType === "active" && (
-                            <RequestDetailsModal
-                                open={modalOpen}
-                                onClose={() => setModalOpen(false)}
-                                request={selectedItem}
-                                requestType={selectedItem.requestType}
-                            />
-                        )}
-
-                        {modalType === "ended" && (
-                            <ProfileDetailsDialog open={modalOpen} onClose={handleCloseModal}
-                                                  selectedItem={selectedItem}
-                                                  type={itemType}/>
-                        )}
-                    </Grid>
-                </Grid>
-
-                {/*<ProfileDetailsDialog
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
-                selectedItem={selectedItem}
-                type={modalType}
-            />*/}
-            </Container>
-
-        </>
+      <main className="profile-workspace profile-loading" role="status">
+        Getting your profile ready…
+      </main>
     );
-};
-
-export default ProfilePage;
+  if (!profile)
+    return (
+      <main className="profile-workspace profile-loading">
+        <h1>Profile unavailable</h1>
+        <p role="alert">{error}</p>
+        <button className="murza-button" onClick={() => setRetry((v) => v + 1)}>
+          Try again
+        </button>
+        <Link to="/main">Explore routes</Link>
+      </main>
+    );
+  const tabs = own
+    ? [
+        ["requests", "My listings"],
+        ["edit", "Public profile"],
+        ["settings", "Account & security"],
+        ["people", "People"],
+      ]
+    : [["requests", "Listings"]];
+  const joined =
+    profile.dateRegistered &&
+    !Number.isNaN(new Date(profile.dateRegistered).getTime())
+      ? new Date(profile.dateRegistered).toLocaleDateString("en-GB", {
+          month: "long",
+          year: "numeric",
+        })
+      : null;
+  return (
+    <main
+      className={`profile-workspace ${tab !== "requests" ? "is-editing" : ""}`}
+    >
+      <div className="profile-breadcrumb">
+        <Link to="/main">Routes & parcels</Link>
+        <span>/</span>
+        <span>{own ? "Your profile" : "Traveller profile"}</span>
+      </div>
+      <header className="profile-hero">
+        <div className="profile-person">
+          <Avatar
+            src={profile.userPhoto || undefined}
+            alt={`${profile.firstName} ${profile.lastName}`}
+            sx={{
+              width: 96,
+              height: 96,
+              bgcolor: "#e7d5c3",
+              color: "#62442e",
+              fontSize: 36,
+            }}
+          >
+            {profile.firstName?.[0]}
+          </Avatar>
+          <div>
+            <span className="murza-eyebrow">
+              {own ? "Your place on Murza" : "Meet your fellow traveller"}
+            </span>
+            <h1>
+              {profile.firstName} {profile.lastName}
+            </h1>
+            {joined && <p>Part of the journey since {joined}</p>}
+            <div className="profile-verifications">
+              {profile.emailVerified && <span>✓ Email verified</span>}
+              {profile.phoneVerified && <span>✓ Phone verified</span>}
+            </div>
+          </div>
+        </div>
+        <div className="profile-hero-actions">
+          {own ? (
+            <>
+              <Link className="murza-button" to="/main?create=parcel">
+                Post a parcel ↗
+              </Link>
+              <Link
+                className="murza-button murza-button-outline"
+                to="/main?create=trip"
+              >
+                Share a trip
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link className="murza-button" to={`/chat/${userId}`}>
+                Send a message ↗
+              </Link>
+              <button
+                className="murza-button murza-button-outline"
+                disabled={busy}
+                onClick={toggleFollow}
+              >
+                {busy
+                  ? "Updating…"
+                  : following
+                    ? "Unfollow"
+                    : "Follow traveller"}
+              </button>
+            </>
+          )}
+        </div>
+      </header>
+      <div className="profile-meta">
+        <span>
+          <strong>{counts.followers}</strong> followers
+        </span>
+        <span>
+          <strong>{counts.following}</strong> following
+        </span>
+        <span className="profile-meta-note">
+          {own
+            ? "Your contact details stay private."
+            : "Arrange delivery details together in chat."}
+        </span>
+      </div>
+      {error && (
+        <Alert severity="error" onClose={() => setError("")}>
+          {error}
+        </Alert>
+      )}
+      <nav className="profile-tabs" aria-label="Profile sections">
+        {tabs.map(([id, label]) => (
+          <button
+            key={id}
+            aria-current={tab === id ? "page" : undefined}
+            onClick={() => setTab(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      {tab === "requests" && (
+        <div className="profile-listings">
+          <ProfileRequests
+            key={`parcel-${userId}`}
+            type="parcel"
+            userId={userId}
+            own={own}
+            onOpen={openDetails}
+            detailBusy={detailBusy}
+          />
+          <ProfileRequests
+            key={`trip-${userId}`}
+            type="trip"
+            userId={userId}
+            own={own}
+            onOpen={openDetails}
+            detailBusy={detailBusy}
+          />
+        </div>
+      )}
+      {tab === "edit" && own && (
+        <EditProfileForm
+          initialProfile={profile}
+          onProfileUpdated={setProfile}
+        />
+      )}
+      {tab === "settings" && own && (
+        <SettingsPanel
+          onSettingsUpdated={(settings) =>
+            setProfile((p) => ({
+              ...p,
+              emailVerified: settings.emailVerified,
+              phoneVerified: settings.phoneVerified,
+            }))
+          }
+        />
+      )}
+      {tab === "people" && own && (
+        <SubscriptionsPanel userId={userId} onChanged={refreshCounts} />
+      )}
+      {selected && (
+        <RequestDetailsModal
+          open
+          onClose={() => setSelected(null)}
+          request={selected.request}
+          requestType={selected.type}
+        />
+      )}
+    </main>
+  );
+}

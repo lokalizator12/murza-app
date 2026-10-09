@@ -30,4 +30,4 @@ Murza currently helps members find and discuss a route. It does not provide live
 
 `/inbox` shows conversations; `/chat/:userId` opens a conversation. On mobile, the header's Messages link returns to the inbox. Sending uses the authenticated `POST /api/messages` endpoint and clears the composer only after the server confirms persistence. Live messages and read receipts use SockJS/STOMP. Failed sends keep the draft visible; uncertain network delivery is explicitly described.
 
-Production Docker builds omit source maps. The development batch history, design decisions and next work are recorded in [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md).
+Production Docker builds omit source maps.
