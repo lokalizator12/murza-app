@@ -1,241 +1,107 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {Client} from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import Cookies from 'js-cookie';
 import axios from '../../axiosConfig';
-import {CHAT_URL} from '../../services/endpoints';
-/* global grecaptcha */
+import {createChatClient} from '../../services/chatClient';
+import {chatSendError, mergeMessages} from '../../services/chatMessages';
+
 export const useChat = (receiverId, user) => {
     const [messages, setMessages] = useState([]);
-    const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(true);
-    const pageSize = 20;
-    const stompClient = useRef(null);
-    const receiverIdRef = useRef(receiverId);
-    const key_captcha = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
-    useEffect(() => {
-        receiverIdRef.current = receiverId;
-    }, [receiverId]);
-    useEffect(() => {
-        const script = document.createElement("script");
-        script.src = `https://www.google.com/recaptcha/api.js?render=${key_captcha}`;
-        script.async = true;
-        document.body.appendChild(script);
-        return () => {
-            document.body.removeChild(script);
-        };
-    }, []);
-    useEffect(() => {
-        if (receiverId && user) {
-            console.log('Resetting state for new receiver:', receiverId);
-            setMessages([]); // Сбрасываем сообщения
-            setPage(0); // Сбрасываем страницу
-            setHasMore(true); // Сбрасываем флаг
-            loadMessages(); // Загружаем сообщения
-            markMessagesAsRead(); // Помечаем сообщения как прочитанные
-        }
+    const [hasMore, setHasMore] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [historyError, setHistoryError] = useState('');
+    const [sendError, setSendError] = useState('');
+    const [sending, setSending] = useState(false);
+    const [connected, setConnected] = useState(false);
+    const client = useRef(null);
+    const active = useRef(false);
+    const page = useRef(0);
+    const loadingPage = useRef(false);
+    const sendingRef = useRef(false);
+
+    const markRead = useCallback(() => {
+        if (client.current?.connected) client.current.publish({destination: '/app/chat.readReceipt', body: String(receiverId)});
+        setMessages(current => current.map(message => Number(message.receiverId) === Number(user)
+            ? {...message, status: 'READ'} : message));
+        window.dispatchEvent(new Event('murza:conversations-changed'));
     }, [receiverId, user]);
 
-    useEffect(() => {
-        if (receiverId && user) {
-            console.log('Loading messages and marking as read for receiver:', receiverId);
-            loadMessages();
-            markMessagesAsRead();
-        }
-    }, [receiverId, user, page]);
-
-    useEffect(() => {
-        return () => {
-            if (stompClient.current) {
-                stompClient.current.deactivate();
-                console.log('WebSocket client deactivated');
+    const loadPage = useCallback(async (pageNumber) => {
+        if (loadingPage.current) return;
+        loadingPage.current = true;
+        setLoading(true);
+        setHistoryError('');
+        try {
+            const {data} = await axios.get(`/messages/${receiverId}`, {params: {page: pageNumber, size: 20}});
+            if (!active.current) return;
+            setMessages(current => mergeMessages(current, data.content || []));
+            page.current = pageNumber;
+            setHasMore(!data.last);
+            try {
+                await axios.post(`/messages/markAsRead/${receiverId}`);
+                if (active.current) markRead();
+            } catch {
+                if (active.current) setHistoryError('Messages loaded, but their read status could not be updated. Try again.');
             }
-        };
-    }, []);
-
-    const loadMessages = useCallback(() => {
-        if (!hasMore) return;
-
-        console.log('Loading messages for page:', page);
-        axios
-            .get(`/messages/${receiverId}?page=${page}&size=${pageSize}`)
-            .then((response) => {
-                const newMessages = response.data.content || [];
-                console.log('Loaded messages:', newMessages);
-
-                setMessages((prevMessages) => {
-                    const messageIds = new Set(prevMessages.map((msg) => msg.id));
-                    const filteredNewMessages = newMessages.filter(
-                        (msg) => !messageIds.has(msg.id)
-                    );
-                    return [...filteredNewMessages, ...prevMessages];
-                });
-
-                setHasMore(!response.data.last);
-            })
-            .catch((error) => {
-                console.error('Failed to fetch messages:', error);
-                setHasMore(false);
-            });
-    }, [receiverId, page, hasMore]);
-
-    const markMessagesAsRead = useCallback(() => {
-        console.log('Marking messages as read for receiverId:', receiverId);
-
-        if (
-            receiverId &&
-            stompClient.current &&
-            stompClient.current.connected
-        ) {
-            console.log('Sending read receipt for receiverId:', receiverId);
-            stompClient.current.publish({
-                destination: '/app/chat.readReceipt',
-                body: String(receiverId), // Отправляем как строку
-            });
-        } else {
-            console.error('Unable to send read receipt. WebSocket not connected or receiverId is null.');
+        } catch (error) {
+            if (active.current) setHistoryError('Messages could not be loaded. Check your connection and try again.');
+        } finally {
+            loadingPage.current = false;
+            if (active.current) setLoading(false);
         }
+    }, [receiverId, markRead]);
 
-        // Локальное обновление статусов сообщений
-        setMessages((prevMessages) =>
-            prevMessages.map((msg) => ({...msg, status: 'READ'}))
-        );
-    }, [receiverId]);
-
-    const onMessageReceived = useCallback(
-        (payload) => {
-            const message = JSON.parse(payload.body);
-            console.log('Message received:', message);
-
-            const senderId = Number(message.senderId);
-            const receiverId = Number(message.receiverId);
-            const currentUserId = Number(user);
-            const currentReceiverId = Number(receiverIdRef.current);
-
-            console.log('Sender ID:', senderId, 'Receiver ID:', receiverId);
-            console.log('Current User ID:', currentUserId, 'Current Receiver ID:', currentReceiverId);
-
-            if (
-                (senderId === currentReceiverId && receiverId === currentUserId) ||
-                (senderId === currentUserId && receiverId === currentReceiverId)
-            ) {
-                console.log('Message matches current conversation');
-                setMessages((prevMessages) => {
-                    if (!prevMessages.some((msg) => msg.id === message.id)) {
-                        return [...prevMessages, message];
-                    } else {
-                        return prevMessages;
+    useEffect(() => {
+        if (!user) return;
+        active.current = true;
+        loadPage(0);
+        let firstConnection = true;
+        const connection = createChatClient({
+            onConnect: () => {
+                if (!active.current) return;
+                setConnected(true);
+                connection.subscribe('/user/queue/messages', payload => {
+                    let message;
+                    try { message = JSON.parse(payload.body); } catch { return; }
+                    if ((Number(message.senderId) === Number(user) && Number(message.receiverId) === Number(receiverId)) ||
+                        (Number(message.senderId) === Number(receiverId) && Number(message.receiverId) === Number(user))) {
+                        setMessages(current => mergeMessages(current, [message]));
+                        if (Number(message.senderId) === Number(receiverId)) markRead();
                     }
                 });
-
-                if (senderId === currentReceiverId) {
-                    console.log('Marking messages as read for sender:', senderId);
-                    markMessagesAsRead();
-                }
-            } else {
-                console.log('Message does not match current conversation');
-            }
-        },
-        [user, markMessagesAsRead]
-    );
-
-    const onReadReceiptReceived = useCallback(
-        (payload) => {
-            const senderId = Number(payload.body);
-            const currentReceiverId = Number(receiverIdRef.current);
-            console.log('Read receipt received from sender:', senderId);
-
-            if (senderId === currentReceiverId) {
-                console.log('Updating messages to READ for sender:', senderId);
-                setMessages((prevMessages) =>
-                    prevMessages.map((msg) =>
-                        Number(msg.senderId) === Number(user) && Number(msg.receiverId) === senderId
-                            ? {...msg, status: 'READ'}
-                            : msg
-                    )
-                );
-            } else {
-                console.log('Read receipt does not match current conversation');
-            }
-        },
-        [user]
-    );
-
-    const connectToWebSocket = useCallback(() => {
-        const token = Cookies.get('token');
-        const socket = new SockJS(`${CHAT_URL}?token=${token}`);
-        stompClient.current = new Client({
-            webSocketFactory: () => socket,
-            reconnectDelay: 5000,
-            debug: (str) => {
-                console.log('STOMP debug:', str);
+                connection.subscribe('/user/queue/read-receipts', payload => {
+                    if (Number(payload.body) === Number(receiverId)) setMessages(current => current.map(message =>
+                        Number(message.senderId) === Number(user) ? {...message, status: 'READ'} : message));
+                });
+                markRead();
+                // Recover messages that arrived while the live connection was offline.
+                if (!firstConnection) loadPage(0);
+                firstConnection = false;
             },
+            onWebSocketClose: () => { if (active.current) setConnected(false); },
+            onStompError: () => { if (active.current) setConnected(false); },
         });
+        client.current = connection;
+        connection.activate();
+        return () => { active.current = false; connection.deactivate(); client.current = null; };
+    }, [receiverId, user, loadPage, markRead]);
 
-        stompClient.current.onConnect = () => {
-            console.log('Connected to WebSocket');
-            stompClient.current.subscribe('/user/queue/messages', onMessageReceived);
-            stompClient.current.subscribe(
-                '/user/queue/read-receipts',
-                onReadReceiptReceived
-            );
-            console.log('Subscribed to /user/queue/read-receipts');
-        };
-
-        stompClient.current.activate();
-    }, [onMessageReceived, onReadReceiptReceived]);
-
-    const disconnectFromWebSocket = useCallback(() => {
-        if (stompClient.current) {
-            stompClient.current.deactivate();
-            console.log('Disconnected from WebSocket');
-        }
-    }, []);
-
-    const sendMessage = async (content) => {
-        if (
-            content.trim() !== '' &&
-            receiverId &&
-            stompClient.current &&
-            stompClient.current.connected
-        ) {
-            console.log('Sending message to receiver:', receiverId);
-            try {
-                const token = await grecaptcha.execute(key_captcha, {
-                    action: 'send_message',
-                });
-
-
-                const chatMessage = {
-                    receiverId,
-                    content,
-                    captchaToken: token, // Include the CAPTCHA token
-                };
-                stompClient.current.publish({
-                    destination: '/app/chat.sendMessage',
-                    body: JSON.stringify(chatMessage),
-                });
-
-                markMessagesAsRead();
-            } catch (error) {
-                console.error('Failed to generate reCAPTCHA token:', error);
-            }
+    const sendMessage = async content => {
+        if (sendingRef.current || !content.trim()) return false;
+        sendingRef.current = true;
+        setSending(true);
+        setSendError('');
+        try {
+            const {data} = await axios.post('/messages', {receiverId: Number(receiverId), content: content.trim()}, {timeout: 15000});
+            if (active.current) setMessages(current => mergeMessages(current, [data]));
+            window.dispatchEvent(new Event('murza:conversations-changed'));
+            return true;
+        } catch (error) {
+            if (active.current) setSendError(chatSendError(error));
+            return false;
+        } finally {
+            sendingRef.current = false;
+            if (active.current) setSending(false);
         }
     };
-
-    const loadMoreMessages = useCallback(() => {
-        if (hasMore) {
-            console.log('Loading more messages');
-            setPage((prevPage) => prevPage + 1);
-        }
-    }, [hasMore]);
-
-    return {
-        messages,
-        sendMessage,
-        connectToWebSocket,
-        disconnectFromWebSocket,
-        loadMoreMessages,
-        hasMore,
-    };
+    return {messages, sendMessage, hasMore, loading, historyError, sendError, sending, connected,
+        loadMoreMessages: () => loadPage(page.current + 1), retryHistory: () => loadPage(page.current)};
 };

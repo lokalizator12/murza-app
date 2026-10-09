@@ -1,9 +1,7 @@
 import React, {createContext, useContext, useEffect, useRef, useState} from 'react';
 import Cookies from 'js-cookie';
 import axios from '../axiosConfig';
-import {Client} from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import {CHAT_URL} from '../services/endpoints';
+import {createChatClient} from '../services/chatClient';
 
 const AuthContext = createContext();
 
@@ -56,21 +54,14 @@ export const AuthProvider = ({children}) => {
             return;
         }
 
-        stompClient.current = new Client({
-            webSocketFactory: () => new SockJS(`${CHAT_URL}?token=${token}`),
-            reconnectDelay: 5000,
-            debug: (str) => {
-                console.log('STOMP debug:', str);
-            },
-        });
+        if (stompClient.current?.active) return;
+        stompClient.current = createChatClient();
 
         stompClient.current.onConnect = () => {
-            console.log('Connected to Presence WebSocket');
             updatePresenceStatus('online'); // Notify online status
         };
 
         stompClient.current.onDisconnect = () => {
-            console.log('Disconnected from Presence WebSocket');
             updatePresenceStatus('offline'); // Notify offline status
         };
 

@@ -20,7 +20,6 @@ const SignIn1 = React.lazy(() => import('./pages/login/SignIn1'));
 const MainPage = React.lazy(() => import('./pages/main/MainPage'));
 const ProfilePage = React.lazy(() => import('./pages/profile/ProfilePage'));
 const ChatPage = React.lazy(() => import('./components/chat/ChatPage'));
-const ConversationList = React.lazy(() => import('./components/chat/Conversations/ConversationList'));
 const ResetPassword = React.lazy(() => import('./pages/login/ResetPassword'));
 
 function AppContent() {
@@ -64,7 +63,7 @@ function AppContent() {
                     path="/inbox"
                     element={
                         <PrivateRoute>
-                            <ConversationList/>
+                            <ChatPage/>
                         </PrivateRoute>
                     }
                 />

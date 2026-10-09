@@ -6,7 +6,7 @@ COPY public ./public
 COPY src ./src
 ARG REACT_APP_MAPBOX_TOKEN
 ARG REACT_APP_RECAPTCHA_SITE_KEY
-RUN npm run build
+RUN GENERATE_SOURCEMAP=false npm run build
 
 FROM nginx:1.27-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
