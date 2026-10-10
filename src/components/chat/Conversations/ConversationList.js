@@ -1,176 +1,59 @@
-// ConversationList.js
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import axios from '../../../axiosConfig';
-import {useNavigate} from 'react-router-dom';
-import {Client} from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import Cookies from 'js-cookie';
-import './ConversationList.css';
+import {Link} from 'react-router-dom';
+import {createChatClient} from '../../../services/chatClient';
+import {messageDate} from '../../../services/chatMessages';
 
-const ConversationList = () => {
+const ConversationList = ({activeId}) => {
     const [conversations, setConversations] = useState([]);
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const stompClient = useRef(null);
-
+    const [error, setError] = useState('');
+    const [query, setQuery] = useState('');
+    const [attempt, setAttempt] = useState(0);
+    const updateUnreadCount = useCallback(items => {
+        const count = items.reduce((total, item) => total + (Number(item.interlocutorId) === Number(activeId) ? 0 : Number(item.unreadMessages) || 0), 0);
+        localStorage.setItem('currentCountMessages', String(count));
+        window.dispatchEvent(new Event('storage'));
+    }, [activeId]);
     useEffect(() => {
-        loadConversations();
-
-        connectToWebSocket();
-
-        return () => {
-            disconnectFromWebSocket();
+        let active = true;
+        let version = 0;
+        const load = async () => {
+            const request = ++version;
+            try {
+                const {data} = await axios.get('/conversations');
+                if (active && request === version) { setConversations(data); updateUnreadCount(data); setError(''); }
+            } catch { if (active && request === version) setError('Conversations could not be loaded. Try again.'); }
+            finally { if (active && request === version) setLoading(false); }
         };
-    }, []);
-    const updateUnreadCount = (conversations) => {
-        const totalUnread = conversations.reduce((acc, conv) => acc + conv.unreadMessages, 0);
-        localStorage.setItem('currentCountMessages', totalUnread); // Save to localStorage
-        window.dispatchEvent(new Event('storage')); // Notify other components about the change
-    };
-
-    const loadConversations = () => {
         setLoading(true);
-        axios
-            .get('/conversations')
-            .then((response) => {
-                setConversations(response.data);
-                console.log(response.data)
-                updateUnreadCount(response.data);
-            })
-            .catch((error) => {
-                console.error('Failed to fetch conversations:', error);
-            }).finally(() => {
-            setLoading(false);
-        });
-    };
-
-    const handleConversationClick = (interlocutorId) => {
-        navigate(`/chat/${interlocutorId}`);
-
-        // Mark messages as read
-        axios.post(`/messages/markAsRead/${interlocutorId}`, null, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        // Update conversations state to remove unread messages count
-        setConversations((prevConversations) =>
-            prevConversations.map((conv) =>
-                conv.interlocutorId === interlocutorId
-                    ? {...conv, unreadMessages: 0}
-                    : conv
-            )
-        );
-        updateUnreadCount(conversations);
-    };
-
-    const connectToWebSocket = () => {
-        const token = Cookies.get('token');
-        const socket = new SockJS(`http://localhost:8080/ws/chat?token=${token}`);
-        stompClient.current = new Client({
-            webSocketFactory: () => socket,
-            reconnectDelay: 5000,
-            debug: (str) => {
-                console.log('STOMP debug:', str);
-            },
-        });
-
-        stompClient.current.onConnect = () => {
-            console.log('Connected to WebSocket in ConversationList');
-
-            stompClient.current.subscribe('/user/queue/messages', onMessageReceived);
-        };
-
-        stompClient.current.activate();
-    };
-
-    const disconnectFromWebSocket = () => {
-        if (stompClient.current) {
-            stompClient.current.deactivate();
-        }
-    };
-
-    const onMessageReceived = (payload) => {
-        const message = JSON.parse(payload.body);
-        const senderId = Number(message.senderId);
-
-        setConversations((prevConversations) => {
-            const existingConversation = prevConversations.find(
-                (conv) => Number(conv.interlocutorId) === senderId
-            );
-
-            if (existingConversation) {
-                // Move the conversation to the top and update last message and unread count
-                const updatedConversations = [
-                    {
-                        ...existingConversation,
-                        lastMessage: message.content,
-                        lastMessageTimestamp: message.timestamp,
-                        unreadMessages: existingConversation.unreadMessages + 1,
-                    },
-                    ...prevConversations.filter(
-                        (conv) => Number(conv.interlocutorId) !== senderId
-                    ),
-                ];
-                updateUnreadCount(updatedConversations); // Update unread messages count
-                return updatedConversations;
-            } else {
-                // Load the conversation from the server
-                loadConversations();
-                return prevConversations;
-            }
-        });
-    };
-
-    return (
-        <div className="conversation-list">
-            {loading ? (
-                <p></p>
-            ) : conversations.length === 0 ? (
-                <p>No conversations yet.</p>
-            ) : (
-                <ul>
-                    {conversations.map((conv) => (
-                        <li
-                            key={conv.interlocutorId}
-                            onClick={() => handleConversationClick(conv.interlocutorId)}
-                        >
-                            <div className="conversation-item">
-                                <img
-                                    src={conv.interlocutorPhoto}
-                                    alt="User Avatar"
-                                    className="conversation-avatar"
-                                />
-                                <div className="conversation-details">
-                  <span className="conversation-name">
-                    {conv.interlocutorName}
-                  </span>
-                                    <span className="conversation-last-message">
-                    {conv.lastMessage
-                        ? `${conv.lastMessage.slice(0, 20)}${
-                            conv.lastMessage.length > 20 ? '...' : ''
-                        }`
-                        : 'No messages yet'}
-                  </span>
-                                </div>
-                                <div className="conversation-meta">
-                  <span className="conversation-timestamp">
-                    {new Date(conv.lastMessageTimestamp).toLocaleString()}
-                  </span>
-                                    {conv.unreadMessages > 0 && (
-                                        <span className="conversation-unread">
-                      {conv.unreadMessages}
-                    </span>
-                                    )}
-                                </div>
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    );
+        load();
+        const connection = createChatClient({onConnect: () => {
+            connection.subscribe('/user/queue/messages', load);
+            load();
+        }});
+        connection.activate();
+        window.addEventListener('murza:conversations-changed', load);
+        return () => { active = false; connection.deactivate(); window.removeEventListener('murza:conversations-changed', load); };
+    }, [updateUnreadCount, attempt]);
+    const filtered = conversations.filter(item => String(item.interlocutorName || '').toLowerCase().includes(query.toLowerCase()));
+    return <aside className="conversation-list" aria-label="Conversations">
+        <h2>Your conversations</h2>
+        <label className="conversation-search">Find a person<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search by name"/></label>
+        {loading && <p role="status">Loading conversations…</p>}
+        {error && <div className="chat-error" role="alert"><p>{error}</p><button onClick={() => setAttempt(value => value + 1)}>Try again</button></div>}
+        {!loading && !error && !conversations.length && <p className="conversation-empty">No conversations yet. Open a parcel or trip and choose “Message sender” or “Message traveller”.</p>}
+        {!loading && !error && conversations.length > 0 && !filtered.length && <p>No people match this name.</p>}
+        <ul>{filtered.map(item => {
+            const selected = String(item.interlocutorId) === String(activeId);
+            const date = messageDate(item.lastMessageTimestamp);
+            return <li key={item.interlocutorId}><Link to={`/chat/${item.interlocutorId}`} className={`conversation-item ${selected ? 'is-active' : ''}`} aria-current={selected ? 'page' : undefined}>
+                {item.interlocutorPhoto ? <img src={item.interlocutorPhoto} alt="" className="chat-avatar"/> : <span className="chat-avatar" aria-hidden="true">{(item.interlocutorName || 'M').charAt(0)}</span>}
+                <span className="conversation-details"><strong>{item.interlocutorName || 'Murza member'}</strong><span>{item.lastMessage || 'Start a conversation'}</span></span>
+                <span className="conversation-meta">{!Number.isNaN(date.getTime()) && <time>{date.toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</time>}
+                {!selected && item.unreadMessages > 0 && <span className="conversation-unread" aria-label={`${item.unreadMessages} unread messages`}>{item.unreadMessages}</span>}</span>
+            </Link></li>;
+        })}</ul>
+    </aside>;
 };
-
 export default ConversationList;

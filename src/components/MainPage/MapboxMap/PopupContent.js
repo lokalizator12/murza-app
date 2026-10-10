@@ -5,10 +5,9 @@ import {Avatar, Box, Button, Typography} from '@mui/material';
 const PopupContent = ({request, selectedType, onClose, onDetails}) => {
     const isParcel = selectedType === 'parcel';
 
-    // Determine the photo URL
     const photoUrl = isParcel
-        ? (request.previewPhoto || '/default-parcel.png')
-        : (request.driverPhoto || '/default-driver.png');
+        ? request.previewPhoto
+        : request.driverPhoto;
 
     return (
         <Box sx={{width: 200, padding: 1, fontFamily: 'Arial', position: 'relative'}}>
@@ -19,18 +18,18 @@ const PopupContent = ({request, selectedType, onClose, onDetails}) => {
                 ×
             </Button>
             <Avatar
-                src={photoUrl}
-                alt="Request Avatar"
+                src={photoUrl || undefined}
+                alt={isParcel ? 'Parcel preview' : 'Traveller photo'}
                 sx={{width: 60, height: 60, mx: 'auto', mb: 1}}
             />
             <Typography variant="subtitle1" align="center" sx={{fontWeight: 'bold'}}>
                 {request.title || (isParcel ? 'Parcel' : 'Trip')}
             </Typography>
             <Typography variant="body2">
-                <strong>From:</strong> {isParcel ? request.departureAddress : request.departureAddress}
+                <strong>From:</strong> {isParcel ? request.pickupAddress : request.departureAddress}
             </Typography>
             <Typography variant="body2">
-                <strong>To:</strong> {isParcel ? request.destinationAddress : request.destinationAddress}
+                <strong>To:</strong> {isParcel ? request.deliveryAddress : request.destinationAddress}
             </Typography>
             <Button
                 variant="contained"
@@ -40,7 +39,7 @@ const PopupContent = ({request, selectedType, onClose, onDetails}) => {
                 onClick={onDetails}
                 sx={{mt: 1}}
             >
-                Details
+                View details
             </Button>
         </Box>
     );

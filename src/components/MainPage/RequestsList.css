@@ -1,0 +1,123 @@
+.murza-request-list {
+  display: grid;
+}
+.murza-request-card {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--murza-line);
+  background: white;
+}
+.murza-request-card-top {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.murza-request-card-top img,
+.murza-request-icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+.murza-request-icon {
+  display: grid;
+  place-items: center;
+  color: var(--murza-blue);
+  background: var(--murza-surface);
+}
+.murza-request-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.murza-request-card.is-parcel .murza-request-icon {
+  background: #fdf0c9;
+  color: var(--murza-ink);
+}
+.murza-request-card-top > div:not(.murza-request-icon) {
+  min-width: 0;
+  flex: 1;
+}
+.murza-request-price {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: #fdf0c9;
+  color: var(--murza-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.murza-request-space {
+  color: var(--murza-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: -5px 0 10px;
+  overflow-wrap: anywhere;
+}
+.murza-request-type {
+  color: var(--murza-muted);
+  font-size: 0.8rem;
+}
+.murza-request-card h3 {
+  margin-top: 4px;
+  color: var(--murza-ink);
+  font-size: 1.08rem;
+  line-height: 1.35;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.murza-request-route {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 14px 0;
+  color: var(--murza-ink);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.murza-request-route span:not(.murza-route-arrow) {
+  min-width: 0;
+}
+.murza-route-arrow {
+  color: var(--murza-muted);
+  flex: 0 0 auto;
+}
+.murza-request-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  color: var(--murza-muted);
+  font-size: 0.85rem;
+}
+.murza-request-card-bottom button {
+  color: var(--murza-blue);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 0;
+}
+.murza-request-card-bottom button:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.murza-empty-list {
+  padding: 36px 18px;
+  background: var(--murza-surface);
+  text-align: center;
+  border-radius: 6px;
+}
+.murza-empty-list img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin: 0 auto 16px;
+}
+.murza-empty-list h3 {
+  font-size: 1.1rem;
+  margin: 8px 0;
+}
+.murza-empty-list p {
+  color: var(--murza-muted);
+  line-height: 1.6;
+}

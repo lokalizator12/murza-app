@@ -10,8 +10,8 @@ const accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 const MapModal = ({isOpen, onClose, setAddress}) => {
     const mapContainerRef = useRef(null);
     const mapInstanceRef = useRef(null);
-    const [inputValue, setInputValue] = useState("");
     const [selectedLocation, setSelectedLocation] = useState(null);  // Сохраняем выбранное местоположение
+    const [mapError, setMapError] = useState(false);
 
     useEffect(() => {
         if (isOpen && mapContainerRef.current && !mapInstanceRef.current) {
@@ -19,15 +19,16 @@ const MapModal = ({isOpen, onClose, setAddress}) => {
 
             // Проверяем, что контейнер готов, перед инициализацией карты
             if (mapContainerRef.current) {
-                mapInstanceRef.current = new mapboxgl.Map({
-                    container: mapContainerRef.current,
-                    center: [-74.5, 40],
-                    zoom: 1,
-                });
-
-                mapInstanceRef.current.on("load", () => {
-                    console.log("Карта загружена");
-                });
+                try {
+                    mapInstanceRef.current = new mapboxgl.Map({
+                        container: mapContainerRef.current,
+                        center: [15, 51],
+                        zoom: 2,
+                    });
+                } catch (error) {
+                    console.warn('Address map is unavailable in this browser', error);
+                    setMapError(true);
+                }
             }
 
             // Очистка карты при закрытии модального окна
@@ -42,14 +43,10 @@ const MapModal = ({isOpen, onClose, setAddress}) => {
 
     // Обработчик изменения адреса в Geocoder
     const handleGeocoderChange = (result) => {
-        console.log(result);
-        console.log(result.geometry);
-        console.log(result.properties.full_address);
-
-        if (result && result.geometry && result.properties.full_address) {
-            setInputValue(result.properties.full_address);
+        const address = result?.properties?.full_address || result?.properties?.name_preferred;
+        if (result?.geometry?.coordinates && address) {
             setSelectedLocation({
-                address: result.properties.full_address,
+                address,
                 coordinates: result.geometry.coordinates,
             });
 
@@ -61,7 +58,6 @@ const MapModal = ({isOpen, onClose, setAddress}) => {
     const handleConfirm = () => {
         if (selectedLocation) {
             setAddress(selectedLocation);  // Передаем полное название и координаты
-            console.log("Передаем адрес и координаты:", selectedLocation); // Для отладки
         }
         onClose();
     };
@@ -74,8 +70,8 @@ const MapModal = ({isOpen, onClose, setAddress}) => {
         <div className="modal-overlay">
             <div className="modal-content">
                 <div className="modal-header">
-                    <h2>Укажите адрес на карте</h2>
-                    <button className="close-button" onClick={onClose}>X</button>
+                    <h2>Choose an address</h2>
+                    <button className="close-button" type="button" aria-label="Close address picker" onClick={onClose}>×</button>
                 </div>
                 <div className="modal-body">
                     <div style={{marginBottom: '16px'}}>
@@ -83,20 +79,18 @@ const MapModal = ({isOpen, onClose, setAddress}) => {
                             accessToken={accessToken}
                             map={mapInstanceRef.current}
                             mapboxgl={mapboxgl}
-                            onRetrieve={(d) => {
-                                setInputValue(d);
-                                handleGeocoderChange(d);
-                            }}
-                            placeholder="Введите адрес"
-                            marker
+                            onRetrieve={handleGeocoderChange}
+                            placeholder="Search for an address"
+                            marker={!mapError}
                         />
                     </div>
-                    <div ref={mapContainerRef} style={{height: 400, minHeight: 400}}/>
+                    <div ref={mapContainerRef} style={{height: mapError ? 0 : 400, minHeight: mapError ? 0 : 400}}/>
+                    {mapError && <p className="murza-address-note">Map preview is unavailable. You can still search and select an address above.</p>}
                 </div>
                 <div className="modal-footer">
-                    <button onClick={onClose} className="cancel-button">Отмена</button>
-                    <button onClick={handleConfirm} className="confirm-button" disabled={!selectedLocation}>
-                        Подтвердить
+                    <button type="button" onClick={onClose} className="cancel-button">Cancel</button>
+                    <button type="button" onClick={handleConfirm} className="confirm-button" disabled={!selectedLocation}>
+                        Use this address
                     </button>
                 </div>
             </div>

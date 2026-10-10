@@ -20,17 +20,24 @@ const RouteMap = ({pickupCoordinates, destinationCoordinates, waypoints = [], tr
     const mapRef = useRef(null);
     const [distance, setDistance] = useState(null);
     const [duration, setDuration] = useState(null);
+    const [mapError, setMapError] = useState(false);
     const markersRef = useRef([]); // Используем ref для хранения маркеров, чтобы избежать зависимости от markers
 
     // Инициализация карты
     useEffect(() => {
         if (!mapRef.current) {
-            mapRef.current = new mapboxgl.Map({
-                container: mapContainerRef.current,
-                style: 'mapbox://styles/mapbox/streets-v12',
-                center: ensureLngLatArray(pickupCoordinates) || [30.5, 50.5],
-                zoom: 1,
-            }, [pickupCoordinates]);
+            try {
+                mapRef.current = new mapboxgl.Map({
+                    container: mapContainerRef.current,
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: ensureLngLatArray(pickupCoordinates) || [30.5, 50.5],
+                    zoom: 1,
+                });
+            } catch (error) {
+                console.warn('Route map is unavailable in this browser', error);
+                setMapError(true);
+                return undefined;
+            }
         }
 
         const mapInstance = mapRef.current;
@@ -141,7 +148,9 @@ const RouteMap = ({pickupCoordinates, destinationCoordinates, waypoints = [], tr
 
     return (
         <div>
-            <div ref={mapContainerRef} style={{width: '100%', height: '400px', marginTop: '20px'}}/>
+            <div ref={mapContainerRef} style={{width: '100%', height: mapError ? 'auto' : '400px', minHeight: mapError ? '100px' : undefined, marginTop: '20px'}}>
+                {mapError && <div className="murza-map-fallback murza-route-map-fallback" role="status">Route preview is unavailable in this browser. Your selected locations are still saved.</div>}
+            </div>
             <div style={{marginTop: '20px'}}>
                 {distance && <p>Total distance: {distance} km</p>}
                 {duration && <p>Estimated travel time: {duration} minutes</p>}

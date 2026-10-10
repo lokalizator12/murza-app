@@ -1,98 +1,68 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import authService from "./services/authService";
+import {API_BASE_URL} from './services/endpoints';
 
-// Base URL for API
-axios.defaults.baseURL = 'http://localhost:8080/api/';
+axios.defaults.baseURL = API_BASE_URL;
+axios.defaults.withCredentials = true;
 
-// Flag to avoid infinite retry loops
-let isRefreshing = false;
-let failedQueue = [];
+let refreshPromise = null;
+let redirectingToLogin = false;
 
-// Process queue of failed requests after token refresh
-const processQueue = (error, token = null) => {
-    failedQueue.forEach((prom) => {
-        if (error) {
-            prom.reject(error);
-        } else {
-            prom.resolve(token);
-        }
-    });
-    failedQueue = [];
-};
+const authAction = (url) => String(url || '').match(/(?:^|\/)auth\/([^/?#]+)/)?.[1];
+const isPublicAuthRequest = (url) =>
+    ['login', 'signup', 'refresh', 'forgot-password', 'reset-password', 'validate-token']
+        .includes(authAction(url));
 
-// Axios request interceptor
-axios.interceptors.request.use(
-    (config) => {
-        const token = Cookies.get('token'); // Get access token from cookies
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+axios.interceptors.request.use((config) => {
+    if (isPublicAuthRequest(config.url)) {
+        delete config.headers.Authorization;
         return config;
-    },
-    (error) => Promise.reject(error)
-);
+    }
 
-// Axios response interceptor
+    const token = Cookies.get('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 axios.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const originalRequest = error.config;
+        const request = error.config;
+        const action = authAction(request?.url);
 
-        if (error.response) {
-            const {status} = error.response;
-
-            if (status === 401 && !originalRequest._retry) {
-                originalRequest._retry = true;
-
-                if (!isRefreshing) {
-                    isRefreshing = true;
-
-                    try {
-                        const refreshResponse = await axios.post('/auth/refresh', {}, {withCredentials: true});
-                        const newAccessToken = refreshResponse.data.token;
-
-                        Cookies.set('token', newAccessToken, {expires: 1, secure: true}); // Set new token (1-day expiry)
-                        axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-                        processQueue(null, newAccessToken);
-                        isRefreshing = false;
-
-                        // Retry the original request
-                        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-                        return axios(originalRequest);
-                    } catch (refreshError) {
-                        processQueue(refreshError, null);
-                        isRefreshing = false;
-
-                        // Logout and redirect to login page
-                        console.warn('Token refresh failed. Logging out...');
-                        await authService.logout();
-                        Cookies.remove('token');
-                        window.location.href = '/login';
-                        return Promise.reject(refreshError);
-                    }
-                }
-
-                return new Promise((resolve, reject) => {
-                    failedQueue.push({resolve, reject});
-                })
-                    .then((token) => {
-                        originalRequest.headers['Authorization'] = `Bearer ${token}`;
-                        return axios(originalRequest);
-                    })
-                    .catch((err) => Promise.reject(err));
-            }
-
-            // Handle other status codes (e.g., 403)
-            if (status === 403) {
-                console.warn('Access forbidden. Redirecting to login.');
-                await authService.logout();
-                Cookies.remove('token');
-                window.location.href = '/login';
-            }
+        if (error.response?.status !== 401 || !request || request._retry ||
+            isPublicAuthRequest(request.url) || action === 'logout' || !Cookies.get('token')) {
+            return Promise.reject(error);
         }
 
-        return Promise.reject(error);
+        request._retry = true;
+        try {
+            if (!refreshPromise) {
+                refreshPromise = axios.post('auth/refresh', {}, {withCredentials: true})
+                    .finally(() => { refreshPromise = null; });
+            }
+            const {data} = await refreshPromise;
+            if (!data?.token) {
+                throw new Error('Token refresh returned no access token');
+            }
+
+            Cookies.set('token', data.token, {
+                expires: data.expiresIn / 86400000,
+                secure: window.location.protocol === 'https:',
+                sameSite: 'Lax',
+            });
+            request.headers.Authorization = `Bearer ${data.token}`;
+            return axios(request);
+        } catch (refreshError) {
+            Cookies.remove('token');
+            if (!redirectingToLogin && window.location.pathname !== '/login') {
+                redirectingToLogin = true;
+                window.location.assign('/login');
+            }
+            return Promise.reject(refreshError);
+        }
     }
 );
 

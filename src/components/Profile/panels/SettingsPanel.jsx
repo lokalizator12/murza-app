@@ -1,555 +1,403 @@
-import React, {useEffect, useRef, useState} from "react";
-import {Alert, Box, Button, CircularProgress, Grid, Snackbar, TextField, Tooltip, Typography,} from "@mui/material";
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, Button } from "@mui/material";
+import Cookies from "js-cookie";
 import axios from "../../../axiosConfig";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import ReCAPTCHA from "react-google-recaptcha";
-import Countdown from "react-countdown";
 
-const SettingsPanel = ({onSettingsUpdated}) => {
-    const [settings, setSettings] = useState(null);
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [isSaving, setIsSaving] = useState(false);
-    const [originalPhoneNumber, setOriginalPhoneNumber] = useState('');
-    const isCodeValid = (code) => /^\d{6}$/.test(code);
-    const [snackbar, setSnackbar] = useState({
-        open: false,
-        message: "",
-        severity: "success",
-    });
-    const [fieldErrors, setFieldErrors] = useState({});
-    const [verificationDialog, setVerificationDialog] = useState({
-        open: false,
-        type: "",
-        code: "",
-    });
-
-    const [originalSettings, setOriginalSettings] = useState(null);
-    const [error, setError] = useState("");
-    const [attemptsLeft, setAttemptsLeft] = useState(3);
-    const [codeExpirationTime, setCodeExpirationTime] = useState(null);
-    const [isCodeSent, setIsCodeSent] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [canResendCode, setCanResendCode] = useState(false);
-    const [blockedStatus, setBlockedStatus] = useState({
-        email: {isBlocked: false, blockUntil: null},
-        phone: {isBlocked: false, blockUntil: null},
-    });
-
-    const recaptchaRef = useRef(null);
-
-    const handleVerification = async (type) => {
-        if (blockedStatus[type].isBlocked) {
-            setVerificationDialog({open: true, type, code: ""});
-            setSnackbar({
-                open: true,
-                message: `You are blocked until ${blockedStatus[type].blockUntil.toLocaleTimeString()}`,
-                severity: "error",
-            });
-            return;
-        }
-        setLoading(true);
-        setCanResendCode(false);
-        try {
-            console.log("Starting verification for type:", type);
-
-            if (recaptchaRef.current) {
-                const captchaResponse = await recaptchaRef.current.executeAsync();
-                console.log("Received captcha response:", captchaResponse);
-                recaptchaRef.current.reset();
-
-                const response = await axios.post(
-                    `/v1/verification/send?type=${type}&captchaResponse=${captchaResponse}`
-                );
-                console.log("Verification code sent successfully:", response.data);
-
-                setSnackbar({
-                    open: true,
-                    message: `Verification code sent to your ${type}.`,
-                    severity: "success",
-                });
-                setVerificationDialog({open: true, type, code: ""});
-                setIsCodeSent(true);
-                setCodeExpirationTime(Date.now() + 2 * 60 * 1000);
-            } else {
-                console.error("recaptchaRef.current is null");
-                setSnackbar({
-                    open: true,
-                    message: "ReCAPTCHA initialization error. Please refresh the page.",
-                    severity: "error",
-                });
-            }
-        } catch (error) {
-            console.error("Error sending verification code:", error);
-
-            let errorMessage = "Error sending verification code.";
-            if (error.response) {
-                const apiError = error.response.data;
-                if (apiError && apiError.message) {
-                    errorMessage = apiError.message;
-                } else if (typeof apiError === "string") {
-                    errorMessage = apiError;
-                }
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-
-            setSnackbar({
-                open: true,
-                message: errorMessage,
-                severity: "error",
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const verifyCode = async () => {
-        setLoading(true);
-        try {
-            console.log("Verifying code:", verificationDialog.code);
-            const {type, code} = verificationDialog;
-            const response = await axios.post(
-                `/v1/verification/verify?type=${type}&code=${code}`
-            );
-            console.log("Verification successful:", response.data);
-
-            setSnackbar({
-                open: true,
-                message: `${
-                    type === "email" ? "Email" : "Phone"
-                } successfully verified!`,
-                severity: "success",
-            });
-            setSettings((prevSettings) => ({
-                ...prevSettings,
-                [`${type}Verified`]: true,
-            }));
-            setVerificationDialog({open: false, type: "", code: ""});
-            setAttemptsLeft(3);
-        } catch (error) {
-            console.error("Error verifying code:", error);
-
-            let errorMessage = "Verification error. Please try again.";
-
-            if (error.response) {
-                const apiError = error.response.data;
-                let errorData;
-
-                if (apiError && apiError.data) {
-                    errorData = apiError.data;
-                } else {
-                    errorData = apiError;
-                }
-
-                if (errorData) {
-                    if (errorData.message) {
-                        errorMessage = errorData.message;
-                    }
-                    if (errorData.errors && errorData.errors.length > 0) {
-                        errorMessage = errorData.errors.map((err) => err.message).join(", ");
-                    }
-                    if (errorData.additionalData) {
-                        if (errorData.additionalData.attemptsLeft !== undefined) {
-                            setAttemptsLeft(errorData.additionalData.attemptsLeft);
-                        }
-                        if (errorData.additionalData.blockedUntil) {
-                            const blockTime = new Date(errorData.additionalData.blockedUntil);
-                            setBlockedStatus((prevStatus) => ({
-                                ...prevStatus,
-                                [verificationDialog.type]: {isBlocked: true, blockUntil: blockTime},
-                            }));
-
-                            const timeoutDuration = blockTime.getTime() - new Date().getTime();
-                            setTimeout(() => {
-                                setBlockedStatus((prevStatus) => ({
-                                    ...prevStatus,
-                                    [verificationDialog.type]: {isBlocked: false, blockUntil: null},
-                                }));
-                                setAttemptsLeft(3);
-                            }, timeoutDuration);
-                        }
-                    }
-                }
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-
-            setSnackbar({
-                open: true,
-                message: errorMessage,
-                severity: "error",
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-    const handleResendCode = () => {
-        setCanResendCode(false);
-        setCodeExpirationTime(Date.now() + 2 * 60 * 1000); // Update code expiration time
-        handleVerification(verificationDialog.type);
-    };
-    const haveSettingsChanged = () => {
-        return (
-            settings.phoneNumber !== originalSettings.phoneNumber ||
-            newPassword !== ''
-        );
-    };
-    const validatePhoneNumber = (value) => {
-        if (value.trim() === '') {
-            return false;
-        }
-        const phoneRegex = /^\+\d{10,15}$/;
-        return phoneRegex.test(value);
-    };
-
-    const handlePhoneNumberChange = (e) => {
-        const value = e.target.value;
-        setSettings((prevSettings) => ({...prevSettings, phoneNumber: value}));
-
-        if (!validatePhoneNumber(value)) {
-            setError("Phone number must start with '+' and contain 10 to 15 digits.");
-        } else {
-            setError("");
-        }
-    };
-
-    useEffect(() => {
-        const fetchSettingsAndBlockStatus = async () => {
-            try {
-                const response = await axios.get("/v1/user/settings");
-                setSettings(response.data);
-                setOriginalSettings(response.data);
-                setOriginalPhoneNumber(response.data.phoneNumber);
-                const blockStatusResponse = await axios.get("/v1/verification/block-status");
-                const blockData = blockStatusResponse.data;
-
-                setBlockedStatus({
-                    email: {
-                        isBlocked: blockData.email.isBlocked,
-                        blockUntil: blockData.email.blockedUntil ? new Date(blockData.email.blockedUntil) : null,
-                    },
-                    phone: {
-                        isBlocked: blockData.phone.isBlocked,
-                        blockUntil: blockData.phone.blockedUntil ? new Date(blockData.phone.blockedUntil) : null,
-                    },
-                });
-            } catch (error) {
-                setSnackbar({
-                    open: true,
-                    message: "Error loading settings.",
-                    severity: "error",
-                });
-            }
-        };
-        fetchSettingsAndBlockStatus();
-    }, []);
-
-
-    const handleSaveSettings = async (event) => {
-        event.preventDefault();
-        setIsSaving(true);
-        setFieldErrors({});
-
-        if (!currentPassword) {
-            setSnackbar({
-                open: true,
-                message: "Current password is required to save changes.",
-                severity: "error",
-            });
-            setIsSaving(false);
-            return;
-        }
-
-        try {
-            const response = await axios.put("/v1/user/settings/update-credentials", {
-                ...settings,
-                currentPassword,
-                newPassword: newPassword || null,
-            });
-
-            setSnackbar({
-                open: true,
-                message: "Settings successfully updated!",
-                severity: "success",
-            });
-            onSettingsUpdated(response.data);
-        } catch (error) {
-            if (error.response && error.response.data && error.response.data.errors) {
-                const errorsMap = {};
-                error.response.data.errors.forEach((err) => {
-                    errorsMap[err.field] = err.message;
-                });
-                setFieldErrors(errorsMap);
-            } else {
-                setSnackbar({
-                    open: true,
-                    message: "An error occurred. Please try again.",
-                    severity: "error",
-                });
-            }
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleCloseSnackbar = () => {
-        setSnackbar({open: false, message: "", severity: ""});
-    };
-
-    const renderer = ({minutes, seconds, completed}) => {
-        if (completed) {
-            setCanResendCode(true);
-            return <span>Time's up.</span>;
-        } else {
-            return (
-                <span>
-        {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
-      </span>
-            );
-        }
-    };
-
-    if (!settings) {
-        return <Typography>Loading settings...</Typography>;
+export default function SettingsPanel({ onSettingsUpdated }) {
+  const [original, setOriginal] = useState(null);
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [verification, setVerification] = useState(null);
+  const [code, setCode] = useState("");
+  const [verifyError, setVerifyError] = useState("");
+  const lock = useRef(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    axios
+      .get("/v1/user/settings", { signal: controller.signal })
+      .then(({ data }) => {
+        if (controller.signal.aborted) return;
+        setOriginal(data);
+        setEmail(data.email || "");
+        setPhone(data.phoneNumber || "");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted)
+          setError("Could not load your account settings. Please try again.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [retry]);
+  const contactChanged =
+    original &&
+    (email.trim() !== original.email || phone.trim() !== original.phoneNumber);
+  const changed = contactChanged || Boolean(newPassword);
+  function errorText(e, fallback) {
+    if (e.response?.status === 409)
+      return "This email or phone number is already used by another account.";
+    if (e.response?.status === 429)
+      return "Please wait two minutes before requesting another code.";
+    if (e.response?.status === 423)
+      return "Too many attempts. Verification is temporarily locked; try again later.";
+    const message = e.response?.data?.message;
+    return typeof message === "string" && message !== "Validation failed"
+      ? message
+      : fallback;
+  }
+  async function save(event) {
+    event.preventDefault();
+    if (lock.current || !changed) return;
+    setError("");
+    setNotice("");
+    if (
+      newPassword &&
+      (newPassword.length < 8 ||
+        new TextEncoder().encode(newPassword).length > 72)
+    ) {
+      setError(
+        "Choose a password with at least 8 characters and no more than 72 bytes.",
+      );
+      return;
     }
-    const hasPhoneNumberChanged = settings.phoneNumber !== originalPhoneNumber;
+    if (newPassword !== confirmPassword) {
+      setError("Your new passwords do not match.");
+      return;
+    }
+    if (!/^\+?[0-9]{10,15}$/.test(phone.trim())) {
+      setError(
+        "Use an international phone number with 10–15 digits, for example +48123456789.",
+      );
+      return;
+    }
+    lock.current = true;
+    setBusy(true);
+    try {
+      const relogin = email.trim() !== original.email || Boolean(newPassword);
+      const { data } = await axios.put("/v1/user/settings/update-credentials", {
+        email: email.trim(),
+        phoneNumber: phone.trim(),
+        currentPassword,
+        newPassword: newPassword || null,
+      });
+      setOriginal(data);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setVerification(null);
+      setCode("");
+      onSettingsUpdated?.(data);
+      if (relogin) {
+        Cookies.remove("token");
+        localStorage.removeItem("currentUserId");
+        localStorage.removeItem("currentCountMessages");
+        sessionStorage.setItem(
+          "murza-account-notice",
+          "Account updated. Sign in again with your current email and password. Your other sessions have been signed out.",
+        );
+        window.location.assign("/login");
+        return;
+      }
+      setNotice("Account updated. Please verify your new contact details.");
+    } catch (e) {
+      setError(
+        errorText(
+          e,
+          "Could not save your settings. Check your current password and try again.",
+        ),
+      );
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+  async function sendCode(type) {
+    if (lock.current || contactChanged) return;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    setVerifyError("");
+    setNotice("");
+    try {
+      await axios.post("/v1/verification/send", { type });
+      setVerification(type);
+      setCode("");
+      setNotice(
+        `A six-digit code was sent to your ${type === "phone" ? "saved phone number" : "saved email address"}.`,
+      );
+    } catch (e) {
+      if (e.response?.data?.message === "Verification Code Already Active") {
+        setVerification(type);
+        setCode("");
+        setNotice(
+          "A code has already been sent. Check your messages and enter it below.",
+        );
+      } else
+        setError(
+          errorText(e, "Could not send the code. Please try again later."),
+        );
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+  async function verifyCode(event) {
+    event.preventDefault();
+    if (lock.current || !/^[0-9]{6}$/.test(code)) return;
+    lock.current = true;
+    setBusy(true);
+    setVerifyError("");
+    try {
+      await axios.post("/v1/verification/verify", { type: verification, code });
+      const { data } = await axios.get("/v1/user/settings");
+      setOriginal(data);
+      onSettingsUpdated?.(data);
+      setVerification(null);
+      setCode("");
+      setNotice("Contact verified. Your profile has been updated.");
+    } catch (e) {
+      setVerifyError(
+        errorText(
+          e,
+          "The code is incorrect or expired. Check it and try again.",
+        ),
+      );
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+  function discard() {
+    setEmail(original.email);
+    setPhone(original.phoneNumber);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setError("");
+    setNotice("");
+  }
+  if (loading) return <p role="status">Loading account settings…</p>;
+  if (!original)
     return (
-        <Box component="form" onSubmit={handleSaveSettings} sx={{mt: 4}} autoComplete="off">
-            <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                <Alert severity={snackbar.severity} onClose={handleCloseSnackbar}>
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
-
-            <Typography variant="h5" gutterBottom>
-                Account Settings
-            </Typography>
-
-            <Grid container spacing={2}>
-                <Grid item xs={12}>
-                    <TextField
-                        fullWidth
-                        label="Email"
-                        type="email"
-                        value={settings.email}
-                        disabled={settings.emailVerified}
-                        helperText={
-                            settings.emailVerified ? "Email is verified and cannot be changed." : ""
-                        }
-                    />
-                    <Tooltip
-                        title={
-                            blockedStatus.email.isBlocked
-                                ? `You are blocked until ${blockedStatus.email.blockUntil.toLocaleTimeString()}`
-                                : settings.emailVerified
-                                    ? "Email is already verified"
-                                    : ""
-                        }
-                    >
-    <span>
-      <Button
-          variant="contained"
-          color={settings.emailVerified ? "success" : "primary"}
-          disabled={
-              settings.emailVerified ||
-              loading ||
-              blockedStatus.email.isBlocked
-          }
-          onClick={() => handleVerification("email")}
-          sx={{mt: 1}}
+      <Alert
+        severity="error"
+        action={
+          <Button onClick={() => setRetry((v) => v + 1)}>Try again</Button>
+        }
       >
-        {loading && verificationDialog.type === "email" ? (
-            <CircularProgress size={24}/>
-        ) : settings.emailVerified ? (
-            "Verified"
-        ) : (
-            "Verify Email"
-        )}
-      </Button>
-    </span>
-                    </Tooltip>
-                </Grid>
-
-
-                <Grid item xs={12}>
-                    <TextField
-                        fullWidth
-                        label="Phone Number"
-                        type="text"
-                        value={settings.phoneNumber}
-                        onChange={handlePhoneNumberChange}
-                        disabled={settings.phoneVerified}
-                        error={!!error}
-                        helperText={
-                            error || (settings.phoneVerified ? "Phone is verified and cannot be changed." : "")
-                        }
-                    />
-                    <Tooltip
-                        title={
-                            blockedStatus.phone.isBlocked
-                                ? `You are blocked until ${blockedStatus.phone.blockUntil.toLocaleTimeString()}`
-                                : settings.phoneVerified
-                                    ? "Phone is already verified"
-                                    : ""
-                        }
-                    >
-    <span>
-      <Button
-          variant="contained"
-          color={settings.phoneVerified ? "success" : "primary"}
-          disabled={
-              settings.phoneVerified ||
-              loading ||
-              blockedStatus.phone.isBlocked ||
-              !!error ||
-              !validatePhoneNumber(settings.phoneNumber)
-
-          }
-          onClick={() => handleVerification("phone")}
-          sx={{mt: 1}}
-      >
-  {loading && verificationDialog.type === "phone" ? (
-      <CircularProgress size={24}/>
-  ) : settings.phoneVerified ? (
-      "Verified"
-  ) : (
-      "Verify Phone"
-  )}
-</Button>
-    </span>
-                    </Tooltip>
-                </Grid>
-
-                <Grid item xs={12}>
-                    <TextField
-                        fullWidth
-                        label="Current Password"
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        required
-                        error={!!fieldErrors.currentPassword}
-                        helperText={fieldErrors.currentPassword || "Required to save changes."}
-                    />
-                </Grid>
-
-                <Grid item xs={12}>
-                    <TextField
-                        fullWidth
-                        label="New Password (optional)"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        error={!!fieldErrors.newPassword}
-                        helperText={
-                            fieldErrors.newPassword || "Leave empty if you don't want to change the password."
-                        }
-                    />
-                </Grid>
-
-                <Grid item xs={12}>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        disabled={
-                            isSaving ||
-                            !!error ||
-                            loading ||
-                            !currentPassword ||
-                            !haveSettingsChanged()
-                        }
-                    >
-                        {isSaving ? <CircularProgress size={24}/> : "Save Changes"}
-                    </Button>
-                </Grid>
-            </Grid>
-
-            {/* Verification Code Dialog */}
-            <Dialog
-                open={verificationDialog.open}
-                onClose={() => setVerificationDialog({open: false, type: "", code: ""})}
-            >
-                <DialogTitle>Enter Verification Code</DialogTitle>
-                <DialogContent>
-                    {blockedStatus[verificationDialog.type]?.isBlocked ? (
-                        <Typography variant="body1">
-                            You are blocked
-                            until {blockedStatus[verificationDialog.type].blockUntil.toLocaleTimeString()}
-                        </Typography>
-                    ) : (
-                        <>
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                label="Verification Code"
-                                type="text"
-                                fullWidth
-                                value={verificationDialog.code}
-                                onChange={(e) =>
-                                    setVerificationDialog({...verificationDialog, code: e.target.value})
-                                }
-                                error={
-                                    verificationDialog.code !== '' && !isCodeValid(verificationDialog.code)
-                                }
-                                helperText={
-                                    verificationDialog.code !== '' && !isCodeValid(verificationDialog.code)
-                                        ? 'Code must be 6 digits long.'
-                                        : `Attempts remaining: ${attemptsLeft}`
-                                }
-                            />
-                            {codeExpirationTime && (
-                                <Typography variant="body2" color="textSecondary">
-                                    Code expires in:{" "}
-                                    <Countdown date={codeExpirationTime} renderer={renderer}/>
-                                </Typography>
-                            )}
-                        </>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button
-                        onClick={() => setVerificationDialog({open: false, type: "", code: ""})}
-                        disabled={loading}
-                    >
-                        Cancel
-                    </Button>
-                    {!blockedStatus[verificationDialog.type]?.isBlocked && (
-                        <Button
-                            onClick={verifyCode}
-                            disabled={
-                                loading ||
-                                attemptsLeft <= 0 ||
-                                !isCodeValid(verificationDialog.code)
-                            }
-                        >
-                            {loading ? <CircularProgress size={24}/> : "Verify"}
-                        </Button>
-                    )}
-                </DialogActions>
-                {!blockedStatus[verificationDialog.type]?.isBlocked && (
-                    <DialogActions>
-                        <Button onClick={handleResendCode} disabled={!canResendCode || loading}>
-                            Resend Code
-                        </Button>
-                    </DialogActions>
-                )}
-            </Dialog>
-
-            {/* ReCAPTCHA Component */}
-            <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
-                size="invisible"
-                hl="en"
-            />
-        </Box>
+        {error}
+      </Alert>
     );
-};
-
-export default SettingsPanel;
+  return (
+    <section className="profile-form-panel">
+      <h2>Account & security</h2>
+      <p>
+        Your email and phone are private. Only their verification status is
+        shown to other members.
+      </p>
+      <form onSubmit={save}>
+        <div className="profile-field-grid">
+          <div>
+            <label>
+              Email address
+              <input
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                maxLength={254}
+                value={email}
+                disabled={busy}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+            <div className="profile-contact-status">
+              <span>
+                {original.emailVerified && email.trim() === original.email
+                  ? "✓ Verified"
+                  : "Not verified"}
+              </span>
+              {!original.emailVerified && (
+                <button
+                  type="button"
+                  className="profile-text-button"
+                  disabled={busy || contactChanged}
+                  onClick={() => sendCode("email")}
+                >
+                  Verify email
+                </button>
+              )}
+            </div>
+          </div>
+          <div>
+            <label>
+              Phone number
+              <input
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                required
+                maxLength={16}
+                value={phone}
+                disabled={busy}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </label>
+            <div className="profile-contact-status">
+              <span>
+                {original.phoneVerified && phone.trim() === original.phoneNumber
+                  ? "✓ Verified"
+                  : "Not verified"}
+              </span>
+              {!original.phoneVerified && (
+                <button
+                  type="button"
+                  className="profile-text-button"
+                  disabled={busy || contactChanged}
+                  onClick={() => sendCode("phone")}
+                >
+                  Verify phone
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        {contactChanged && (
+          <p className="profile-security-note">
+            Save your new contact details before verifying them.
+          </p>
+        )}
+        <div className="profile-password-section">
+          <h3>Change your password</h3>
+          <p className="profile-security-note">
+            Optional. Use at least 8 characters. Changing your email or password
+            signs out all existing sessions.
+          </p>
+          <div className="profile-field-grid">
+            <label>
+              New password
+              <input
+                name="newPassword"
+                type="password"
+                autoComplete="new-password"
+                minLength={8}
+                maxLength={72}
+                value={newPassword}
+                disabled={busy}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </label>
+            <label>
+              Confirm new password
+              <input
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required={Boolean(newPassword)}
+                value={confirmPassword}
+                disabled={busy}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </label>
+          </div>
+        </div>
+        <label>
+          Current password
+          <input
+            name="currentPassword"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={currentPassword}
+            disabled={busy}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+        </label>
+        <p className="profile-security-note">
+          Required to confirm any account changes.
+        </p>
+        {error && <Alert severity="error">{error}</Alert>}
+        {notice && <Alert severity="success">{notice}</Alert>}
+        <div className="profile-form-actions">
+          <button
+            className="murza-button"
+            type="submit"
+            disabled={busy || !changed}
+          >
+            {busy ? "Updating…" : "Save account changes"}
+          </button>
+          <button
+            className="profile-text-button"
+            type="button"
+            disabled={busy || !changed}
+            onClick={discard}
+          >
+            Discard changes
+          </button>
+        </div>
+      </form>
+      {verification && (
+        <form className="profile-code-form" onSubmit={verifyCode}>
+          <h3>
+            Verify your {verification === "phone" ? "phone number" : "email"}
+          </h3>
+          <p className="profile-security-note">
+            Enter the six-digit code sent to{" "}
+            {verification === "phone" ? original.phoneNumber : original.email}.
+          </p>
+          <label>
+            Verification code
+            <input
+              name="verificationCode"
+              autoComplete="one-time-code"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              required
+              value={code}
+              disabled={busy}
+              onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
+            />
+          </label>
+          {verifyError && <Alert severity="error">{verifyError}</Alert>}
+          <div className="profile-form-actions">
+            <button
+              className="murza-button murza-button-small"
+              type="submit"
+              disabled={busy || !/^[0-9]{6}$/.test(code)}
+            >
+              {busy ? "Checking…" : "Verify contact"}
+            </button>
+            <button
+              className="profile-text-button"
+              type="button"
+              disabled={busy}
+              onClick={() => sendCode(verification)}
+            >
+              Send another code
+            </button>
+            <button
+              className="profile-text-button"
+              type="button"
+              disabled={busy}
+              onClick={() => setVerification(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
+  );
+}

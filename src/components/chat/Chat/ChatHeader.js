@@ -1,103 +1,22 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from '../../../axiosConfig';
 import {Link} from 'react-router-dom';
-import {Client} from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import Cookies from 'js-cookie';
-import './ChatHeader.css'
 
 const ChatHeader = ({receiverId}) => {
     const [receiver, setReceiver] = useState(null);
-    const [isOnline, setIsOnline] = useState(false);
-    const [lastSeen, setLastSeen] = useState(null);
-    const stompClient = useRef(null);
-
+    const [error, setError] = useState(false);
     useEffect(() => {
-        fetchReceiverDetails();
-        connectToPresenceWebSocket();
-
-        return () => disconnectFromPresenceWebSocket();
+        let active = true;
+        axios.get(`/v1/profile/${receiverId}`).then(({data}) => { if (active) setReceiver(data); })
+            .catch(() => { if (active) setError(true); });
+        return () => { active = false; };
     }, [receiverId]);
-
-    const fetchReceiverDetails = async () => {
-        try {
-            const response = await axios.get(`/v1/profile/${receiverId}`);
-            setReceiver(response.data);
-            setIsOnline(response.data.online);
-            setLastSeen(response.data.lastActivityDate);
-        } catch (error) {
-            console.error('Failed to fetch receiver details:', error);
-        }
-    };
-
-    const connectToPresenceWebSocket = () => {
-        const token = Cookies.get('token');
-        const socket = new SockJS(`http://localhost:8080/ws/chat?token=${token}`);
-        stompClient.current = new Client({
-            webSocketFactory: () => socket,
-            reconnectDelay: 5000,
-            debug: (str) => console.log('STOMP debug:', str),
-        });
-
-        stompClient.current.onConnect = () => {
-            stompClient.current.subscribe(`/topic/presence/${receiverId}`, (message) => {
-                const presenceUpdate = JSON.parse(message.body);
-                if (presenceUpdate.userId === receiverId) {
-                    setIsOnline(presenceUpdate.online);
-                    if (!presenceUpdate.online) {
-                        setLastSeen(presenceUpdate.lastSeen || new Date().toISOString());
-                    }
-                }
-            });
-        };
-
-        stompClient.current.activate();
-    };
-
-    const disconnectFromPresenceWebSocket = () => {
-        if (stompClient.current) stompClient.current.deactivate();
-    };
-
-    const formatLastSeen = (timestamp) => {
-        if (!timestamp) return 'Recently';
-
-        const lastSeenDate = new Date(timestamp);
-        const now = new Date();
-        const diffMs = now - lastSeenDate;
-
-        if (diffMs < 60 * 1000) {
-            return 'Just now';
-        } else if (diffMs < 60 * 60 * 1000) {
-            const minutes = Math.floor(diffMs / (60 * 1000));
-            return `${minutes} minutes ago`;
-        } else {
-            return lastSeenDate.toLocaleString();
-        }
-    };
-
-    return (
-        <div className="chat-header">
-            {receiver ? (
-                <>
-                    <img src={receiver.userPhoto} alt="User Avatar" className="chat-header-avatar"/>
-                    <div className="chat-header-info">
-                        <h2>{`${receiver.firstName} ${receiver.lastName}`}</h2>
-                        <p>
-                            {isOnline ? (
-                                <span className="online-status">Online</span>
-                            ) : (
-                                <span>Last seen: {formatLastSeen(lastSeen)}</span>
-                            )}
-                        </p>
-                    </div>
-                    <Link to={`/profile/${receiverId}`}
-                          className="navbar8-action11 thq-button-filled thq-button-animated">View Profile</Link>
-                </>
-            ) : (
-                <h2>Loading...</h2>
-            )}
-        </div>
-    );
+    const name = receiver ? `${receiver.firstName || ''} ${receiver.lastName || ''}`.trim() || 'Murza member' : error ? 'Member unavailable' : 'Loading person…';
+    return <header className="chat-header">
+        <Link to="/inbox" className="chat-back">Messages</Link>
+        {receiver?.userPhoto ? <img src={receiver.userPhoto} alt="" className="chat-header-avatar"/> : <span className="chat-avatar" aria-hidden="true">{name.charAt(0)}</span>}
+        <div className="chat-header-info"><h2>{name}</h2><p>Discuss pickup, delivery and price.</p></div>
+        {receiver && <Link to={`/profile/${receiverId}`} className="chat-profile-link">View profile</Link>}
+    </header>;
 };
-
 export default ChatHeader;
