@@ -1,25 +1,25 @@
 .murza-hero {
-  background: var(--murza-surface);
+  background: #e7f1f9;
 }
 .murza-hero-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 64px;
   align-items: center;
-  padding-block: 72px 64px;
+  padding-block: 48px 38px;
 }
 .murza-hero-copy h1 {
-  font-size: clamp(2.8rem, 5.4vw, 4.7rem);
+  font-size: clamp(2.8rem, 4.8vw, 4.1rem);
   font-weight: 600;
   line-height: 1.06;
   letter-spacing: -0.035em;
-  margin: 0 0 24px;
+  margin: 0 0 18px;
 }
 .murza-hero-copy > p {
   max-width: 35ch;
   font-size: 1.2rem;
   line-height: 1.6;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 .murza-text-link {
   color: var(--murza-blue);
@@ -27,19 +27,63 @@
   text-underline-offset: 4px;
   font-weight: 600;
 }
-.murza-hero-companion {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  margin-top: 40px;
+.murza-hero-scene {
+  position: relative;
+  height: 278px;
+  margin: 16px 0 0;
 }
-.murza-hero-companion img {
+.murza-hero-scene > img {
+  position: absolute;
+  right: -20px;
+  bottom: 16px;
+  width: 420px;
+  max-width: 90%;
+  height: 270px;
   object-fit: contain;
+  transition: transform 350ms ease;
 }
-.murza-hero-companion p {
-  color: var(--murza-muted);
-  font-size: 0.9rem;
-  line-height: 1.5;
+.murza-hero-scene.is-carry > img {
+  transform: translateX(-8px) rotate(-2deg);
+}
+.murza-hero-scene figcaption {
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  color: var(--murza-blue);
+  font-size: 0.85rem;
+}
+.murza-luggage-tag {
+  position: absolute;
+  left: 0;
+  bottom: 35px;
+  width: 162px;
+  padding: 17px 18px;
+  background: var(--murza-parcel);
+  color: var(--murza-ink);
+  border-radius: 3px 18px 18px 3px;
+  transform: rotate(-6deg);
+  box-shadow: 0 3px 0 #d5ae4d;
+  overflow-wrap: anywhere;
+}
+.murza-luggage-tag > span:first-child {
+  display: block;
+  font-size: 0.75rem;
+  margin-bottom: 9px;
+}
+.murza-luggage-tag strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  max-height: 2.6em;
+  overflow: hidden;
+}
+.murza-tag-connection {
+  display: block;
+  height: 18px;
+  width: 1px;
+  border-left: 1px dashed currentColor;
+  margin: 5px 0 5px 4px;
 }
 .murza-route-search {
   padding: 32px;
@@ -294,8 +338,8 @@
     grid-template-columns: 1fr;
   }
   .murza-hero-grid {
-    padding-block: 36px;
-    gap: 28px;
+    padding-block: 28px;
+    gap: 20px;
   }
   .murza-hero-copy h1 {
     font-size: clamp(2.5rem, 10vw, 3.6rem);
@@ -306,8 +350,27 @@
     margin-bottom: 16px;
     max-width: 38ch;
   }
-  .murza-hero-companion {
-    display: none;
+  .murza-hero-scene {
+    height: 175px;
+    margin-top: 10px;
+  }
+  .murza-hero-scene > img {
+    right: -8px;
+    width: 255px;
+    height: 158px;
+    bottom: 20px;
+  }
+  .murza-luggage-tag {
+    width: 132px;
+    padding: 11px 13px;
+    bottom: 36px;
+  }
+  .murza-luggage-tag strong {
+    font-size: 0.85rem;
+  }
+  .murza-hero-scene figcaption {
+    font-size: 0.75rem;
+    right: 0;
   }
   .murza-route-search {
     padding: 22px 18px;
@@ -333,5 +396,11 @@
     width: 36px;
     height: 36px;
     flex-basis: 36px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .murza-hero-scene > img {
+    transition: none;
+    transform: none;
   }
 }

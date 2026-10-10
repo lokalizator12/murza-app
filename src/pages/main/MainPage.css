@@ -7,7 +7,44 @@
   border-bottom: 1px solid var(--murza-line);
 }
 .murza-board-head-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
   padding-block: 20px;
+}
+.murza-board-view {
+  display: none;
+  flex-shrink: 0;
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid var(--murza-line);
+  border-radius: 8px;
+  background: white;
+}
+.murza-board-view button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 5px;
+  font: inherit;
+  cursor: pointer;
+}
+.murza-board-view button[aria-pressed="true"] {
+  background: var(--murza-blue);
+  color: white;
+}
+.murza-board-view svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .murza-board-head h1 {
   margin: 0 0 6px;
@@ -41,6 +78,11 @@
 }
 .murza-board-actions .murza-button {
   min-width: 0;
+}
+.murza-board-sidebar .MuiToggleButton-root.Mui-selected,
+.murza-board-sidebar .MuiToggleButton-root.Mui-selected:hover {
+  color: var(--murza-blue);
+  background: var(--murza-surface);
 }
 .murza-filter-toggle {
   display: flex;
@@ -116,7 +158,41 @@
   min-width: 0;
   height: 100%;
 }
+.murza-map-scope {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 1;
+  width: fit-content;
+  max-width: calc(100% - 78px);
+  padding: 10px 12px;
+  border: 1px solid var(--murza-line);
+  border-radius: 5px;
+  background: white;
+  color: var(--murza-ink);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.murza-map-scope button {
+  display: none;
+  padding-top: 8px;
+  color: var(--murza-blue);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
 @media (max-width: 800px) {
+  .murza-map-scope button {
+    display: block;
+  }
+  .murza-board-head-inner {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .murza-board-view {
+    display: flex;
+  }
   .murza-board-workspace {
     grid-template-columns: 1fr;
     height: auto;
@@ -127,8 +203,20 @@
     border-right: 0;
   }
   .murza-board-map {
-    height: 440px;
-    min-height: 440px;
+    height: 65dvh;
+    min-height: 380px;
+  }
+  .murza-board-workspace[data-mobile-view="list"] .murza-board-map,
+  .murza-board-workspace[data-mobile-view="map"] #murza-request-results {
+    display: none;
+  }
+  .murza-board-workspace[data-mobile-view="map"] .murza-board-sidebar {
+    padding-bottom: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .murza-board-view button {
+    transition: none;
   }
 }
 @media (max-width: 520px) {

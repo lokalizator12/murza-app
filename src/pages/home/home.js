@@ -49,18 +49,26 @@ const Home = () => {
               <Link className="murza-text-link" to="/about">
                 How delivery works
               </Link>
-              <div className="murza-hero-companion">
+              <figure className={`murza-hero-scene is-${purpose}`}>
                 <img
-                  src="/images/murza-mascot.webp"
-                  alt=""
-                  width="64"
-                  height="64"
+                  src="/images/murza-travel-companion-v2.webp"
+                  alt="Murza, a curious Siamese cat, checking a parcel in a blue travel bag"
+                  width="900"
+                  height="600"
+                  fetchpriority="high"
                 />
-                <p>
-                  Meet Murza.
-                  <br />A Siamese cat with a place to go.
-                </p>
-              </div>
+                <div className="murza-luggage-tag" aria-hidden="true">
+                  <span>Your route</span>
+                  <strong>{from.trim() || "Departure"}</strong>
+                  <span className="murza-tag-connection" />
+                  <strong>{to.trim() || "Destination"}</strong>
+                </div>
+                <figcaption>
+                  {purpose === "send"
+                    ? "Murza has packed. Your turn."
+                    : "A little room. A big favour."}
+                </figcaption>
+              </figure>
             </div>
             <form
               className="murza-route-search"

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Dialog, Pagination } from "@mui/material";
 import MapboxMap from "../../components/MainPage/MapboxMap/MapboxMap";
@@ -46,6 +46,8 @@ const MainPage = () => {
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [requestKind, setRequestKind] = useState(null);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [mobileView, setMobileView] = useState("list");
+  const requestSequence = useRef(0);
 
   const requestedSearch = searchParams.toString();
   useEffect(() => {
@@ -79,6 +81,7 @@ const MainPage = () => {
   }, []);
 
   const fetchRequests = useCallback(async (type, page, activeFilters) => {
+    const sequence = ++requestSequence.current;
     setLoading(true);
     setError("");
     try {
@@ -89,6 +92,7 @@ const MainPage = () => {
       });
       const endpoint = type === "parcel" ? "parcel-requests" : "trip-requests";
       const response = await axios.get(`/${endpoint}/list-summary?${params}`);
+      if (sequence !== requestSequence.current) return;
       setRequests((previous) => ({
         ...previous,
         [type]: response.data.content || [],
@@ -98,16 +102,20 @@ const MainPage = () => {
         [type]: response.data.totalPages || 0,
       }));
     } catch (fetchError) {
+      if (sequence !== requestSequence.current) return;
       setError("Requests could not be loaded. Please try again.");
       setRequests((previous) => ({ ...previous, [type]: [] }));
       console.error("Unable to load requests", fetchError);
     } finally {
-      setLoading(false);
+      if (sequence === requestSequence.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     fetchRequests(currentFilter, pages[currentFilter], filters);
+    return () => {
+      requestSequence.current += 1;
+    };
   }, [currentFilter, pages, filters, fetchRequests]);
   useEffect(() => {
     fetchMapRequests();
@@ -149,6 +157,22 @@ const MainPage = () => {
     }
   };
 
+  const hasFilters = Object.keys(filters).length > 0;
+  const idKey = currentFilter === "parcel" ? "idParcel" : "idTrip";
+  const visibleIds = new Set(
+    requests[currentFilter].map((request) => request[idKey]),
+  );
+  const visibleMapRequests = hasFilters
+    ? {
+        ...mapRequests,
+        [currentFilter]: loading
+          ? []
+          : mapRequests[currentFilter].filter((request) =>
+              visibleIds.has(request[idKey]),
+            ),
+      }
+    : mapRequests;
+
   return (
     <main className="murza-board">
       <div className="murza-board-head">
@@ -160,9 +184,37 @@ const MainPage = () => {
               traveller.
             </p>
           </div>
+          <div
+            className="murza-board-view"
+            role="group"
+            aria-label="View requests"
+          >
+            <button
+              type="button"
+              aria-pressed={mobileView === "list"}
+              aria-controls="murza-request-results"
+              onClick={() => setMobileView("list")}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 6h12M9 12h12M9 18h12M3 6h1M3 12h1M3 18h1" />
+              </svg>
+              List
+            </button>
+            <button
+              type="button"
+              aria-pressed={mobileView === "map"}
+              aria-controls="murza-request-map"
+              onClick={() => setMobileView("map")}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16" />
+              </svg>
+              Map
+            </button>
+          </div>
         </div>
       </div>
-      <div className="murza-board-workspace">
+      <div className="murza-board-workspace" data-mobile-view={mobileView}>
         <aside className="murza-board-sidebar" aria-label="Requests">
           <div className="murza-board-actions">
             <button
@@ -226,16 +278,6 @@ const MainPage = () => {
               />
             </div>
           )}
-          <div className="murza-list-heading">
-            <h2>
-              {currentFilter === "parcel"
-                ? "Parcel requests"
-                : "Available trips"}
-            </h2>
-            <span>
-              {loading ? "Loading…" : `${requests[currentFilter].length} shown`}
-            </span>
-          </div>
           {error && (
             <div className="murza-board-error" role="alert">
               {error}{" "}
@@ -249,39 +291,70 @@ const MainPage = () => {
               </button>
             </div>
           )}
-          {loading ? (
-            <div className="murza-board-status" role="status">
-              Loading requests…
+          <div id="murza-request-results">
+            <div className="murza-list-heading">
+              <h2>
+                {currentFilter === "parcel"
+                  ? "Parcel requests"
+                  : "Available trips"}
+              </h2>
+              <span>
+                {loading
+                  ? "Loading…"
+                  : `${requests[currentFilter].length} shown`}
+              </span>
             </div>
-          ) : (
-            <RequestsList
-              requests={requests[currentFilter]}
-              currentFilter={currentFilter}
-              onSelectRequest={(id) => handleRequestSelect(id)}
-            />
-          )}
-          {totalPages[currentFilter] > 1 && (
-            <div className="murza-board-pagination">
-              <Pagination
-                count={totalPages[currentFilter]}
-                page={pages[currentFilter] + 1}
-                onChange={(_, page) =>
-                  setPages((previous) => ({
-                    ...previous,
-                    [currentFilter]: page - 1,
-                  }))
-                }
+
+            {loading ? (
+              <div className="murza-board-status" role="status">
+                Loading requests…
+              </div>
+            ) : (
+              <RequestsList
+                requests={requests[currentFilter]}
+                currentFilter={currentFilter}
+                onSelectRequest={(id) => handleRequestSelect(id)}
               />
-            </div>
-          )}
+            )}
+            {totalPages[currentFilter] > 1 && (
+              <div className="murza-board-pagination">
+                <Pagination
+                  count={totalPages[currentFilter]}
+                  page={pages[currentFilter] + 1}
+                  onChange={(_, page) =>
+                    setPages((previous) => ({
+                      ...previous,
+                      [currentFilter]: page - 1,
+                    }))
+                  }
+                />
+              </div>
+            )}
+          </div>
         </aside>
-        <section className="murza-board-map" aria-label="Request map">
+        <section
+          id="murza-request-map"
+          className="murza-board-map"
+          aria-label="Request map"
+        >
           <MapboxMap
-            mapParcels={mapRequests.parcel}
-            mapDrivers={mapRequests.trip}
+            mapParcels={visibleMapRequests.parcel}
+            mapDrivers={visibleMapRequests.trip}
             selectedType={currentFilter}
             onRequestSelect={handleRequestSelect}
           />
+          <div className="murza-map-scope">
+            <span>
+              {hasFilters
+                ? loading
+                  ? "Updating filtered routes…"
+                  : "Filtered requests from this list page"
+                : `All active ${currentFilter === "parcel" ? "parcels" : "trips"}`}
+            </span>
+            <button type="button" onClick={() => setMobileView("list")}>
+              Back to list
+            </button>
+          </div>
           <MurzaGuide />
         </section>
       </div>

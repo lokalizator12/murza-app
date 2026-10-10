@@ -29,6 +29,31 @@
   width: 24px;
   height: 24px;
 }
+.murza-request-card.is-parcel .murza-request-icon {
+  background: #fdf0c9;
+  color: var(--murza-ink);
+}
+.murza-request-card-top > div:not(.murza-request-icon) {
+  min-width: 0;
+  flex: 1;
+}
+.murza-request-price {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: #fdf0c9;
+  color: var(--murza-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.murza-request-space {
+  color: var(--murza-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: -5px 0 10px;
+  overflow-wrap: anywhere;
+}
 .murza-request-type {
   color: var(--murza-muted);
   font-size: 0.8rem;

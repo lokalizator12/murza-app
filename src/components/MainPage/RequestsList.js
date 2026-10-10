@@ -41,7 +41,10 @@ const RequestsList = ({ requests, currentFilter, onSelectRequest }) => {
           : request.destinationAddress;
         const date = isParcel ? request.pickupDate : request.departureDate;
         return (
-          <article className="murza-request-card" key={id}>
+          <article
+            className={`murza-request-card is-${currentFilter}`}
+            key={id}
+          >
             <div className="murza-request-card-top">
               {isParcel && request.previewPhoto ? (
                 <img
@@ -64,6 +67,18 @@ const RequestsList = ({ requests, currentFilter, onSelectRequest }) => {
                 </span>
                 <h3>{title}</h3>
               </div>
+              {isParcel && Number.isFinite(request.price) && (
+                <span
+                  className="murza-request-price"
+                  aria-label="Proposed price"
+                >
+                  {new Intl.NumberFormat("en-GB", {
+                    style: "currency",
+                    currency: "EUR",
+                    maximumFractionDigits: 2,
+                  }).format(request.price)}
+                </span>
+              )}
             </div>
             <p className="murza-request-route">
               <span>{from || "Origin to be confirmed"}</span>
@@ -72,6 +87,13 @@ const RequestsList = ({ requests, currentFilter, onSelectRequest }) => {
               </span>
               <span>{to || "Destination to be confirmed"}</span>
             </p>
+            {(isParcel ? request.size : request.shippingMethod?.methodName) && (
+              <p className="murza-request-space">
+                {isParcel
+                  ? `Size: ${request.size}`
+                  : `Travelling by ${request.shippingMethod.methodName.toLowerCase()}`}
+              </p>
+            )}
             <div className="murza-request-card-bottom">
               <span>{formatDate(date)}</span>
               <button type="button" onClick={() => onSelectRequest(id)}>
