@@ -166,21 +166,18 @@ export default function ProfilePage() {
             sx={{
               width: 96,
               height: 96,
-              bgcolor: "#e7d5c3",
-              color: "#62442e",
+              bgcolor: "var(--murza-surface)",
+              color: "var(--murza-blue)",
               fontSize: 36,
             }}
           >
             {profile.firstName?.[0]}
           </Avatar>
           <div>
-            <span className="murza-eyebrow">
-              {own ? "Your place on Murza" : "Meet your fellow traveller"}
-            </span>
             <h1>
               {profile.firstName} {profile.lastName}
             </h1>
-            {joined && <p>Part of the journey since {joined}</p>}
+            {joined && <p>Member since {joined}</p>}
             <div className="profile-verifications">
               {profile.emailVerified && <span>✓ Email verified</span>}
               {profile.phoneVerified && <span>✓ Phone verified</span>}
@@ -191,19 +188,19 @@ export default function ProfilePage() {
           {own ? (
             <>
               <Link className="murza-button" to="/main?create=parcel">
-                Post a parcel ↗
+                Post a parcel
               </Link>
               <Link
                 className="murza-button murza-button-outline"
                 to="/main?create=trip"
               >
-                Share a trip
+                Post a trip
               </Link>
             </>
           ) : (
             <>
               <Link className="murza-button" to={`/chat/${userId}`}>
-                Send a message ↗
+                Send a message
               </Link>
               <button
                 className="murza-button murza-button-outline"

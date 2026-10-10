@@ -1,76 +1,337 @@
-.murza-home { overflow: hidden; }
-.murza-home h1, .murza-home h2, .murza-info-page h1, .murza-info-page h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 500; letter-spacing: -.035em; }
-.murza-hero { position: relative; padding: 70px 0 78px; background: radial-gradient(circle at 8% 20%, #f5dac0 0, transparent 28%), linear-gradient(120deg, #fff8ef, #f9eee2 76%, #f7e0ca); }
-.murza-hero::before { content: '✦'; position: absolute; top: 30px; left: 46%; color: #d39a6d; font-size: 40px; animation: murza-float 6s ease-in-out infinite; }
-.murza-hero-grid { display: grid; grid-template-columns: .94fr 1.06fr; align-items: center; gap: clamp(30px, 5vw, 72px); }
-.murza-hero-copy h1 { max-width: 630px; margin: 20px 0 22px; font-size: clamp(3rem, 5.1vw, 5.3rem); line-height: 1.06; color: #352820; }
-.murza-hero-copy h1 em { color: #9e5838; font-style: italic; }
-.murza-hero-copy > p { max-width: 520px; color: #624f43; font-size: 1.15rem; line-height: 1.65; }
-.murza-hero-actions, .murza-path-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 29px; }
-.murza-guide { display: flex; align-items: center; gap: 14px; margin-top: 48px; color: #69574b; font-size: .88rem; line-height: 1.45; }
-.murza-guide strong { color: #3e3026; }
-.murza-guide-mascot { width: 54px; height: 54px; object-fit: contain; filter: drop-shadow(0 4px 6px #3e2b202d); }
-.murza-carousel { position: relative; min-width: 0; height: min(550px, 51vw); min-height: 430px; border: 8px solid #fffaf4; border-radius: 32px; overflow: hidden; box-shadow: 0 30px 65px #6b472b30; background: #c9a684; }
-.murza-carousel-images, .murza-carousel-images::after { position: absolute; inset: 0; }
-.murza-carousel-images::after { content: ''; z-index: 1; background: linear-gradient(0deg, #1f1b18d9, transparent 56%); pointer-events: none; }
-.murza-carousel-images img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity .7s ease, transform 6.5s ease; }
-.murza-carousel-images img.is-active { opacity: 1; transform: scale(1); }
-.murza-carousel-caption { position: absolute; z-index: 2; left: 38px; right: 38px; bottom: 95px; color: white; }
-.murza-carousel-caption span { display: inline-block; margin-bottom: 9px; font-size: .78rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; color: #f7dfbd; }
-.murza-carousel-caption h2 { max-width: 480px; font-size: clamp(1.8rem, 3vw, 2.65rem); line-height: 1.1; }
-.murza-carousel-caption p { max-width: 450px; margin-top: 9px; font-size: .96rem; line-height: 1.5; }
-.murza-carousel-controls { position: absolute; z-index: 2; left: 38px; right: 38px; bottom: 29px; display: flex; align-items: center; justify-content: space-between; }
-.murza-carousel-controls > button { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid #ffffffa0; border-radius: 50%; color: white; cursor: pointer; transition: background .2s; }
-.murza-carousel-controls > button:hover { background: #ffffff48; }
-.murza-carousel-dots { display: flex; gap: 8px; }
-.murza-carousel-dots button { width: 9px; height: 9px; border-radius: 99px; background: #ffffff9c; cursor: pointer; transition: width .2s, background .2s; }
-.murza-carousel-dots button.is-active { width: 28px; background: white; }
-.murza-intro { padding-block: 104px; text-align: center; }
-.murza-intro > h2, .murza-faq h2 { max-width: 700px; margin: 16px auto; font-size: clamp(2.3rem, 4vw, 3.6rem); line-height: 1.15; }
-.murza-intro > p { max-width: 660px; margin: 0 auto; color: #69574b; line-height: 1.65; }
-.murza-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 44px; text-align: left; }
-.murza-step { min-height: 214px; padding: 28px; background: #fff; border: 1px solid var(--murza-line); border-radius: 24px; box-shadow: 0 10px 30px #442d190a; }
-.murza-step > span { color: #b86b42; font-family: Georgia, serif; font-size: 2.1rem; }
-.murza-step h3 { margin: 12px 0 9px; font-size: 1.2rem; }
-.murza-step p { color: #6b5b4f; line-height: 1.55; }
-.murza-paths { padding: 80px 0; background: #f4e8da; }
-.murza-path-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
-.murza-path-card { overflow: hidden; background: #fffaf4; border: 1px solid #ead7c2; border-radius: 28px; }
-.murza-path-image { height: 260px; overflow: hidden; }
-.murza-path-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
-.murza-path-card:hover img { transform: scale(1.04); }
-.murza-path-card > div:last-child { padding: 32px; }
-.murza-path-card h2 { margin: 12px 0; font-size: clamp(2rem, 2.8vw, 2.8rem); }
-.murza-path-card p { max-width: 510px; color: #69574b; line-height: 1.6; }
-.murza-text-link { color: #70462f; font-weight: 700; text-decoration: none; }
-.murza-text-link:hover { text-decoration: underline; }
-.murza-faq { display: grid; grid-template-columns: .8fr 1.2fr; gap: 70px; padding-block: 108px; }
-.murza-faq h2 { margin-left: 0; }
-.murza-faq > div:first-child p { color: #69574b; line-height: 1.6; }
-.murza-faq-list details { border-bottom: 1px solid #d9c7b6; padding: 19px 0; }
-.murza-faq-list summary { cursor: pointer; font-weight: 700; font-size: 1.05rem; }
-.murza-faq-list details p { padding: 13px 24px 0 0; color: #69574b; line-height: 1.6; }
-.murza-last-call { display: flex; align-items: center; justify-content: space-between; gap: 30px; padding: 50px; background: #e9d6bd; border-radius: 30px; }
-.murza-last-call h2 { margin: 12px 0; font-size: clamp(2rem, 3.4vw, 3.4rem); }
-.murza-last-call p { color: #5d4b40; }
-@keyframes murza-float { 50% { transform: translateY(12px) rotate(14deg); } }
+.murza-hero {
+  background: var(--murza-surface);
+}
+.murza-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  padding-block: 72px 64px;
+}
+.murza-hero-copy h1 {
+  font-size: clamp(2.8rem, 5.4vw, 4.7rem);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  margin: 0 0 24px;
+}
+.murza-hero-copy > p {
+  max-width: 35ch;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.murza-text-link {
+  color: var(--murza-blue);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  font-weight: 600;
+}
+.murza-hero-companion {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 40px;
+}
+.murza-hero-companion img {
+  object-fit: contain;
+}
+.murza-hero-companion p {
+  color: var(--murza-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.murza-route-search {
+  padding: 32px;
+  border-radius: 10px;
+  background: white;
+  min-width: 0;
+}
+.murza-search-purpose {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
+  margin: 0 0 28px;
+  min-width: 0;
+  gap: 8px;
+}
+.murza-search-purpose legend {
+  padding: 0 0 16px;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.murza-search-purpose label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 10px;
+  background: #f3f5f7;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.murza-search-purpose label.is-selected {
+  color: var(--murza-blue);
+  background: var(--murza-surface);
+  border-color: var(--murza-blue);
+}
+.murza-search-purpose input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+.murza-route-fields {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.murza-route-fields label {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid #a5b6c3;
+  border-radius: 5px;
+  padding-left: 16px;
+  background: white;
+}
+.murza-route-fields label:focus-within {
+  outline: 2px solid var(--murza-blue);
+  outline-offset: 2px;
+}
+.murza-route-fields label > span {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.murza-route-fields input {
+  width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  padding: 16px 40px 16px 12px;
+  border: 0;
+  background: none;
+  color: var(--murza-ink);
+  outline: none;
+}
+.murza-route-fields input::placeholder {
+  color: var(--murza-muted);
+}
+.murza-swap-route {
+  position: absolute;
+  z-index: 1;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: 1px solid #a5b6c3;
+  border-radius: 50%;
+  color: var(--murza-blue);
+  cursor: pointer;
+}
+.murza-swap-route svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.murza-search-submit {
+  width: 100%;
+}
+.murza-search-note {
+  color: var(--murza-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+.murza-search-post {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--murza-line);
+  font-size: 0.9rem;
+}
+.murza-search-post a {
+  color: var(--murza-blue);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.murza-how {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  padding-block: 72px;
+}
+.murza-home h2 {
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.murza-how-content > p {
+  color: var(--murza-muted);
+  max-width: 56ch;
+  line-height: 1.65;
+}
+.murza-how ol {
+  list-style: none;
+  counter-reset: handover;
+  display: grid;
+  gap: 24px;
+  margin-top: 30px;
+}
+.murza-how li {
+  position: relative;
+  padding-left: 36px;
+  counter-increment: handover;
+}
+.murza-how li::before {
+  content: counter(handover);
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--murza-blue);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.murza-how h3 {
+  font-size: 1.08rem;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.murza-how li p {
+  color: var(--murza-muted);
+  line-height: 1.6;
+  max-width: 54ch;
+}
+.murza-options {
+  padding-block: 48px;
+  background: #f4f7f9;
+}
+.murza-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+}
+.murza-options article {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+.murza-option-icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  fill: none;
+  stroke: var(--murza-blue);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.murza-options h2 {
+  font-size: 1.5rem;
+  margin-bottom: 14px;
+}
+.murza-options p {
+  max-width: 42ch;
+  color: var(--murza-muted);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.murza-faq {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  padding-block: 72px;
+}
+.murza-faq-list details {
+  border-bottom: 1px solid var(--murza-line);
+  padding: 18px 0;
+}
+.murza-faq-list details:first-child {
+  padding-top: 0;
+}
+.murza-faq-list summary {
+  font-weight: 600;
+  font-size: 1.03rem;
+  cursor: pointer;
+  line-height: 1.5;
+}
+.murza-faq-list details p {
+  color: var(--murza-muted);
+  line-height: 1.65;
+  margin-top: 12px;
+  max-width: 58ch;
+}
 @media (max-width: 900px) {
-    .murza-hero-grid, .murza-faq { grid-template-columns: 1fr; }
-    .murza-hero { padding-top: 52px; }
-    .murza-carousel { height: 520px; }
-    .murza-faq { gap: 24px; }
+  .murza-hero-grid,
+  .murza-how,
+  .murza-options-grid,
+  .murza-faq {
+    gap: 36px;
+  }
+  .murza-route-search {
+    padding: 24px;
+  }
 }
 @media (max-width: 680px) {
-    .murza-hero-copy h1 { font-size: clamp(2.7rem, 12vw, 4rem); }
-    .murza-carousel { height: 420px; min-height: 0; border-width: 5px; border-radius: 24px; }
-    .murza-carousel-caption { left: 22px; right: 22px; bottom: 84px; }
-    .murza-carousel-controls { left: 22px; right: 22px; }
-    .murza-steps, .murza-path-grid { grid-template-columns: 1fr; }
-    .murza-intro, .murza-faq { padding-block: 70px; }
-    .murza-paths { padding-block: 55px; }
-    .murza-last-call { align-items: flex-start; flex-direction: column; padding: 30px; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .murza-hero::before { animation: none; }
-    .murza-carousel-images img, .murza-path-image img { transition: none; transform: none; }
+  .murza-hero-grid,
+  .murza-how,
+  .murza-options-grid,
+  .murza-faq {
+    grid-template-columns: 1fr;
+  }
+  .murza-hero-grid {
+    padding-block: 36px;
+    gap: 28px;
+  }
+  .murza-hero-copy h1 {
+    font-size: clamp(2.5rem, 10vw, 3.6rem);
+    margin-bottom: 16px;
+  }
+  .murza-hero-copy > p {
+    font-size: 1.05rem;
+    margin-bottom: 16px;
+    max-width: 38ch;
+  }
+  .murza-hero-companion {
+    display: none;
+  }
+  .murza-route-search {
+    padding: 22px 18px;
+  }
+  .murza-search-purpose label {
+    font-size: 0.9rem;
+  }
+  .murza-how,
+  .murza-faq {
+    padding-block: 44px;
+    gap: 24px;
+  }
+  .murza-options {
+    padding-block: 36px;
+  }
+  .murza-options-grid {
+    gap: 36px;
+  }
+  .murza-options article {
+    gap: 14px;
+  }
+  .murza-option-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
 }

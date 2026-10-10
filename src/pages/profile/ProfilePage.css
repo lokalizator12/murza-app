@@ -9,11 +9,11 @@
   gap: 12px;
   align-items: center;
   font-size: 0.85rem;
-  color: #796b60;
+  color: var(--murza-muted);
   margin-bottom: 30px;
 }
 .profile-breadcrumb a {
-  color: var(--murza-brown);
+  color: var(--murza-blue);
   text-decoration: none;
 }
 .profile-hero {
@@ -30,15 +30,15 @@
   min-width: 0;
 }
 .profile-person h1 {
-  font-family: Georgia, serif;
+  font-family: inherit;
   font-size: clamp(2rem, 4vw, 3.2rem);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.15;
   margin: 12px 0 8px;
   overflow-wrap: anywhere;
 }
 .profile-person p {
-  color: #796b60;
+  color: var(--murza-muted);
   margin: 0;
   font-size: 0.9rem;
 }
@@ -59,8 +59,8 @@
 }
 .profile-verifications span {
   font-size: 0.78rem;
-  color: #365c4e;
-  background: #e9efe9;
+  color: var(--murza-green);
+  background: #edf5ef;
   padding: 5px 10px;
   border-radius: 6px;
 }
@@ -75,7 +75,7 @@
 }
 .profile-meta-note {
   margin-left: auto;
-  color: #796b60;
+  color: var(--murza-muted);
 }
 .profile-tabs {
   display: flex;
@@ -89,15 +89,15 @@
   border: 0;
   background: none;
   padding: 16px 0;
-  color: #796b60;
+  color: var(--murza-muted);
   cursor: pointer;
   border-bottom: 3px solid transparent;
   font-size: 0.95rem;
   font-weight: 600;
 }
 .profile-tabs button[aria-current] {
-  color: var(--murza-brown);
-  border-color: var(--murza-brown);
+  color: var(--murza-blue);
+  border-color: var(--murza-blue);
 }
 .profile-listings {
   display: grid;
@@ -112,20 +112,20 @@
   margin-bottom: 18px;
 }
 .profile-section-heading h2 {
-  font-family: Georgia, serif;
+  font-family: inherit;
   font-size: 1.8rem;
-  font-weight: 400;
+  font-weight: 500;
   margin: 8px 0 0;
 }
 .profile-section-heading small {
-  font-family: Arial, sans-serif;
+  font-family: inherit;
   font-size: 0.85rem;
-  color: #796b60;
+  color: var(--murza-muted);
   margin-left: 8px;
 }
 .profile-section-heading a,
 .profile-people-list a {
-  color: #336b8a;
+  color: var(--murza-blue);
   font-size: 0.9rem;
   text-decoration: none;
 }
@@ -143,15 +143,15 @@
 .profile-status {
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: normal;
   padding: 5px 8px;
-  color: #365c4e;
-  background: #e9efe9;
+  color: var(--murza-green);
+  background: #edf5ef;
   border-radius: 5px;
 }
 .profile-status.is-complete {
-  color: #796b60;
-  background: #f0e9e1;
+  color: var(--murza-muted);
+  background: #f0f3f5;
 }
 .profile-listing-link {
   display: block;
@@ -183,15 +183,15 @@
   overflow-wrap: anywhere;
 }
 .profile-route span:nth-child(2) {
-  color: #b25d35;
+  color: var(--murza-blue);
 }
 .profile-listing-link p {
   font-size: 0.83rem;
-  color: #796b60;
+  color: var(--murza-muted);
   margin: 12px 0;
 }
 .profile-details-label {
-  color: #336b8a;
+  color: var(--murza-blue);
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -207,7 +207,7 @@
   border: 0;
   background: none;
   padding: 4px 0;
-  color: var(--murza-brown);
+  color: var(--murza-blue);
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -221,8 +221,8 @@
   align-items: center;
   text-align: center;
   padding: 24px;
-  background: #f7efe5;
-  border: 1px dashed #d7c5b3;
+  background: var(--murza-surface);
+  border: 0;
   border-radius: 8px;
 }
 .profile-empty img {
@@ -231,20 +231,20 @@
   object-fit: contain;
 }
 .profile-empty h3 {
-  font-family: Georgia, serif;
+  font-family: inherit;
   font-size: 1.4rem;
-  font-weight: 400;
+  font-weight: 500;
   margin: 12px 0;
 }
 .profile-empty p {
   max-width: 300px;
-  color: #796b60;
+  color: var(--murza-muted);
   line-height: 1.65;
   margin: 0 0 20px;
 }
 .profile-list-loading {
   padding: 60px 0;
-  color: #796b60;
+  color: var(--murza-muted);
 }
 .profile-loading {
   min-height: 55vh;
@@ -258,13 +258,13 @@
   max-width: 760px;
 }
 .profile-form-panel h2 {
-  font-family: Georgia, serif;
-  font-weight: 400;
+  font-family: inherit;
+  font-weight: 500;
   font-size: 2rem;
   margin: 12px 0;
 }
 .profile-form-panel > p {
-  color: #796b60;
+  color: var(--murza-muted);
   line-height: 1.6;
   margin-bottom: 28px;
 }
@@ -276,7 +276,7 @@
 }
 .profile-photo-editor p {
   font-size: 0.8rem;
-  color: #796b60;
+  color: var(--murza-muted);
   margin: 10px 0;
 }
 .profile-field-grid {
@@ -293,7 +293,7 @@
   font-weight: 600;
 }
 .profile-form-panel input {
-  border: 1px solid #cdbba9;
+  border: 1px solid #a5b6c3;
   border-radius: 6px;
   min-height: 48px;
   padding: 12px;
@@ -304,7 +304,7 @@
   box-sizing: border-box;
 }
 .profile-form-panel input:focus {
-  outline: 2px solid #336b8a;
+  outline: 2px solid var(--murza-blue);
   outline-offset: 2px;
 }
 .profile-form-actions {
@@ -322,7 +322,7 @@
 }
 .profile-workspace button:focus-visible,
 .profile-workspace a:focus-visible {
-  outline: 3px solid #336b8a;
+  outline: 3px solid var(--murza-blue);
   outline-offset: 4px;
 }
 .profile-workspace .MuiAlert-root {
@@ -334,14 +334,14 @@
   border-top: 1px solid var(--murza-line);
 }
 .profile-password-section h3 {
-  font-family: Georgia, serif;
+  font-family: inherit;
   font-size: 1.5rem;
-  font-weight: 400;
+  font-weight: 500;
   margin: 0 0 16px;
 }
 .profile-security-note {
   font-size: 0.85rem;
-  color: #796b60;
+  color: var(--murza-muted);
   line-height: 1.6;
 }
 .profile-contact-status {
@@ -350,10 +350,10 @@
   align-items: center;
   font-size: 0.8rem;
   margin-top: 10px;
-  font-weight: 400;
+  font-weight: 500;
 }
 .profile-contact-status span {
-  color: #547568;
+  color: var(--murza-green);
 }
 .profile-people-tabs {
   display: flex;
@@ -364,12 +364,12 @@
   border: 1px solid var(--murza-line);
   border-radius: 6px;
   padding: 12px 18px;
-  color: var(--murza-brown);
+  color: var(--murza-blue);
   background: transparent;
   cursor: pointer;
 }
 .profile-people-tabs button[aria-pressed="true"] {
-  background: var(--murza-brown);
+  background: var(--murza-blue);
   color: white;
 }
 .profile-people-list {
@@ -399,7 +399,7 @@
 .profile-code-form {
   margin-top: 20px;
   padding: 20px;
-  background: #f7efe5;
+  background: var(--murza-surface);
   border-radius: 6px;
 }
 .profile-code-form label {

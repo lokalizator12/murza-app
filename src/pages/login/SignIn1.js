@@ -107,14 +107,17 @@ export default function SignIn1() {
   };
   return (
     <div className="page-container">
+      <a className="murza-auth-brand" href="/" aria-label="Murza home">
+        <img src="/logo-1500h.png" alt="Murza" />
+      </a>
       <Helmet>
-        <title>Sign In</title>
-        <meta property="og:title" content="Sign In" />
+        <title>Log in</title>
+        <meta property="og:title" content="Log in" />
       </Helmet>
       <div className="sign-in2-container1 thq-section-padding">
         <div className="sign-in2-max-width thq-section-max-width">
           <div className="sign-in2-form-root">
-            <h2 className="sign-in2-text25 thq-heading-2">Sign In</h2>
+            <h2 className="sign-in2-text25 thq-heading-2">Log in</h2>
 
             {accountNotice && (
               <p className="profile-security-note" role="status">
@@ -201,23 +204,14 @@ export default function SignIn1() {
                 onClick={handleForgotPasswordOpen}
                 className="forgot-password-btn"
               >
-                Forgot Password?
+                Forgot password?
               </button>
-            </div>
-
-            <div className="sign-in2-container4">
-              <div className="sign-in2-terms-agree">
-                <p className="thq-body-large">
-                  New here? Learn <a href="/about">how Murza works</a> before
-                  you join.
-                </p>
-              </div>
             </div>
 
             <div className="sign-in2-container5">
               <div className="sign-in2-divider4"></div>
               <span className="sign-in2-text23 thq-body-large">
-                Your next connection starts here.
+                Don’t have an account?
               </span>
             </div>
 
@@ -226,7 +220,9 @@ export default function SignIn1() {
               className="sign-in2-button4 thq-button-outline"
               onClick={() => navigate("/register")}
             >
-              <span className="sign-in2-text26 thq-body-small">Sign Up</span>
+              <span className="sign-in2-text26 thq-body-small">
+                Create an account
+              </span>
             </button>
           </div>
         </div>

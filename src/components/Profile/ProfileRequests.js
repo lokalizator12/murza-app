@@ -103,9 +103,6 @@ export default function ProfileRequests({
     >
       <div className="profile-section-heading">
         <div>
-          <span className="murza-eyebrow">
-            {parcel ? "Something to send" : "A journey to share"}
-          </span>
           <h2>
             {own ? "My " : ""}
             {parcel ? "parcels" : "trips"} <small>{total}</small>
@@ -113,7 +110,7 @@ export default function ProfileRequests({
         </div>
         {own && (
           <Link to={`/main?create=${type}`}>
-            Add {parcel ? "parcel" : "trip"} ↗
+            Add {parcel ? "parcel" : "trip"}
           </Link>
         )}
       </div>
@@ -205,7 +202,7 @@ export default function ProfileRequests({
               </div>
               <p>{listingDate(item.departureDate)}</p>
               <span className="profile-details-label">
-                View {parcel ? "parcel" : "trip"} details ↗
+                View {parcel ? "parcel" : "trip"} details
               </span>
             </button>
             {own && !item.status && (

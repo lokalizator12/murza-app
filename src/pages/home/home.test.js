@@ -1,24 +1,69 @@
-import React from 'react';
-import {fireEvent, render, screen} from '@testing-library/react';
-import Home from './home';
-
-jest.mock('react-router-dom', () => ({
-    Link: ({to, children, ...props}) => <a href={to} {...props}>{children}</a>
-}), {virtual: true});
-jest.mock('../../context/AuthContext', () => ({
-    useAuth: () => ({isAuthenticated: false})
+import React from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import Home from "./home";
+const mockNavigate = jest.fn();
+jest.mock(
+  "react-router-dom",
+  () => ({
+    Link: ({ to, children, ...props }) => (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    ),
+    useNavigate: () => mockNavigate,
+  }),
+  { virtual: true },
+);
+jest.mock("../../context/AuthContext", () => ({
+  useAuth: () => ({ isAuthenticated: false }),
 }));
+beforeEach(() => mockNavigate.mockClear());
 
-beforeAll(() => {
-    window.matchMedia = () => ({matches: false, addListener: () => {}, removeListener: () => {}});
+test("preserves a trimmed route through the login destination", () => {
+  render(<Home />);
+  fireEvent.change(screen.getByRole("textbox", { name: "From" }), {
+    target: { value: " Warsaw " },
+  });
+  fireEvent.change(screen.getByRole("textbox", { name: "To" }), {
+    target: { value: "Gdańsk" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Find a traveller" }));
+  const destination = new URLSearchParams(
+    mockNavigate.mock.calls[0][0].split("?")[1],
+  ).get("next");
+  const query = new URLSearchParams(destination.split("?")[1]);
+  expect(destination.split("?")[0]).toBe("/main");
+  expect(query.get("type")).toBe("trip");
+  expect(query.get("from")).toBe("Warsaw");
+  expect(query.get("to")).toBe("Gdańsk");
+  expect(
+    screen.getByText(/Live parcel tracking is not available/i),
+  ).toBeInTheDocument();
 });
 
-test('shows honest service copy, working sign-in destinations, and carousel controls', () => {
-    render(<Home/>);
-    expect(screen.getByRole('heading', {name: /Every parcel has a route/i})).toBeInTheDocument();
-    expect(screen.getByRole('link', {name: /Find a trip/i}).getAttribute('href')).toBe('/login?next=%2Fmain%3Ftype%3Dtrip');
-    expect(screen.getByText(/Live parcel tracking is not available/i)).toBeInTheDocument();
-    expect(screen.getByRole('heading', {name: 'A parcel with somewhere to go'})).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', {name: 'Next story'}));
-    expect(screen.getByRole('heading', {name: 'Going that way anyway?'})).toBeInTheDocument();
+test("switches to carrying parcels and swaps the route before searching", () => {
+  render(<Home />);
+  fireEvent.change(screen.getByRole("textbox", { name: "From" }), {
+    target: { value: "Warsaw" },
+  });
+  fireEvent.change(screen.getByRole("textbox", { name: "To" }), {
+    target: { value: "Berlin" },
+  });
+  fireEvent.click(screen.getByRole("radio", { name: "Carry a parcel" }));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Swap departure and destination" }),
+  );
+  expect(screen.getByRole("textbox", { name: "From" })).toHaveValue("Berlin");
+  screen
+    .getAllByRole("link", { name: "Post a trip" })
+    .forEach((link) =>
+      expect(link.getAttribute("href")).toContain("create%3Dtrip"),
+    );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Find parcels to carry" }),
+  );
+  const next = new URLSearchParams(
+    mockNavigate.mock.calls[0][0].split("?")[1],
+  ).get("next");
+  expect(next).toBe("/main?type=parcel&from=Berlin&to=Warsaw");
 });

@@ -66,7 +66,6 @@ export default function SubscriptionsPanel({ userId, onChanged }) {
   }
   return (
     <section className="profile-form-panel">
-      <span className="murza-eyebrow">Good journeys start with people</span>
       <h2>Your connections</h2>
       <p>
         Keep travellers you know close, and find your way back to their routes.

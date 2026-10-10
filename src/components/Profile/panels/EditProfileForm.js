@@ -88,7 +88,6 @@ export default function EditProfileForm({ initialProfile, onProfileUpdated }) {
   }
   return (
     <section className="profile-form-panel">
-      <span className="murza-eyebrow">A familiar face</span>
       <h2>Your public profile</h2>
       <p>Your name and photo help senders and travellers recognise you.</p>
       <form onSubmit={save}>
@@ -99,7 +98,12 @@ export default function EditProfileForm({ initialProfile, onProfileUpdated }) {
                 ? undefined
                 : preview || initialProfile.userPhoto || undefined
             }
-            sx={{ width: 88, height: 88, bgcolor: "#e7d5c3", color: "#62442e" }}
+            sx={{
+              width: 88,
+              height: 88,
+              bgcolor: "var(--murza-surface)",
+              color: "var(--murza-blue)",
+            }}
           >
             {firstName[0]}
           </Avatar>

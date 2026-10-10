@@ -201,7 +201,6 @@ export default function SettingsPanel({ onSettingsUpdated }) {
     );
   return (
     <section className="profile-form-panel">
-      <span className="murza-eyebrow">Your account, in good hands</span>
       <h2>Account & security</h2>
       <p>
         Your email and phone are private. Only their verification status is

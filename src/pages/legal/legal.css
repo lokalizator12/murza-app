@@ -1,7 +1,29 @@
-.murza-service-info { max-width: 920px; padding-block: 85px 40px; }
-.murza-service-info h1 { max-width: 800px; margin: 18px 0 24px; font-size: clamp(2.8rem, 5vw, 4.5rem); line-height: 1.1; }
-.murza-service-lead { max-width: 740px; color: #655348; font-size: 1.12rem; line-height: 1.7; }
-.murza-service-list { display: grid; gap: 16px; margin: 44px 0; }
-.murza-service-list section { padding: 25px 28px; border: 1px solid #e6d6c5; border-radius: 20px; background: white; }
-.murza-service-list h2 { margin-bottom: 10px; font-size: 1.6rem; }
-.murza-service-list p { color: #655348; line-height: 1.65; }
+.murza-service-info {
+  max-width: 800px;
+  padding-block: 56px;
+}
+.murza-service-info h1 {
+  margin-bottom: 24px;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.murza-service-lead {
+  color: var(--murza-muted);
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+.murza-service-list {
+  display: grid;
+  gap: 32px;
+  margin: 40px 0;
+}
+.murza-service-list h2 {
+  margin-bottom: 12px;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+.murza-service-list p {
+  color: var(--murza-muted);
+  line-height: 1.7;
+}
